@@ -5,10 +5,11 @@ This module contains the tool of collective.recipe.backup
 import os
 from setuptools import setup, find_packages
 
+
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.1'
+version = '0.1 dev'
 
 long_description = (
     read('README.txt')
@@ -18,19 +19,18 @@ long_description = (
     + '\n' +
     read('collective', 'recipe', 'backup', 'README.txt')
     + '\n' +
-    'Contributors\n' 
+    'Contributors\n'
     '************\n'
     + '\n' +
     read('CONTRIBUTORS.txt')
     + '\n' +
     'Change history\n'
     '**************\n'
-    + '\n' + 
+    + '\n' +
     read('CHANGES.txt')
     + '\n' +
    'Download\n'
-    '********\n'
-    )
+    '********\n')
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {"zc.buildout": ["default = %s" % entry_point]}
 
@@ -40,7 +40,6 @@ setup(name='collective.recipe.backup',
       version=version,
       description="bin/backup script: sensible defaults around bin/repozo",
       long_description=long_description,
-      # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         'Framework :: Buildout',
         'Intended Audience :: Developers',
