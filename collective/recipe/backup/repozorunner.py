@@ -1,4 +1,4 @@
 # Wrapper that invokes repozo.
 
-def main:
+def main():
     print 'hoera'

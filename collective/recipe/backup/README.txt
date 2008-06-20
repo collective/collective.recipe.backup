@@ -28,11 +28,14 @@ The simplest way to use it to add a part in ``buildout.cfg`` like this:
     ... recipe = collective.recipe.backup
     ... """)
 
-Running the buildout adds a ``bin/backup`` script (NOT YET) and the ``var/backups`` dir:
+Running the buildout adds a ``bin/backup`` script and the ``var/backups`` dir:
 
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
     backup: Created /sample-buildout/var/backups
     <BLANKLINE>
+    >>> ls('var')
+    d  backups
     >>> ls('bin')
+    -  backup
     -  buildout
