@@ -46,7 +46,7 @@ class Recipe(object):
 
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
-        return tuple()
+        return scripts
 
     def update(self):
         """Updater"""
