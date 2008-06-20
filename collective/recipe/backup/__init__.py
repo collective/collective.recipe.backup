@@ -38,9 +38,10 @@ class Recipe(object):
             logger.info('Created %s', backup_dir)
 
         requirements, ws = self.egg.working_set(['collective.recipe.backup'])
-        #scripts = zc.buildout.easy_install.scripts(
-        #    ['backup', 'collective.recipe.backup.repozorunner', 'main'],
-        #    ws, self.options['executable'], self.options['bin-directory'])
+        scripts = zc.buildout.easy_install.scripts(
+            #[('backup', 'collective.recipe.backup.repozorunner', 'main')],
+            requirements,
+            ws, self.options['executable'], self.options['bin-directory'])
 
 
         # Return files that were created by the recipe. The buildout

@@ -33,6 +33,9 @@ Running the buildout adds a ``bin/backup`` script and the ``var/backups`` dir:
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
     backup: Created /sample-buildout/var/backups
+    Getting distribution for 'zc.recipe.egg'.
+    Got zc.recipe.egg 1.0.0.
+    Generated script '/sample-buildout/bin/backup'.
     <BLANKLINE>
     >>> ls('var')
     d  backups
