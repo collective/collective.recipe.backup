@@ -43,9 +43,15 @@ Running the buildout adds a ``bin/backup`` script and the ``var/backups`` dir:
     -  backup
     -  buildout
 
-Calling ``bin/backup`` results in a normal repozo backup. We'll put in place a
-mock repozo script that prints the options it is passed.
+Calling ``bin/backup`` results in a normal repozo backup. We put in place a
+mock repozo script that prints the options it is passed (and make it
+executable):
 
-    >>> write('bin', 'repozo', "#!python2.4\nimport sys\nprint sys.argv[1:]")
+    >>> #write('bin', 'repozo', "#!python2.4\nimport sys\nprint sys.argv[1:]")
+    >>> write('bin', 'repozo', "#!/bin/sh\necho $*")
+    >>> dontcare = system('chmod u+x bin/repozo')
+
+By default, backups are done in ``var/backups``:
+
     >>> print system('bin/backup')
-    >>> cat('bin', 'backup')
+    --backup --repository=/sample-buildout/var/backups

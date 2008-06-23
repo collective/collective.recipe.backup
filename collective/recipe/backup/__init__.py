@@ -34,23 +34,17 @@ class Recipe(object):
         backup_dir = os.path.abspath(self.options['location'])
         if not os.path.isdir(backup_dir):
             os.makedirs(backup_dir)
-            #logger.info('Created %s', backup_dir)
-        logger.info("hey, are we working?")
-        logger.warn("bindir: %r", self.options)
+            logger.info('Created %s', backup_dir)
         initialization = '\n'.join(
-            ['bindir = %s' % self.options['bin-directory'],
+            ["bindir = '%s'" % self.options['bin-directory'],
              ])
-        logger.warn("just after init code stuff")
         requirements, ws = self.egg.working_set(['collective.recipe.backup'])
-        #import pdb;p db.set_trace()
-        logger.warn("Just before easy_install call")
         scripts = zc.buildout.easy_install.scripts(
             [('backup', 'collective.recipe.backup.repozorunner', 'main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments='bindir',
             initialization=initialization)
-        logger.info("Installed %r.", scripts)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
         return scripts
