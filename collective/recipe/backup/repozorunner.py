@@ -1,4 +1,4 @@
 # Wrapper that invokes repozo.
 
-def main():
-    print 'hoera'
+def main(bindir):
+    print bindir

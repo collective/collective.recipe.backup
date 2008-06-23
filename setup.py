@@ -34,9 +34,10 @@ long_description = (
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {
     'zc.buildout': ["default = %s" % entry_point],
-    'console_scripts':[
-            'backup = collective.recipe.backup.repozorunner:main'
-            ]}
+    #'console_scripts':[
+    #        'backup = collective.recipe.backup.repozorunner:main'
+    #        ]
+    }
 
 tests_require=['zope.testing', 'zc.buildout', 'zc.recipe.egg']
 
@@ -60,8 +61,8 @@ setup(name='collective.recipe.backup',
       namespace_packages=['collective', 'collective.recipe'],
       include_package_data=True,
       zip_safe=False,
-      install_requires=['setuptools',
-                        'zc.buildout',
+      install_requires=['zc.buildout',
+                        'setuptools',
                         # -*- Extra requirements: -*-
                         'zc.recipe.egg',
                         ],
