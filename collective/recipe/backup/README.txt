@@ -45,13 +45,19 @@ Running the buildout adds a ``bin/backup`` script and the ``var/backups`` dir:
 
 Calling ``bin/backup`` results in a normal repozo backup. We put in place a
 mock repozo script that prints the options it is passed (and make it
-executable):
+executable). It is horridly unix-specific at the moment.
 
-    >>> #write('bin', 'repozo', "#!python2.4\nimport sys\nprint sys.argv[1:]")
-    >>> write('bin', 'repozo', "#!/bin/sh\necho $*")
+    >>> import sys
+    >>> write('bin', 'repozo',
+    ...       "#!%s\nimport sys\nprint sys.argv[1:]" % sys.executable)
+    >>> #write('bin', 'repozo', "#!/bin/sh\necho $*")
     >>> dontcare = system('chmod u+x bin/repozo')
 
 By default, backups are done in ``var/backups``:
 
     >>> print system('bin/backup')
-    --backup --repository=/sample-buildout/var/backups
+    ['--backup'. '--file=/sample-buildout/var/filestorage/Data.fs', '--repository=/sample-buildout/var/backups']
+
+
+
+TODO: datafs option
