@@ -1,7 +1,9 @@
 # Wrapper that invokes repozo.
 from operator import itemgetter
-import os
 import logging
+import os
+import sys
+
 
 logger = logging.getLogger('backup')
 
@@ -28,6 +30,23 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep):
     cleanup(snapshot_location, keep)
 
 
+def restore_main(bin_dir, datafs, backup_location):
+    """Main method, gets called by generated bin/restore."""
+    repozo = os.path.join(bin_dir, 'repozo')
+    logger.debug("If things break: did you stop zope?")
+    date = None
+    if len(sys.argv) > 1:
+        date = sys.argv[1]
+        logger.debug("Argument passed to bin/restore, we assume it is "
+                     "a date that we have to pass to repozo: %s.", date)
+        logger.info("Date restriction: restoring state at %s." % date)
+    logger.info("Restoring database file: %s to %s...",
+                backup_location, datafs)
+    os.system(repozo + ' ' +
+              restore_arguments(datafs, backup_location, date))
+    logger.debug("Repoze command executed.")
+
+
 def backup_arguments(datafs=None,
                      backup_location=None,
                      full=False,
@@ -52,6 +71,32 @@ def backup_arguments(datafs=None,
     if full:
         # By default, there's an incremental backup, if possible.
         arguments.append('-F')
+    args = ' '.join(arguments)
+    logger.debug("Repoze arguments used: %s", args)
+    return args
+
+
+def restore_arguments(datafs=None,
+                      backup_location=None,
+                      date=None):
+    """
+      >>> restore_arguments()
+      Traceback (most recent call last):
+      ...
+      RuntimeError: Missing locations.
+      >>> restore_arguments(datafs='in/Data.fs', backup_location='out')
+      '--restore -o in/Data.fs -r out'
+
+    """
+    if datafs is None or backup_location is None:
+        raise RuntimeError("Missing locations.")
+    arguments = []
+    arguments.append('--restore')
+    arguments.append('-o %s' % datafs)
+    arguments.append('-r %s' % backup_location)
+    if date is not None:
+        logger.debug("Restore as of date %r requested.", date)
+        arguments.append('-D %s' % date)
     args = ' '.join(arguments)
     logger.debug("Repoze arguments used: %s", args)
     return args

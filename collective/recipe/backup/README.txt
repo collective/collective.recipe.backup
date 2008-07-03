@@ -12,8 +12,9 @@ The simplest way to use it to add a part in ``buildout.cfg`` like this:
     ... recipe = collective.recipe.backup
     ... """)
 
-Running the buildout adds a ``bin/backup`` and ``bin/snapshotbackup`` script
-and, by default, the ``var/backups`` and ``var/snapshotbackups`` dir:
+Running the buildout adds a backup, snapshotbackup and restore scripts to the
+``bin/`` directory and, by default, it creates the ``var/backups`` and
+``var/snapshotbackups`` dirs:
 
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
@@ -23,6 +24,7 @@ and, by default, the ``var/backups`` and ``var/snapshotbackups`` dir:
     Got zc.recipe.egg 1.0.0.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
     <BLANKLINE>
     >>> ls('var')
     d  backups
@@ -30,6 +32,7 @@ and, by default, the ``var/backups`` and ``var/snapshotbackups`` dir:
     >>> ls('bin')
     -  backup
     -  buildout
+    -  restore
     -  snapshotbackup
 
 Calling ``bin/backup`` results in a normal repozo backup. We put in place a
@@ -47,6 +50,21 @@ By default, backups are done in ``var/backups``:
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     INFO: Backing up database file: ...
+
+You can restore the very latest backup with ``bin/restore``:
+
+    >>> print system('bin/restore')
+    --restore -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    INFO: Restoring...
+
+You can also restore the backup as of a certain date. Just pass a date
+argument. According to repozo: specify UTC (not local) time.  The format is
+``yyyy-mm-dd[-hh[-mm[-ss]]]``.
+
+    >>> print system('bin/restore 1972-12-25')
+    --restore -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D 1972-12-25
+    INFO: Date restriction: restoring state at 1972-12-25.
+    INFO: Restoring...
 
 For quickly grabbing the current state of a production database so you can
 download it to your development laptop, you want a full backup. But
@@ -113,6 +131,7 @@ We'll use the three options.
     backup: Created /sample-buildout/snap/my
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
     <BLANKLINE>
 
 Backups are now stored in ``/backups/myproject`` and the Data.fs location is

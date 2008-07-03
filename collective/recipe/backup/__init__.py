@@ -87,6 +87,12 @@ class Recipe(object):
             ws, self.options['executable'], self.options['bin-directory'],
             arguments='bin_dir, datafs, snapshot_location, keep',
             initialization=initialization)
+        scripts = zc.buildout.easy_install.scripts(
+            [('restore', 'collective.recipe.backup.repozorunner', 'restore_main')],
+            #requirements,
+            ws, self.options['executable'], self.options['bin-directory'],
+            arguments='bin_dir, datafs, backup_location',
+            initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
         return scripts

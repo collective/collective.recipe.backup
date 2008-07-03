@@ -1,6 +1,8 @@
 0.1 (unreleased)
 ----------------
 
+- Added bin/restore. [reinout]
+
 - Added snapshot backups. [reinout]
 
 - Enabled cleaning up of older backups. [reinout]
