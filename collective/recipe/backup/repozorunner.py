@@ -12,18 +12,26 @@ def main(bin_dir, datafs, backup_location, keep, full):
     logger.info("Backing up database file: %s to %s...",
                 datafs, backup_location)
     os.system(repozo + ' ' +
-              backup_arguments(datafs, backup_location, keep, full))
+              backup_arguments(datafs, backup_location, full))
 
 
 def backup_arguments(datafs=None,
                      backup_location=None,
-                     keep=None,
                      full=False,
                      ):
     """
-      >>> 3 + 4
-      7
+      >>> backup_arguments()
+      Traceback (most recent call last):
+      ...
+      RuntimeError: Missing locations.
+      >>> backup_arguments(datafs='in/Data.fs', backup_location='out')
+      '--backup -f in/Data.fs -r out'
+      >>> backup_arguments(datafs='in/Data.fs', backup_location='out', full=True)
+      '--backup -f in/Data.fs -r out -F'
+
     """
+    if datafs is None or backup_location is None:
+        raise RuntimeError("Missing locations.")
     arguments = []
     arguments.append('--backup')
     arguments.append('-f %s' % datafs)
@@ -36,10 +44,21 @@ def backup_arguments(datafs=None,
     return args
 
 
-def cleanup():
-    # We want to clean up old backups automaticly.
-    # The number_of_backups var tells us how many full backups we want
-    # to keep.
+def cleanup(backup_location, keep=None):
+    """Clean up old backups
+
+    For the test, we create a backup dir using buildout's test support methods:
+
+      >>> mkdir('back')
+      >>> backup_dir = join('back')
+      >>> cleanup(backup_dir)
+
+
+    """
+    if not keep:
+        logger.debug("Value of 'keep' is %r, we don't want to remove anything.",
+                     keep)
+        return
     logger.debug("Trying to clean up old backups.")
     filenames = os.listdir(backup_location)
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
