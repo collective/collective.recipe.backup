@@ -8,29 +8,30 @@ import sys
 logger = logging.getLogger('backup')
 
 
-def backup_main(bin_dir, datafs, backup_location, keep, full):
+def backup_main(bin_dir, datafs, backup_location, keep, full, verbose):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.info("Backing up database file: %s to %s...",
                 datafs, backup_location)
     os.system(repozo + ' ' +
-              backup_arguments(datafs, backup_location, full))
+              backup_arguments(datafs, backup_location, full, verbose))
     logger.debug("Repoze command executed.")
     cleanup(backup_location, keep)
 
 
-def snapshot_main(bin_dir, datafs, snapshot_location, keep):
+def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.info("Making snapshot backup: %s to %s...",
                 datafs, snapshot_location)
     os.system(repozo + ' ' +
-              backup_arguments(datafs, snapshot_location, full=True))
+              backup_arguments(datafs, snapshot_location,
+                               full=True, verbose=verbose))
     logger.debug("Repoze command executed.")
     cleanup(snapshot_location, keep)
 
 
-def restore_main(bin_dir, datafs, backup_location):
+def restore_main(bin_dir, datafs, backup_location, verbose):
     """Main method, gets called by generated bin/restore."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.debug("If things break: did you stop zope?")
@@ -43,13 +44,14 @@ def restore_main(bin_dir, datafs, backup_location):
     logger.info("Restoring database file: %s to %s...",
                 backup_location, datafs)
     os.system(repozo + ' ' +
-              restore_arguments(datafs, backup_location, date))
+              restore_arguments(datafs, backup_location, date, verbose))
     logger.debug("Repoze command executed.")
 
 
 def backup_arguments(datafs=None,
                      backup_location=None,
                      full=False,
+                     verbose=False,
                      ):
     """
       >>> backup_arguments()
@@ -75,6 +77,8 @@ def backup_arguments(datafs=None,
         logger.debug("You're not making a full backup. Note that if there "
                      "are no changes since the last backup, there won't "
                      "be a new incremental backup file.")
+    if verbose:
+        arguments.append('--verbose')
     args = ' '.join(arguments)
     logger.debug("Repoze arguments used: %s", args)
     return args
@@ -82,7 +86,9 @@ def backup_arguments(datafs=None,
 
 def restore_arguments(datafs=None,
                       backup_location=None,
-                      date=None):
+                      date=None,
+                      verbose=False,
+                      ):
     """
       >>> restore_arguments()
       Traceback (most recent call last):
@@ -101,6 +107,8 @@ def restore_arguments(datafs=None,
     if date is not None:
         logger.debug("Restore as of date %r requested.", date)
         arguments.append('-D %s' % date)
+    if verbose:
+        arguments.append('--verbose')
     args = ' '.join(arguments)
     logger.debug("Repoze arguments used: %s", args)
     return args

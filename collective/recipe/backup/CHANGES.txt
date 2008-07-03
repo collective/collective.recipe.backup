@@ -1,7 +1,10 @@
 0.2 (unreleased)
 ================
 
-- Nothing yet.
+- Extra tests and documentation change for 'keep': the default is to keep 2
+  backups instead of all backups. [reinout]
+
+- If debug=true, then repozo is also run in --verbose mode. [reinout]
 
 
 0.1 (2008-07-03)

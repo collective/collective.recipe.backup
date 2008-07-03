@@ -152,11 +152,11 @@ Backups are now stored in ``/backups/myproject`` and the Data.fs location is
 handled correctly despite being a relative link:
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject -F
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject -F --verbose
     INFO: Backing up database file: ...
 
 The same is true for the snapshot backup.
 
     >>> print system('bin/snapshotbackup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
     INFO: Making snapshot backup:...
