@@ -13,6 +13,7 @@ def main(bin_dir, datafs, backup_location, keep, full):
                 datafs, backup_location)
     os.system(repozo + ' ' +
               backup_arguments(datafs, backup_location, full))
+    cleanup(backup_location, keep)
 
 
 def backup_arguments(datafs=None,
@@ -51,8 +52,84 @@ def cleanup(backup_location, keep=None):
 
       >>> mkdir('back')
       >>> backup_dir = join('back')
+
+    And we'll make a function that creates a backup file for us and that also
+    sets the file modification dates to a meaningful time.
+
+      >>> import time
+      >>> import os
+      >>> next_mod_time = time.time() - 1000
+      >>> def add_backup(name):
+      ...     global next_mod_time
+      ...     write('back', name, 'dummycontents')
+      ...     # Change modification time, every new file is 10 seconds older.
+      ...     os.utime(join('back', name), (next_mod_time, next_mod_time))
+      ...     next_mod_time += 10
+
+    Calling 'cleanup' without a keep arguments will just return without doing
+    anything.
+
       >>> cleanup(backup_dir)
 
+    Cleaning an empty directory won't do a thing.
+
+      >>> cleanup(backup_dir, keep=1)
+
+    Adding one backup file and cleaning the directory won't remove it either:
+
+      >>> add_backup('1.fs')
+      >>> cleanup(backup_dir, keep=1)
+      >>> ls('back')
+      - 1.fs
+
+    Adding a second backup file means the first one gets removed.
+
+      >>> add_backup('2.fs')
+      >>> cleanup(backup_dir, keep=1)
+      >>> ls('back')
+      - 2.fs
+
+    If there are more than one file to remove, the results are OK, too:
+
+      >>> add_backup('3.fs')
+      >>> add_backup('4.fs')
+      >>> add_backup('5.fs')
+      >>> cleanup(backup_dir, keep=1)
+      >>> ls('back')
+      - 5.fs
+
+    Every other file older than the last full backup that is kept is deleted,
+    too. This includes deltas for incremental backups and '.dat' files. Deltas
+    and other files added after the last full retained backup are always kept.
+
+      >>> add_backup('5-something.deltafs')
+      >>> add_backup('5.dat')
+      >>> add_backup('6.fs')
+      >>> add_backup('6-something.deltafs')
+      >>> cleanup(backup_dir, keep=1)
+      >>> ls('back')
+      - 6-something.deltafs
+      - 6.fs
+
+    Keeping more than one file is also supported.
+
+      >>> add_backup('7.fs')
+      >>> add_backup('7-something.deltafs')
+      >>> add_backup('7.dat')
+      >>> add_backup('8.fs')
+      >>> add_backup('8-something.deltafs')
+      >>> add_backup('8.dat')
+      >>> add_backup('9.fs')
+      >>> add_backup('9-something.deltafs')
+      >>> add_backup('9.dat')
+      >>> cleanup(backup_dir, keep=2)
+      >>> ls('back')
+      -  8-something.deltafs
+      -  8.dat
+      -  8.fs
+      -  9-something.deltafs
+      -  9.dat
+      -  9.fs
 
     """
     if not keep:
@@ -63,7 +140,7 @@ def cleanup(backup_location, keep=None):
     filenames = os.listdir(backup_location)
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
               len(filenames), filenames)
-    num_backups = conf.numberOfBackups()
+    num_backups = int(keep)
     logger.debug("Max number of backups: %s.", num_backups)
     files_modtimes = []
     for filename in filenames:

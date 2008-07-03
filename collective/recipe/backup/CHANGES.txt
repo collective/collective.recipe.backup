@@ -1,6 +1,8 @@
 0.1 (unreleased)
 ----------------
 
+- Enabled cleaning up of older backups. [reinout]
+
 - First working version that runs repozo and that creates a backup dir if
   needed. [reinout]
 
