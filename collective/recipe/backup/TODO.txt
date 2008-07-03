@@ -1,0 +1,5 @@
+* Add restore script.
+
+* Enable "keep" functionality.
+
+* Enable logging by the scripts themselves.
