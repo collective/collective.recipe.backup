@@ -1,3 +1,5 @@
 * Add restore script.
 
 * Enable "keep" functionality.
+
+* Add snapshot backups.
