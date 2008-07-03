@@ -41,6 +41,7 @@ By default, backups are done in ``var/backups``:
 
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    INFO: Backing up database file: ...
 
 
 Supported options
@@ -86,3 +87,4 @@ handled correctly despite being a relative link:
 
     >>> print system('bin/backup')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject
+    INFO: Backing up database file: ...

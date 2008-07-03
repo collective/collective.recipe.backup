@@ -45,7 +45,10 @@ class Recipe(object):
         backup_location = os.path.join(buildout_dir,
                                        self.options['location'])
         initialization = '\n'.join(
-            ["bin_dir = '%s'" % self.options['bin-directory'],
+            ["import logging",
+             "logging.basicConfig(level=logging.INFO,"
+             "    format='%(levelname)s: %(message)s')",
+             "bin_dir = '%s'" % self.options['bin-directory'],
              "datafs = '%s'" % datafs,
              "keep = '%s'" % self.options['keep'],
              "backup_location = '%s'" % backup_location,

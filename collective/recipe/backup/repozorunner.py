@@ -32,7 +32,7 @@ def backup_arguments(datafs=None,
     #    arguments.append('--full')
     #    # By default, there's an incremental backup, if possible.
     args = ' '.join(arguments)
-    logger.info("Command used: %s", args)
+    logger.debug("Command used: %s", args)
     return args
 
 
