@@ -11,7 +11,7 @@ tasks. Making backups a piece of cake is important!
 
 - bin/snapshotbackup makes a full backup, separate from the regular
   backups. Handy for copying the current production database to your laptop or
-  right before a big chance in the site.
+  right before a big change in the site.
 
 Some extra information:
 
