@@ -71,6 +71,10 @@ def backup_arguments(datafs=None,
     if full:
         # By default, there's an incremental backup, if possible.
         arguments.append('-F')
+    else:
+        logger.debug("You're not making a full backup. Note that if there "
+                     "are no changes since the last backup, there won't "
+                     "be a new incremental backup file.")
     args = ' '.join(arguments)
     logger.debug("Repoze arguments used: %s", args)
     return args
