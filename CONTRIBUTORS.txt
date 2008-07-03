@@ -1,1 +1,11 @@
-Reinout van Rees, Zest software
+collective.recipe.backup is basically a port of ye olde instancemanager_'s
+backup functionality. That backup functionality was coded mostly by Reinout
+van Rees and Maurits van Rees, both from `Zest software`_
+
+Creating the buildout recipe was done by Reinout_.
+
+
+
+.. _Zest software: http://zestsoftware.nl/
+
+.. _Reinout: http://vanrees.org/

@@ -1,4 +1,1 @@
-0.1 (unreleased)
-================
-
- - Created recipe with ZopeSkel [Reinout van Rees].
+See collective/recipe/backup/CHANGES.txt

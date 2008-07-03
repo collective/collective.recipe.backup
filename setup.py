@@ -27,10 +27,8 @@ long_description = (
     'Change history\n'
     '**************\n'
     + '\n' +
-    read('CHANGES.txt')
-    + '\n' +
-   'Download\n'
-    '********\n')
+    read('collective', 'recipe', 'backup', 'CHANGES.txt')
+    )
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {
     'zc.buildout': ["default = %s" % entry_point],
@@ -53,9 +51,9 @@ setup(name='collective.recipe.backup',
         'License :: OSI Approved :: GNU General Public License (GPL)',
         ],
       keywords='buildout backup repozo zope',
-      author='Reinout van Rees',
+      author='Reinout van Rees, Maurits van Rees',
       author_email='reinout@vanrees.org',
-      url='',
+      url='https://svn.plone.org/svn/collective/buildout/collective.recipe.backup',
       license='GPL',
       packages=find_packages(exclude=['ez_setup']),
       namespace_packages=['collective', 'collective.recipe'],

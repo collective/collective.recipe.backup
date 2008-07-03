@@ -35,6 +35,10 @@ Running the buildout adds a backup, snapshotbackup and restore scripts to the
     -  restore
     -  snapshotbackup
 
+
+Backup
+------
+
 Calling ``bin/backup`` results in a normal repozo backup. We put in place a
 mock repozo script that prints the options it is passed (and make it
 executable). It is horridly unix-specific at the moment.
@@ -51,6 +55,10 @@ By default, backups are done in ``var/backups``:
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     INFO: Backing up database file: ...
 
+
+Restore
+-------
+
 You can restore the very latest backup with ``bin/restore``:
 
     >>> print system('bin/restore')
@@ -65,6 +73,10 @@ argument. According to repozo: specify UTC (not local) time.  The format is
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D 1972-12-25
     INFO: Date restriction: restoring state at 1972-12-25.
     INFO: Restoring...
+
+
+Snapshots
+---------
 
 For quickly grabbing the current state of a production database so you can
 download it to your development laptop, you want a full backup. But
@@ -81,7 +93,10 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 Supported options
 =================
 
-The recipe supports the following options:
+The recipe supports the following options, none of which are needed by
+default. The most common one to change is ``location``, as that allows you to
+place your backups in some system-wide directory like
+``/var/zopebackups/instancename/``.
 
 location
     Location where backups are stored. Defaults to ``var/backups`` inside the
