@@ -1,4 +1,4 @@
-0.1 (unreleased)
+0.1 (2008-07-03)
 ================
 
 - Added bin/restore. [reinout]
