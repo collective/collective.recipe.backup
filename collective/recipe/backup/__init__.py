@@ -26,6 +26,7 @@ class Recipe(object):
         options.setdefault('keep', '2')
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')
+        options.setdefault('debug', 'false')
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
@@ -36,6 +37,10 @@ class Recipe(object):
             options['full'] = 'True'
         else:
             options['full'] = 'False'
+        if options['debug'].lower() == 'true':
+            options['debug'] = 'True'
+        else:
+            options['debug'] = 'False'
         self.options = options
 
     def install(self):
@@ -49,9 +54,13 @@ class Recipe(object):
         datafs = os.path.join(buildout_dir, self.options['datafs'])
         backup_location = os.path.join(buildout_dir,
                                        self.options['location'])
+        if self.options['debug'] == 'True':
+            loglevel = 'DEBUG'
+        else:
+            loglevel = 'INFO'
         initialization = '\n'.join(
             ["import logging",
-             "logging.basicConfig(level=logging.INFO,"
+             "logging.basicConfig(level=logging.%s," % loglevel,
              "    format='%(levelname)s: %(message)s')",
              "bin_dir = '%s'" % self.options['bin-directory'],
              "datafs = '%s'" % datafs,

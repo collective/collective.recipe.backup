@@ -1,3 +1,5 @@
 * Add restore script.
 
 * Add snapshot backups.
+
+* Allow debug logging.

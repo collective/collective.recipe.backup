@@ -67,6 +67,10 @@ full
     By default, incremental backups are made. If this option is set to 'true',
     bin/backup will always make a full backup.
 
+debug
+    In rare cases when you want to know exactly what's going on, set debug to
+    'true' to get debug level logging.
+
 We'll use the three options.
 
     >>> write('buildout.cfg',
@@ -80,6 +84,7 @@ We'll use the three options.
     ... keep = 3
     ... datafs = subfolder/myproject.fs
     ... full = true
+    ... debug = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
