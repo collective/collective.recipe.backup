@@ -54,7 +54,7 @@ By default, backups are done in ``var/backups``:
 You can restore the very latest backup with ``bin/restore``:
 
     >>> print system('bin/restore')
-    --restore -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     INFO: Restoring...
 
 You can also restore the backup as of a certain date. Just pass a date
@@ -62,7 +62,7 @@ argument. According to repozo: specify UTC (not local) time.  The format is
 ``yyyy-mm-dd[-hh[-mm[-ss]]]``.
 
     >>> print system('bin/restore 1972-12-25')
-    --restore -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D 1972-12-25
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D 1972-12-25
     INFO: Date restriction: restoring state at 1972-12-25.
     INFO: Restoring...
 

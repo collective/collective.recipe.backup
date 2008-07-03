@@ -85,13 +85,13 @@ def restore_arguments(datafs=None,
       ...
       RuntimeError: Missing locations.
       >>> restore_arguments(datafs='in/Data.fs', backup_location='out')
-      '--restore -o in/Data.fs -r out'
+      '--recover -o in/Data.fs -r out'
 
     """
     if datafs is None or backup_location is None:
         raise RuntimeError("Missing locations.")
     arguments = []
-    arguments.append('--restore')
+    arguments.append('--recover')
     arguments.append('-o %s' % datafs)
     arguments.append('-r %s' % backup_location)
     if date is not None:
