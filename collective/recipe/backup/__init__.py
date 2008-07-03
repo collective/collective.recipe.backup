@@ -69,7 +69,7 @@ class Recipe(object):
              "    format='%(levelname)s: %(message)s')",
              "bin_dir = '%s'" % self.options['bin-directory'],
              "datafs = '%s'" % datafs,
-             "keep = '%s'" % self.options['keep'],
+             "keep = %s" % self.options['keep'],
              "backup_location = '%s'" % backup_location,
              "snapshot_location = '%s'" % snapshot_location,
              "full = %s" % self.options['full'],
@@ -85,7 +85,7 @@ class Recipe(object):
             [('snapshotbackup', 'collective.recipe.backup.repozorunner', 'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, snapshot_location, full',
+            arguments='bin_dir, datafs, snapshot_location, keep',
             initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
