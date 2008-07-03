@@ -17,6 +17,17 @@ def backup_main(bin_dir, datafs, backup_location, keep, full):
     cleanup(backup_location, keep)
 
 
+def snapshot_main(bin_dir, datafs, snapshot_location, keep):
+    """Main method, gets called by generated bin/snapshotbackup."""
+    repozo = os.path.join(bin_dir, 'repozo')
+    logger.info("Making snapshot backup: %s to %s...",
+                datafs, snapshot_location)
+    os.system(repozo + ' ' +
+              backup_arguments(datafs, snapshot_location, full=True))
+    logger.debug("Repoze command executed.")
+    cleanup(snapshot_location, keep)
+
+
 def backup_arguments(datafs=None,
                      backup_location=None,
                      full=False,

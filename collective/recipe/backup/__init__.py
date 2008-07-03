@@ -18,11 +18,14 @@ class Recipe(object):
         buildout_dir = self.buildout['buildout']['directory']
         backup_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', 'backups'))
+        snapshot_dir = os.path.abspath(
+            os.path.join(buildout_dir, 'var', 'snapshotbackups'))
         datafs = os.path.abspath(
             os.path.join(buildout_dir, 'var', 'filestorage', 'Data.fs'))
 
         options.setdefault('buildout_dir', buildout_dir)
         options.setdefault('location', backup_dir)
+        options.setdefault('snapshotlocation', snapshot_dir)
         options.setdefault('keep', '2')
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')
@@ -45,15 +48,17 @@ class Recipe(object):
 
     def install(self):
         """Installer"""
-        backup_dir = os.path.abspath(self.options['location'])
-        if not os.path.isdir(backup_dir):
-            os.makedirs(backup_dir)
-            logger.info('Created %s', backup_dir)
+        backup_location = os.path.abspath(self.options['location'])
+        snapshot_location = os.path.abspath(self.options['snapshotlocation'])
+        if not os.path.isdir(backup_location):
+            os.makedirs(backup_location)
+            logger.info('Created %s', backup_location)
+        if not os.path.isdir(snapshot_location):
+            os.makedirs(snapshot_location)
+            logger.info('Created %s', snapshot_location)
 
         buildout_dir = self.buildout['buildout']['directory']
         datafs = os.path.join(buildout_dir, self.options['datafs'])
-        backup_location = os.path.join(buildout_dir,
-                                       self.options['location'])
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
         else:
@@ -66,6 +71,7 @@ class Recipe(object):
              "datafs = '%s'" % datafs,
              "keep = '%s'" % self.options['keep'],
              "backup_location = '%s'" % backup_location,
+             "snapshot_location = '%s'" % snapshot_location,
              "full = %s" % self.options['full'],
              ])
         requirements, ws = self.egg.working_set(['collective.recipe.backup'])
@@ -79,7 +85,7 @@ class Recipe(object):
             [('snapshotbackup', 'collective.recipe.backup.repozorunner', 'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, snapshot_location, keep, full',
+            arguments='bin_dir, datafs, snapshot_location, full',
             initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
