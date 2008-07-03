@@ -12,7 +12,8 @@ The simplest way to use it to add a part in ``buildout.cfg`` like this:
     ... recipe = collective.recipe.backup
     ... """)
 
-Running the buildout adds a ``bin/backup`` script and, by default, the ``var/backups`` dir:
+Running the buildout adds a ``bin/backup`` and ``bin/snapshotbackup`` script
+and, by default, the ``var/backups`` dir:
 
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
@@ -20,12 +21,14 @@ Running the buildout adds a ``bin/backup`` script and, by default, the ``var/bac
     Getting distribution for 'zc.recipe.egg'.
     Got zc.recipe.egg 1.0.0.
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
     <BLANKLINE>
     >>> ls('var')
     d  backups
     >>> ls('bin')
     -  backup
     -  buildout
+    -  snapshotbackup
 
 Calling ``bin/backup`` results in a normal repozo backup. We put in place a
 mock repozo script that prints the options it is passed (and make it
@@ -90,6 +93,7 @@ We'll use the three options.
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
     <BLANKLINE>
 
 Backups are now stored in ``/backups/myproject`` and the Data.fs location is

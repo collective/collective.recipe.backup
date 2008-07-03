@@ -70,10 +70,16 @@ class Recipe(object):
              ])
         requirements, ws = self.egg.working_set(['collective.recipe.backup'])
         scripts = zc.buildout.easy_install.scripts(
-            [('backup', 'collective.recipe.backup.repozorunner', 'main')],
+            [('backup', 'collective.recipe.backup.repozorunner', 'backup_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments='bin_dir, datafs, backup_location, keep, full',
+            initialization=initialization)
+        scripts = zc.buildout.easy_install.scripts(
+            [('snapshotbackup', 'collective.recipe.backup.repozorunner', 'snapshot_main')],
+            #requirements,
+            ws, self.options['executable'], self.options['bin-directory'],
+            arguments='bin_dir, datafs, snapshot_location, keep, full',
             initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.

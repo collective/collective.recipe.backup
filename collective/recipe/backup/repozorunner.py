@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger('backup')
 
 
-def main(bin_dir, datafs, backup_location, keep, full):
+def backup_main(bin_dir, datafs, backup_location, keep, full):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.info("Backing up database file: %s to %s...",
