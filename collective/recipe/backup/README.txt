@@ -63,6 +63,10 @@ datafs
     In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``
     location, this option can overwrite it.
 
+full
+    By default, incremental backups are made. If this option is set to 'true',
+    bin/backup will always make a full backup.
+
 We'll use the three options.
 
     >>> write('buildout.cfg',
@@ -75,6 +79,7 @@ We'll use the three options.
     ... location = /backups/myproject
     ... keep = 3
     ... datafs = subfolder/myproject.fs
+    ... full = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -86,5 +91,5 @@ Backups are now stored in ``/backups/myproject`` and the Data.fs location is
 handled correctly despite being a relative link:
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject -F
     INFO: Backing up database file: ...

@@ -6,19 +6,19 @@ import logging
 logger = logging.getLogger('backup')
 
 
-def main(bin_dir, datafs, backup_location, keep):
+def main(bin_dir, datafs, backup_location, keep, full):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.info("Backing up database file: %s to %s...",
                 datafs, backup_location)
     os.system(repozo + ' ' +
-              backup_arguments(datafs, backup_location, keep))
+              backup_arguments(datafs, backup_location, keep, full))
 
 
 def backup_arguments(datafs=None,
                      backup_location=None,
                      keep=None,
-                     #full=False,
+                     full=False,
                      ):
     """
       >>> 3 + 4
@@ -28,9 +28,9 @@ def backup_arguments(datafs=None,
     arguments.append('--backup')
     arguments.append('-f %s' % datafs)
     arguments.append('-r %s' % backup_location)
-    #if full:
-    #    arguments.append('--full')
-    #    # By default, there's an incremental backup, if possible.
+    if full:
+        # By default, there's an incremental backup, if possible.
+        arguments.append('-F')
     args = ' '.join(arguments)
     logger.debug("Command used: %s", args)
     return args
