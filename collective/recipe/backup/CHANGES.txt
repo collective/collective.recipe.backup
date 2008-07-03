@@ -1,4 +1,4 @@
-0.2 (unreleased)
+0.2 (2008-07-03)
 ================
 
 - Extra tests and documentation change for 'keep': the default is to keep 2

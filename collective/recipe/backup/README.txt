@@ -117,7 +117,8 @@ full
 
 debug
     In rare cases when you want to know exactly what's going on, set debug to
-    'true' to get debug level logging.
+    'true' to get debug level logging of the recipe itself. Repozo is also run
+    with ``--verbose`` if this option is enabled.
 
 snapshotlocation
     Location where snapshot defaults are stored. Defaults to
