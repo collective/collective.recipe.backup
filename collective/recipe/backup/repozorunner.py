@@ -106,7 +106,7 @@ def restore_arguments(datafs=None,
     return args
 
 
-def cleanup(backup_location, keep=None):
+def cleanup(backup_location, keep=0):
     """Clean up old backups
 
     For the test, we create a backup dir using buildout's test support methods:
@@ -192,7 +192,19 @@ def cleanup(backup_location, keep=None):
       -  9.dat
       -  9.fs
 
+    Keep = 0 doesn't delete anything.
+
+      >>> cleanup(backup_dir, keep=0)
+      >>> ls('back')
+      -  8-something.deltafs
+      -  8.dat
+      -  8.fs
+      -  9-something.deltafs
+      -  9.dat
+      -  9.fs
+
     """
+    keep = int(keep) # Making sure.
     if not keep:
         logger.debug("Value of 'keep' is %r, we don't want to remove anything.",
                      keep)
