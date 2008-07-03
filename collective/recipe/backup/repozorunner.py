@@ -13,6 +13,7 @@ def main(bin_dir, datafs, backup_location, keep, full):
                 datafs, backup_location)
     os.system(repozo + ' ' +
               backup_arguments(datafs, backup_location, full))
+    logger.debug("Repoze command executed.")
     cleanup(backup_location, keep)
 
 
@@ -41,7 +42,7 @@ def backup_arguments(datafs=None,
         # By default, there's an incremental backup, if possible.
         arguments.append('-F')
     args = ' '.join(arguments)
-    logger.debug("Command used: %s", args)
+    logger.debug("Repoze arguments used: %s", args)
     return args
 
 
