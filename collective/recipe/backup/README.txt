@@ -103,10 +103,9 @@ location
     buildout directory.
 
 keep
-    Number of full backups to keep. Defaults to ``0``, which means old backups
-    are not removed. ``2``, for instance, means that the current and the
-    previous full backup are kept. Older backups are removed, including their
-    incremental backups.
+    Number of full backups to keep. Defaults to ``2``, which means that the
+    current and the previous full backup are kept. Older backups are removed,
+    including their incremental backups. Set it to ``0`` to keep all backups.
 
 datafs
     In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``
