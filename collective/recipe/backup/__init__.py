@@ -21,8 +21,9 @@ class Recipe(object):
         datafs = os.path.abspath(
             os.path.join(buildout_dir, 'var', 'filestorage', 'Data.fs'))
 
+        options.setdefault('buildout_dir', buildout_dir)
         options.setdefault('location', backup_dir)
-        #options.setdefault('scripts', '')
+        options.setdefault('keep', '2')
         options.setdefault('datafs', datafs)
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
@@ -39,17 +40,22 @@ class Recipe(object):
             os.makedirs(backup_dir)
             logger.info('Created %s', backup_dir)
 
+        buildout_dir = self.buildout['buildout']['directory']
+        datafs = os.path.join(buildout_dir, self.options['datafs'])
+        backup_location = os.path.join(buildout_dir,
+                                       self.options['location'])
         initialization = '\n'.join(
-            ["bindir = '%s'" % self.options['bin-directory'],
-             "datafs = '%s'" % self.options['datafs'],
-             "backup_location = '%s'" % self.options['location'],
+            ["bin_dir = '%s'" % self.options['bin-directory'],
+             "datafs = '%s'" % datafs,
+             "keep = '%s'" % self.options['keep'],
+             "backup_location = '%s'" % backup_location,
              ])
         requirements, ws = self.egg.working_set(['collective.recipe.backup'])
         scripts = zc.buildout.easy_install.scripts(
             [('backup', 'collective.recipe.backup.repozorunner', 'main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bindir, datafs, backup_location',
+            arguments='bin_dir, datafs, backup_location, keep',
             initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.

@@ -1,0 +1,7 @@
+0.1 (unreleased)
+----------------
+
+- First working version that runs repozo and that creates a backup dir if
+  needed. [reinout]
+
+- Started project based on zopeskel template. [reinout]

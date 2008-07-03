@@ -7,11 +7,12 @@ __docformat__ = 'restructuredtext'
 import unittest
 import zc.buildout.tests
 import zc.buildout.testing
-
+from collective.recipe.backup import repozorunner
 from zope.testing import doctest, renormalizing
 
 optionflags =  (doctest.ELLIPSIS |
                 doctest.NORMALIZE_WHITESPACE)
+
 
 def setUp(test):
     zc.buildout.testing.buildoutSetUp(test)
@@ -20,7 +21,7 @@ def setUp(test):
     zc.buildout.testing.install_develop('collective.recipe.backup', test)
 
     # Install any other recipes that should be available in the tests
-    #zc.buildout.testing.install('zc.recipe.egg', test)
+
 
 def test_suite():
     suite = unittest.TestSuite((
@@ -39,8 +40,10 @@ def test_suite():
                         zc.buildout.testing.normalize_path,
                         ]),
                 ),
+            doctest.DocTestSuite(repozorunner),
             ))
     return suite
+
 
 if __name__ == '__main__':
     unittest.main(defaultTest='test_suite')
