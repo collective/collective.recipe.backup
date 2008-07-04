@@ -1,8 +1,10 @@
-0.3 (2008-07-04)
+0.3.1 (2008-07-04)
 ================
 
 - Added 'gzip' option, including changes to the cleanup functionality that
   treats .fsz also as a full backup like .fs. [reinout]
+
+- Fixed typo: repoze is now repozo everywhere... [reinout]
 
 
 0.2 (2008-07-03)

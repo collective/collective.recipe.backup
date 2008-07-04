@@ -1,6 +1,6 @@
 .. contents::
 
-``bin/repoze`` is a zope script to make backups of your Data.fs. Looking up
+``bin/repozo`` is a zope script to make backups of your Data.fs. Looking up
 the settings can be a chore. And you have to pick a directory where to put the
 backups. This recipe provides **sensible defaults** for your common backup
 tasks. Making backups a piece of cake is important!

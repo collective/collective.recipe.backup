@@ -27,7 +27,7 @@ def backup_main(bin_dir, datafs, backup_location, keep, full, verbose, gzip):
                 datafs, backup_location)
     os.system(repozo + ' ' +
               backup_arguments(datafs, backup_location, full, verbose, gzip))
-    logger.debug("Repoze command executed.")
+    logger.debug("Repozo command executed.")
     cleanup(backup_location, keep)
 
 
@@ -39,7 +39,7 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip):
     os.system(repozo + ' ' +
               backup_arguments(datafs, snapshot_location,
                                full=True, verbose=verbose, gzip=gzip))
-    logger.debug("Repoze command executed.")
+    logger.debug("Repozo command executed.")
     cleanup(snapshot_location, keep)
 
 
@@ -57,7 +57,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose):
                 backup_location, datafs)
     os.system(repozo + ' ' +
               restore_arguments(datafs, backup_location, date, verbose))
-    logger.debug("Repoze command executed.")
+    logger.debug("Repozo command executed.")
 
 
 def backup_arguments(datafs=None,
@@ -95,7 +95,7 @@ def backup_arguments(datafs=None,
     if gzip:
         arguments.append('--gzip')
     args = ' '.join(arguments)
-    logger.debug("Repoze arguments used: %s", args)
+    logger.debug("Repozo arguments used: %s", args)
     return args
 
 
@@ -125,7 +125,7 @@ def restore_arguments(datafs=None,
     if verbose:
         arguments.append('--verbose')
     args = ' '.join(arguments)
-    logger.debug("Repoze arguments used: %s", args)
+    logger.debug("Repozo arguments used: %s", args)
     return args
 
 
