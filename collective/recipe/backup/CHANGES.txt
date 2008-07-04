@@ -1,4 +1,4 @@
-0.3 (unreleased)
+0.3 (2008-07-04)
 ================
 
 - Added 'gzip' option, including changes to the cleanup functionality that
