@@ -226,6 +226,17 @@ def cleanup(backup_location, keep=0):
       -  9.dat
       -  9.fs
 
+    Back to keep=2, we test that .fsz files (made with repozo's ``--gzip``
+    option) are also treated as full backups.
+
+      >>> add_backup('10.fsz')
+      >>> cleanup(backup_dir, keep=2)
+      >>> ls('back')
+      -  10.fsz
+      -  9-something.deltafs
+      -  9.dat
+      -  9.fs
+
     """
     keep = int(keep) # Making sure.
     if not keep:
@@ -244,8 +255,9 @@ def cleanup(backup_location, keep=0):
         file_ = (filename, mod_time)
         files_modtimes.append(file_)
     # we are only interested in full backups
-    fullbackups = [f for f in files_modtimes if f[0].endswith('.fs')]
-    logger.debug("Filtered out full backups (*.fs): %r.",
+    fullbackups = [f for f in files_modtimes
+                   if f[0].endswith('.fs') or f[0].endswith('.fsz')]
+    logger.debug("Filtered out full backups (*.fs/*.fsz): %r.",
               [f[0] for f in fullbackups])
     if len(fullbackups) > num_backups and num_backups != 0:
         logger.debug("There are older backups that we can remove.")

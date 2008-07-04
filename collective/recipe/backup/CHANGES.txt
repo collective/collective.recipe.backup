@@ -1,7 +1,8 @@
 0.3 (unreleased)
 ================
 
-- Nothing yet
+- Added 'gzip' option, including changes to the cleanup functionality that
+  treats .fsz also as a full backup like .fs. [reinout]
 
 
 0.2 (2008-07-03)
