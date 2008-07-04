@@ -1,4 +1,16 @@
-# Wrapper that invokes repozo.
+"""Wrapper that invokes repozo.
+
+There are three main methods, these get called by the generated scripts. So
+backup_main() for bin/backup, snapshot_main() for bin/snapshotbackup and
+restore_main() for bin/restore.
+
+backup_arguments() and restore_arguments() determine the arguments that are to
+be passed to bin/repozo.
+
+cleanup() empties old backups from the backup directory to prevent it from
+filling up the harddisk.
+
+"""
 from operator import itemgetter
 import logging
 import os
@@ -8,25 +20,25 @@ import sys
 logger = logging.getLogger('backup')
 
 
-def backup_main(bin_dir, datafs, backup_location, keep, full, verbose):
+def backup_main(bin_dir, datafs, backup_location, keep, full, verbose, gzip):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.info("Backing up database file: %s to %s...",
                 datafs, backup_location)
     os.system(repozo + ' ' +
-              backup_arguments(datafs, backup_location, full, verbose))
+              backup_arguments(datafs, backup_location, full, verbose, gzip))
     logger.debug("Repoze command executed.")
     cleanup(backup_location, keep)
 
 
-def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose):
+def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.info("Making snapshot backup: %s to %s...",
                 datafs, snapshot_location)
     os.system(repozo + ' ' +
               backup_arguments(datafs, snapshot_location,
-                               full=True, verbose=verbose))
+                               full=True, verbose=verbose, gzip=gzip))
     logger.debug("Repoze command executed.")
     cleanup(snapshot_location, keep)
 
@@ -52,6 +64,7 @@ def backup_arguments(datafs=None,
                      backup_location=None,
                      full=False,
                      verbose=False,
+                     gzip=False,
                      ):
     """
       >>> backup_arguments()
@@ -79,6 +92,8 @@ def backup_arguments(datafs=None,
                      "be a new incremental backup file.")
     if verbose:
         arguments.append('--verbose')
+    if gzip:
+        arguments.append('--gzip')
     args = ' '.join(arguments)
     logger.debug("Repoze arguments used: %s", args)
     return args

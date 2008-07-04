@@ -124,7 +124,13 @@ snapshotlocation
     Location where snapshot defaults are stored. Defaults to
     ``var/snapshotbackups`` inside the buildout directory.
 
-We'll use the three options.
+gzip
+    Use repozo's zipping functionality. 'false' by default. Set it to 'true'
+    and repozo will gzip its files. Note that ``*.fs`` becomes ``*.fsz``, not
+    ``*.fs.gz``.
+
+
+We'll use all options:
 
     >>> write('buildout.cfg',
     ... """
@@ -139,6 +145,7 @@ We'll use the three options.
     ... full = true
     ... debug = true
     ... snapshotlocation = snap/my
+    ... gzip = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -153,11 +160,11 @@ Backups are now stored in ``/backups/myproject`` and the Data.fs location is
 handled correctly despite being a relative link:
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject -F --verbose --gzip
     INFO: Backing up database file: ...
 
 The same is true for the snapshot backup.
 
     >>> print system('bin/snapshotbackup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose --gzip
     INFO: Making snapshot backup:...

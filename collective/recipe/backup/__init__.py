@@ -30,20 +30,14 @@ class Recipe(object):
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')
         options.setdefault('debug', 'false')
+        options.setdefault('gzip', 'false')
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
         python = buildout['buildout']['python']
         options['executable'] = buildout[python]['executable']
         options['bin-directory'] = buildout['buildout']['bin-directory']
-        if options['full'].lower() == 'true':
-            options['full'] = 'True'
-        else:
-            options['full'] = 'False'
-        if options['debug'].lower() == 'true':
-            options['debug'] = 'True'
-        else:
-            options['debug'] = 'False'
+        check_for_true(options, ['full', 'debug', 'gzip'])
         self.options = options
 
     def install(self):
@@ -74,22 +68,26 @@ class Recipe(object):
              "snapshot_location = '%s'" % snapshot_location,
              "full = %s" % self.options['full'],
              "verbose = %s" % self.options['debug'],
+             "gzip = %s" % self.options['gzip'],
              ])
         requirements, ws = self.egg.working_set(['collective.recipe.backup'])
         scripts = zc.buildout.easy_install.scripts(
-            [('backup', 'collective.recipe.backup.repozorunner', 'backup_main')],
+            [('backup', 'collective.recipe.backup.repozorunner',
+              'backup_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, backup_location, keep, full, verbose',
+            arguments='bin_dir, datafs, backup_location, keep, full, verbose, gzip',
             initialization=initialization)
         scripts = zc.buildout.easy_install.scripts(
-            [('snapshotbackup', 'collective.recipe.backup.repozorunner', 'snapshot_main')],
+            [('snapshotbackup', 'collective.recipe.backup.repozorunner',
+              'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, snapshot_location, keep, verbose',
+            arguments='bin_dir, datafs, snapshot_location, keep, verbose, gzip',
             initialization=initialization)
         scripts = zc.buildout.easy_install.scripts(
-            [('restore', 'collective.recipe.backup.repozorunner', 'restore_main')],
+            [('restore', 'collective.recipe.backup.repozorunner',
+              'restore_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments='bin_dir, datafs, backup_location, verbose',
@@ -101,3 +99,17 @@ class Recipe(object):
     def update(self):
         """Updater"""
         pass
+
+
+def check_for_true(options, keys):
+    """Set the truth options right.
+
+    Default value is False, set it to True only if we're passed the string
+    'true' or 'True'. Unify on a capitalized True/False string.
+
+    """
+    for key in keys:
+        if options[key].lower() == 'true':
+            options[key] = 'True'
+        else:
+            options[key] = 'False'
