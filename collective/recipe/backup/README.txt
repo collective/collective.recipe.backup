@@ -1,7 +1,7 @@
 Example usage
 =============
 
-The simplest way to use it to add a part in ``buildout.cfg`` like this:
+The simplest way to use it to add a part in ``buildout.cfg`` like this::
 
     >>> write('buildout.cfg',
     ... """
@@ -14,7 +14,7 @@ The simplest way to use it to add a part in ``buildout.cfg`` like this:
 
 Running the buildout adds a backup, snapshotbackup and restore scripts to the
 ``bin/`` directory and, by default, it creates the ``var/backups`` and
-``var/snapshotbackups`` dirs:
+``var/snapshotbackups`` dirs::
 
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
@@ -49,7 +49,7 @@ executable). It is horridly unix-specific at the moment.
     >>> #write('bin', 'repozo', "#!/bin/sh\necho $*")
     >>> dontcare = system('chmod u+x bin/repozo')
 
-By default, backups are done in ``var/backups``:
+By default, backups are done in ``var/backups``::
 
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
@@ -59,7 +59,7 @@ By default, backups are done in ``var/backups``:
 Restore
 -------
 
-You can restore the very latest backup with ``bin/restore``:
+You can restore the very latest backup with ``bin/restore``::
 
     >>> print system('bin/restore')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
@@ -130,7 +130,7 @@ gzip
     ``*.fs.gz``.
 
 
-We'll use all options:
+We'll use all options::
 
     >>> write('buildout.cfg',
     ... """
@@ -157,7 +157,7 @@ We'll use all options:
     <BLANKLINE>
 
 Backups are now stored in ``/backups/myproject`` and the Data.fs location is
-handled correctly despite being a relative link:
+handled correctly despite being a relative link::
 
     >>> print system('bin/backup')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject -F --verbose --gzip
