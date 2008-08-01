@@ -57,19 +57,33 @@ class Recipe(object):
             loglevel = 'DEBUG'
         else:
             loglevel = 'INFO'
-        initialization = '\n'.join(
-            ["import logging",
-             "logging.basicConfig(level=logging.%s," % loglevel,
-             "    format='%(levelname)s: %(message)s')",
-             "bin_dir = '%s'" % self.options['bin-directory'],
-             "datafs = '%s'" % datafs,
-             "keep = %s" % self.options['keep'],
-             "backup_location = '%s'" % backup_location,
-             "snapshot_location = '%s'" % snapshot_location,
-             "full = %s" % self.options['full'],
-             "verbose = %s" % self.options['debug'],
-             "gzip = %s" % self.options['gzip'],
-             ])
+        """
+if sys.argv[-1] in ('-q', '--quiet'):
+    loglevel = logging.WARN
+else:
+    loglevel = logging.INFO
+logging.basicConfig(level=loglevel,
+        """
+        initialization_template = """
+import logging
+logging.basicConfig(level=logging.%(loglevel)s,
+    format='%%(levelname)s: %%(message)s')
+bin_dir = '%(bin-directory)s'
+datafs = '%(datafs)s'
+keep = %(keep)s
+backup_location = '%(backup_location)s'
+snapshot_location = '%(snapshot_location)s'
+full = %(full)s
+verbose = %(debug)s
+gzip = %(gzip)s
+"""
+        # Work with a copy of the options, for safety.
+        opts = self.options.copy()
+        opts['loglevel'] = loglevel
+        opts['datafs'] = datafs
+        opts['backup_location'] = backup_location
+        opts['snapshot_location'] = snapshot_location
+        initialization = initialization_template % opts
         requirements, ws = self.egg.working_set(['collective.recipe.backup'])
         scripts = zc.buildout.easy_install.scripts(
             [('backup', 'collective.recipe.backup.repozorunner',
