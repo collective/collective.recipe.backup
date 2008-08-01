@@ -1,6 +1,9 @@
 0.4 (unreleased)
 ================
 
+- Allowed the user to make the script more quiet (say in a cronjob)
+  by using 'bin/backup -q' (or --quiet).  [maurits]
+
 - Refactored initialization template so it is easier to change.  [maurits]
 
 

@@ -59,7 +59,11 @@ class Recipe(object):
             loglevel = 'INFO'
         initialization_template = """
 import logging
-logging.basicConfig(level=logging.%(loglevel)s,
+loglevel = logging.%(loglevel)s
+# Allow the user to make the script more quiet (say in a cronjob):
+if sys.argv[-1] in ('-q', '--quiet'):
+    loglevel = logging.WARN
+logging.basicConfig(level=loglevel,
     format='%%(levelname)s: %%(message)s')
 bin_dir = '%(bin-directory)s'
 datafs = '%(datafs)s'
