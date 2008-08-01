@@ -57,13 +57,6 @@ class Recipe(object):
             loglevel = 'DEBUG'
         else:
             loglevel = 'INFO'
-        """
-if sys.argv[-1] in ('-q', '--quiet'):
-    loglevel = logging.WARN
-else:
-    loglevel = logging.INFO
-logging.basicConfig(level=loglevel,
-        """
         initialization_template = """
 import logging
 logging.basicConfig(level=logging.%(loglevel)s,
