@@ -55,6 +55,13 @@ By default, backups are done in ``var/backups``::
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     INFO: Backing up database file: ...
 
+You can also tell the backup to be more quiet with ``--quiet`` or
+``-q``.  That is useful at least for cronjobs.  Warnings or errors are
+still shown.  In our case the mock repozo script still prints something::
+
+    >>> print system('bin/backup --quiet')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+
 
 Restore
 -------
