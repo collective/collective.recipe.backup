@@ -1,4 +1,4 @@
-0.4 (unreleased)
+0.4 (2008-08-19)
 ================
 
 - Allowed the user to make the script more quiet (say in a cronjob)
