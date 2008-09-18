@@ -30,6 +30,7 @@ class Recipe(object):
         options.setdefault('full', 'false')
         options.setdefault('debug', 'false')
         options.setdefault('gzip', 'false')
+        options.setdefault('additional_filestorages', '')
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
@@ -49,6 +50,24 @@ class Recipe(object):
         if not os.path.isdir(snapshot_location):
             os.makedirs(snapshot_location)
             logger.info('Created %s', snapshot_location)
+
+        additional = self.options['additional_filestorages']
+        if additional:
+            additional = additional.split('\n')
+            additional = [a.strip() for a in additional
+                          if a.strip()]
+        else:
+            additional = []
+
+        for a in additional:
+            backup = backup_location + '_' + a
+            snapshot = snapshot_location + '_' + a
+            if not os.path.isdir(backup):
+                os.makedirs(backup)
+                logger.info('Created %s', backup)
+            if not os.path.isdir(snapshot):
+                os.makedirs(snapshot)
+                logger.info('Created %s', snapshot)
 
         buildout_dir = self.buildout['buildout']['directory']
         datafs = os.path.join(buildout_dir, self.options['datafs'])
@@ -72,6 +91,7 @@ snapshot_location = '%(snapshot_location)s'
 full = %(full)s
 verbose = %(debug)s
 gzip = %(gzip)s
+additional = %(additional)r
 """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -79,6 +99,7 @@ gzip = %(gzip)s
         opts['datafs'] = datafs
         opts['backup_location'] = backup_location
         opts['snapshot_location'] = snapshot_location
+        opts['additional'] = additional
         initialization = initialization_template % opts
         requirements, ws = self.egg.working_set(['collective.recipe.backup',
                                                  'zc.buildout',
@@ -88,21 +109,21 @@ gzip = %(gzip)s
               'backup_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, backup_location, keep, full, verbose, gzip',
+            arguments='bin_dir, datafs, backup_location, keep, full, verbose, gzip, additional',
             initialization=initialization)
         scripts = zc.buildout.easy_install.scripts(
             [('snapshotbackup', 'collective.recipe.backup.repozorunner',
               'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, snapshot_location, keep, verbose, gzip',
+            arguments='bin_dir, datafs, snapshot_location, keep, verbose, gzip, additional',
             initialization=initialization)
         scripts = zc.buildout.easy_install.scripts(
             [('restore', 'collective.recipe.backup.repozorunner',
               'restore_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, backup_location, verbose',
+            arguments='bin_dir, datafs, backup_location, verbose, additional',
             initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.

@@ -135,6 +135,11 @@ gzip
     and repozo will gzip its files. Note that ``*.fs`` becomes ``*.fsz``, not
     ``*.fs.gz``.
 
+additional_filestorages
+    Advanced option, only needed when you have split for instance a
+    ``catalog.fs`` out of the regular ``Data.fs``. Use it to specify the extra
+    filestorages. (See explanation further on).
+
 
 We'll use all options::
 
@@ -174,3 +179,78 @@ The same is true for the snapshot backup.
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose --gzip
     INFO: Making snapshot backup:...
+
+
+Advanced usage: multiple Data.fs files
+======================================
+
+Sometimes, a Data.fs is split into several files. Most common reason is to
+have a regular Data.fs and a catalog.fs which contains the
+portal_catalog. This is supported with the ``additional_filestorages``
+option::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... additional_filestorages =
+    ...     catalog
+    ...     another
+    ... """)
+
+The additional backups have to be stored separate from the ``Data.fs``
+backup. That's done by appending the file's name and creating extra backup
+directories named that way::
+
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    backup: Created /sample-buildout/var/backups_catalog
+    backup: Created /sample-buildout/var/snapshotbackups_catalog
+    backup: Created /sample-buildout/var/backups_another
+    backup: Created /sample-buildout/var/snapshotbackups_another
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    <BLANKLINE>
+    >>> ls('var')
+    d  backups
+    d  backups_another
+    d  backups_catalog
+    d  snapshotbackups
+    d  snapshotbackups_another
+    d  snapshotbackups_catalog
+
+The various backups are done one after the other. They cannot be done at the
+same time with repozo::
+
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
+    INFO: Backing up database file: ...
+    INFO: Backing up database file: ...
+    INFO: Backing up database file: ...
+
+Same with snapshot backups::
+
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F
+    INFO: Making snapshot backup: ...
+    INFO: Making snapshot backup: ...
+    INFO: Making snapshot backup: ...
+
+And a restore restores all three backups::
+
+    >>> print system('bin/restore')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    --recover -o /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
+    --recover -o /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
+    INFO: Restoring...
+    INFO: Restoring...
+    INFO: Restoring...

@@ -1,7 +1,10 @@
 0.5 (unreleased)
 ================
 
-- No changes yet.
+- Added support for additional_filestorages option, needed for for instance a
+  split-out catalog.fs. [reinout]
+
+- Test setup fixes. [reinout+maurits]
 
 
 0.4 (2008-08-19)
