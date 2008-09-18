@@ -6,7 +6,6 @@ import os
 import zc.recipe.egg
 import zc.buildout
 
-
 logger = logging.getLogger('backup')
 
 
@@ -81,7 +80,9 @@ gzip = %(gzip)s
         opts['backup_location'] = backup_location
         opts['snapshot_location'] = snapshot_location
         initialization = initialization_template % opts
-        requirements, ws = self.egg.working_set(['collective.recipe.backup'])
+        requirements, ws = self.egg.working_set(['collective.recipe.backup',
+                                                 'zc.buildout',
+                                                 'zc.recipe.egg'])
         scripts = zc.buildout.easy_install.scripts(
             [('backup', 'collective.recipe.backup.repozorunner',
               'backup_main')],
