@@ -17,11 +17,10 @@ Running the buildout adds a backup, snapshotbackup and restore scripts to the
 ``var/snapshotbackups`` dirs::
 
     >>> print system(buildout) # doctest:+ELLIPSIS
+    Upgraded...
     Installing backup.
     backup: Created /sample-buildout/var/backups
     backup: Created /sample-buildout/var/snapshotbackups
-    Getting distribution for 'zc.recipe.egg'.
-    Got zc.recipe.egg 1.0.0.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
