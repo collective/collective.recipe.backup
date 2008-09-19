@@ -1,4 +1,10 @@
-0.5 (unreleased)
+0.6 (unreleased)
+================
+
+- nothing yet
+
+
+0.5 (2008-09-18)
 ================
 
 - Added support for additional_filestorages option, needed for for instance a
