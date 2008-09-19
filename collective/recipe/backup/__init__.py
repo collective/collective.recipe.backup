@@ -175,9 +175,16 @@ def construct_path(buildout_dir, path):
       >>> construct_path(buildout_dir, '../var/filestorage/Data.fs')
       '/somewhere/var/filestorage/Data.fs'
 
+    Also $HOME-style environment variables are expanded::
+
+      >>> import os
+      >>> os.environ['BACKUPDIR'] = '/var/backups'
+      >>> construct_path(buildout_dir, '$BACKUPDIR/myproject')
+      '/var/backups/myproject'
 
     """
     path = os.path.expanduser(path)
+    path = os.path.expandvars(path)
     combination = os.path.join(buildout_dir, path)
     normalized = os.path.normpath(combination)
     return normalized
