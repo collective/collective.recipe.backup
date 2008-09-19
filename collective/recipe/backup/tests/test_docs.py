@@ -10,6 +10,9 @@ import zc.buildout.testing
 from collective.recipe.backup import repozorunner
 from zope.testing import doctest, renormalizing
 
+# Importing modules so that we can install their eggs in the test buildout.
+import zc.recipe.egg
+
 optionflags =  (doctest.ELLIPSIS |
                 doctest.NORMALIZE_WHITESPACE)
 
@@ -21,6 +24,7 @@ def setUp(test):
     zc.buildout.testing.install_develop('collective.recipe.backup', test)
 
     # Install any other recipes that should be available in the tests
+    zc.buildout.testing.install_develop('zc.recipe.egg', test)
 
 
 def test_suite():
