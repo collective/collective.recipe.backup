@@ -3,8 +3,7 @@ Example usage
 
 The simplest way to use it to add a part in ``buildout.cfg`` like this::
 
-    >>> system(buildout) # Running it once to get past a test issue.
-    ''
+    >>> ignore = system(buildout) # Running it once to get past a test issue.
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
