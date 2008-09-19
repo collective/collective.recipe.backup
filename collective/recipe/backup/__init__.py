@@ -42,8 +42,9 @@ class Recipe(object):
 
     def install(self):
         """Installer"""
-        backup_location = os.path.abspath(self.options['location'])
-        snapshot_location = os.path.abspath(self.options['snapshotlocation'])
+        buildout_dir = self.options['buildout_dir']
+        backup_location = construct_path(buildout_dir, self.options['location'])
+        snapshot_location = construct_path(buildout_dir, self.options['snapshotlocation'])
         if not os.path.isdir(backup_location):
             os.makedirs(backup_location)
             logger.info('Created %s', backup_location)
@@ -69,8 +70,7 @@ class Recipe(object):
                 os.makedirs(snapshot)
                 logger.info('Created %s', snapshot)
 
-        buildout_dir = self.buildout['buildout']['directory']
-        datafs = os.path.join(buildout_dir, self.options['datafs'])
+        datafs = construct_path(buildout_dir, self.options['datafs'])
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
         else:
@@ -146,3 +146,38 @@ def check_for_true(options, keys):
             options[key] = 'True'
         else:
             options[key] = 'False'
+
+
+def construct_path(buildout_dir, path):
+    """Return absolute path, taking into account buildout dir and ~ expansion.
+
+    Normal paths are relative to the buildout dir::
+
+      >>> buildout_dir = '/somewhere/buildout'
+      >>> construct_path(buildout_dir, 'var/filestorage/Data.fs')
+      '/somewhere/buildout/var/filestorage/Data.fs'
+
+    Absolute paths also work::
+
+      >>> construct_path(buildout_dir, '/var/filestorage/Data.fs')
+      '/var/filestorage/Data.fs'
+
+    And a tilde, too::
+
+      >>> userdir = os.path.expanduser('~')
+      >>> desired = userdir + '/var/filestorage/Data.fs'
+      >>> result = construct_path(buildout_dir, '~/var/filestorage/Data.fs')
+      >>> result == desired
+      True
+
+    Relative links are nicely normalized::
+
+      >>> construct_path(buildout_dir, '../var/filestorage/Data.fs')
+      '/somewhere/var/filestorage/Data.fs'
+
+
+    """
+    path = os.path.expanduser(path)
+    combination = os.path.join(buildout_dir, path)
+    normalized = os.path.normpath(combination)
+    return normalized

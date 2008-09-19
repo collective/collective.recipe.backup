@@ -4,6 +4,11 @@
 - Fixed the test setup so both bin/test and python setup.py test
   work. [reinout+maurits]
 
+- Added support for ~ in path names. And fixed a bug at the same time that
+  would occur if you call the backup script from a different location than
+  your buildout directory in combination with a non-absolute backup
+  location. [reinout]
+
 
 0.5 (2008-09-18)
 ================

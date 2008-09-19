@@ -1,9 +1,12 @@
 Example usage
 =============
 
+Just to isolate some test differences, we run an empty buildout once::
+
+    >>> ignore = system(buildout)
+
 The simplest way to use it to add a part in ``buildout.cfg`` like this::
 
-    >>> ignore = system(buildout) # Running it once to get past a test issue.
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
@@ -150,7 +153,7 @@ We'll use all options::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
-    ... location = /backups/myproject
+    ... location = ${buildout:directory}/myproject
     ... keep = 3
     ... datafs = subfolder/myproject.fs
     ... full = true
@@ -161,17 +164,18 @@ We'll use all options::
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
     Installing backup.
+    backup: Created /sample-buildout/myproject
     backup: Created /sample-buildout/snap/my
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     <BLANKLINE>
 
-Backups are now stored in ``/backups/myproject`` and the Data.fs location is
-handled correctly despite being a relative link::
+Backups are now stored in the ``/myproject`` folder inside buildout and the
+Data.fs location is handled correctly despite not being an absolute path::
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /backups/myproject -F --verbose --gzip
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
     INFO: Backing up database file: ...
 
 The same is true for the snapshot backup.
@@ -179,6 +183,10 @@ The same is true for the snapshot backup.
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose --gzip
     INFO: Making snapshot backup:...
+
+Untested in this file, as it would create directories in your root or your
+home dir, are absolute links (starting with a '/') or directories in your home
+dir or relative (``../``) paths. They do work, of course.
 
 
 Advanced usage: multiple Data.fs files
