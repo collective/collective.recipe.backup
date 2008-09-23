@@ -1,7 +1,8 @@
 0.8 (unreleased)
 ================
 
-- Nothing yet
+- Backup of additional databases (if you have configured them) now takes place
+  before the backup of the main database (same with restore). [reinout]
 
 
 0.7 (2008-09-19)

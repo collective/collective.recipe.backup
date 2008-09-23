@@ -23,10 +23,6 @@ logger = logging.getLogger('backup')
 def backup_main(bin_dir, datafs, backup_location, keep, full, verbose, gzip, additional):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
-    logger.info("Backing up database file: %s to %s...",
-                datafs, backup_location)
-    os.system(repozo + ' ' +
-              backup_arguments(datafs, backup_location, full, verbose, gzip))
     for a in additional:
         fs = datafs.replace('Data.fs', '%s.fs' % a)
         location = backup_location + '_' + a
@@ -35,6 +31,10 @@ def backup_main(bin_dir, datafs, backup_location, keep, full, verbose, gzip, add
         os.system(repozo + ' ' +
                   backup_arguments(fs, location, full, verbose, gzip))
 
+    logger.info("Backing up database file: %s to %s...",
+                datafs, backup_location)
+    os.system(repozo + ' ' +
+              backup_arguments(datafs, backup_location, full, verbose, gzip))
     logger.debug("Repozo command executed.")
     cleanup(backup_location, keep)
 
@@ -42,11 +42,6 @@ def backup_main(bin_dir, datafs, backup_location, keep, full, verbose, gzip, add
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip, additional):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
-    logger.info("Making snapshot backup: %s to %s...",
-                datafs, snapshot_location)
-    os.system(repozo + ' ' +
-              backup_arguments(datafs, snapshot_location,
-                               full=True, verbose=verbose, gzip=gzip))
     for a in additional:
         fs = datafs.replace('Data.fs', '%s.fs' % a)
         location = snapshot_location + '_' + a
@@ -55,7 +50,11 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip, addit
         os.system(repozo + ' ' +
                   backup_arguments(fs, location,
                                    full=True, verbose=verbose, gzip=gzip))
-
+    logger.info("Making snapshot backup: %s to %s...",
+                datafs, snapshot_location)
+    os.system(repozo + ' ' +
+              backup_arguments(datafs, snapshot_location,
+                               full=True, verbose=verbose, gzip=gzip))
     logger.debug("Repozo command executed.")
     cleanup(snapshot_location, keep)
 
@@ -70,10 +69,6 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
         logger.debug("Argument passed to bin/restore, we assume it is "
                      "a date that we have to pass to repozo: %s.", date)
         logger.info("Date restriction: restoring state at %s." % date)
-    logger.info("Restoring database file: %s to %s...",
-                backup_location, datafs)
-    os.system(repozo + ' ' +
-              restore_arguments(datafs, backup_location, date, verbose))
     for a in additional:
         fs = datafs.replace('Data.fs', '%s.fs' % a)
         location = backup_location + '_' + a
@@ -81,7 +76,10 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
                     location, fs)
         os.system(repozo + ' ' +
                   restore_arguments(fs, location, date, verbose))
-
+    logger.info("Restoring database file: %s to %s...",
+                backup_location, datafs)
+    os.system(repozo + ' ' +
+              restore_arguments(datafs, backup_location, date, verbose))
     logger.debug("Repozo command executed.")
 
 

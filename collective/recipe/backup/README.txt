@@ -246,12 +246,14 @@ directories named that way::
     d  snapshotbackups_catalog
 
 The various backups are done one after the other. They cannot be done at the
-same time with repozo::
+same time with repozo. So they are not completely in sync. The "other"
+databases are backed up first as a small difference in the catalog is just
+mildly irritating, but the other way around users can get real errors::
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     INFO: Backing up database file: ...
     INFO: Backing up database file: ...
     INFO: Backing up database file: ...
@@ -259,9 +261,9 @@ same time with repozo::
 Same with snapshot backups::
 
     >>> print system('bin/snapshotbackup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F
     INFO: Making snapshot backup: ...
     INFO: Making snapshot backup: ...
     INFO: Making snapshot backup: ...
@@ -269,9 +271,9 @@ Same with snapshot backups::
 And a restore restores all three backups::
 
     >>> print system('bin/restore')
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     --recover -o /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
     --recover -o /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     INFO: Restoring...
     INFO: Restoring...
     INFO: Restoring...
