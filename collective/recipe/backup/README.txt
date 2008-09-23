@@ -57,13 +57,6 @@ By default, backups are done in ``var/backups``::
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     INFO: Backing up database file: ...
 
-You can also tell the backup to be more quiet with ``--quiet`` or
-``-q``.  That is useful at least for cronjobs.  Warnings or errors are
-still shown.  In our case the mock repozo script still prints something::
-
-    >>> print system('bin/backup --quiet')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
-
 
 Restore
 -------
@@ -203,8 +196,9 @@ get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
     >>> print system('bin/backup --quiet')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
 
-The ``--backup ...`` lines above are just the test that's printing out the
-executed repozo commands. So it proves that the command is executed, but it
+
+In our case the ``--backup ...`` lines above are just the mock repozo script
+that still prints something. So it proves that the command is executed, but it
 won't end up in the output.
 
 
