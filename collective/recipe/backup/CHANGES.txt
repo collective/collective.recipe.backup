@@ -1,4 +1,4 @@
-0.8 (unreleased)
+0.8 (2008-09-23)
 ================
 
 - Changed the default for gzipping to True. Adding ``gzip = true`` to all our
