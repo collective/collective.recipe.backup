@@ -190,6 +190,24 @@ dir or relative (``../``) path. They do work, of course. Also ``~`` and
 ``$BACKUP``-style environment variables are expanded.
 
 
+Cron job integration
+====================
+
+``bin/backup`` is of course ideal to put in your cronjob instead of a whole
+``bin/repozo ....`` line. But you don't want the "INFO" level logging that you
+get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
+``--quiet`` and ``bin/backup`` will shut up unless there's a problem.
+
+    >>> print system('bin/backup -q')
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
+    >>> print system('bin/backup --quiet')
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
+
+The ``--backup ...`` lines above are just the test that's printing out the
+executed repozo commands. So it proves that the command is executed, but it
+won't end up in the output.
+
+
 Advanced usage: multiple Data.fs files
 ======================================
 
