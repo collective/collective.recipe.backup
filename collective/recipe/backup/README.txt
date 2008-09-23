@@ -54,7 +54,7 @@ executable). It is horridly unix-specific at the moment.
 By default, backups are done in ``var/backups``::
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Backing up database file: ...
 
 
@@ -88,7 +88,7 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 ``var/snapshotbackups``.
 
     >>> print system('bin/snapshotbackup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Making snapshot backup:...
 
 
@@ -127,9 +127,11 @@ snapshotlocation
     ``var/snapshotbackups`` inside the buildout directory.
 
 gzip
-    Use repozo's zipping functionality. 'false' by default. Set it to 'true'
-    and repozo will gzip its files. Note that ``*.fs`` becomes ``*.fsz``, not
-    ``*.fs.gz``.
+    Use repozo's zipping functionality. 'true' by default. Set it to 'false'
+    and repozo will notgzip its files. Note that gzipped databases are called
+    ``*.fsz``, not ``*.fs.gz``. **Changed in 0.8**: the default used to be
+    false, but it so totally makes sense to gzip your backups that we changed
+    the default.
 
 additional_filestorages
     Advanced option, only needed when you have split for instance a
@@ -152,7 +154,7 @@ We'll use all options::
     ... full = true
     ... debug = true
     ... snapshotlocation = snap/my
-    ... gzip = true
+    ... gzip = false
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -168,13 +170,13 @@ Backups are now stored in the ``/myproject`` folder inside buildout and the
 Data.fs location is handled correctly despite not being an absolute path::
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     INFO: Backing up database file: ...
 
 The same is true for the snapshot backup.
 
     >>> print system('bin/snapshotbackup')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose --gzip
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
     INFO: Making snapshot backup:...
 
 Untested in this file, as it would create directories in your root or your
@@ -192,9 +194,9 @@ get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
 ``--quiet`` and ``bin/backup`` will shut up unless there's a problem.
 
     >>> print system('bin/backup -q')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     >>> print system('bin/backup --quiet')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
 
 
 In our case the ``--backup ...`` lines above are just the mock repozo script
@@ -251,9 +253,9 @@ databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors::
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Backing up database file: ...
     INFO: Backing up database file: ...
     INFO: Backing up database file: ...
@@ -261,9 +263,9 @@ mildly irritating, but the other way around users can get real errors::
 Same with snapshot backups::
 
     >>> print system('bin/snapshotbackup')
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Making snapshot backup: ...
     INFO: Making snapshot backup: ...
     INFO: Making snapshot backup: ...

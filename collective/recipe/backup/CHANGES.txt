@@ -1,6 +1,11 @@
 0.8 (unreleased)
 ================
 
+- Changed the default for gzipping to True. Adding ``gzip = true`` to all our
+  server deployment configs gets tired pretty quickly, so doing it by default
+  is the best default. Stuff like this needs to be changed **before** a 1.0
+  release :-) [reinout]
+
 - Backup of additional databases (if you have configured them) now takes place
   before the backup of the main database (same with restore). [reinout]
 

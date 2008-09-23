@@ -29,7 +29,7 @@ class Recipe(object):
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')
         options.setdefault('debug', 'false')
-        options.setdefault('gzip', 'false')
+        options.setdefault('gzip', 'true')
         options.setdefault('additional_filestorages', '')
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
