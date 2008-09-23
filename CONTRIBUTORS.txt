@@ -8,6 +8,6 @@ Creating the buildout recipe was done by Reinout_ with some fixes by Maurits_.
 
 .. _Zest software: http://zestsoftware.nl/
 
-.. _Reinout: http://vanrees.org/
+.. _Reinout: http://reinout.vanrees.org/
 
 .. _Maurits: http://maurits.vanrees.org/
