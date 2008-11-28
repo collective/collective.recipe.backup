@@ -83,11 +83,11 @@ if sys.argv[-1] in ('-q', '--quiet'):
     loglevel = logging.WARN
 logging.basicConfig(level=loglevel,
     format='%%(levelname)s: %%(message)s')
-bin_dir = '%(bin-directory)s'
-datafs = '%(datafs)s'
+bin_dir = %(bin-directory)r
+datafs = %(datafs)r
 keep = %(keep)s
-backup_location = '%(backup_location)s'
-snapshot_location = '%(snapshot_location)s'
+backup_location = %(backup_location)r
+snapshot_location = %(snapshot_location)r
 full = %(full)s
 verbose = %(debug)s
 gzip = %(gzip)s
