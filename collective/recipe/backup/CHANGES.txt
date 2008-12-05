@@ -1,7 +1,7 @@
 0.9 (unreleased)
 ================
 
-- Nothing yet.
+- Windows path compatibility fix.  [Juan A. Diaz]
 
 
 0.8 (2008-09-23)
