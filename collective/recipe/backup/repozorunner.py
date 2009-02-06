@@ -19,8 +19,18 @@ import sys
 
 logger = logging.getLogger('backup')
 
+def quote_command(command):
+    # Quote the program name, so it works even if it contains spaces
+    command = " ".join(['"%s"' % x for x in command])
+    if sys.platform[:3].lower() == 'win': 
+        # odd, but true: the windows cmd processor can't handle more than 
+        # one quoted item per string unless you add quotes around the 
+        # whole line. 
+        command = '"%s"' % command 
+    return command
 
-def backup_main(bin_dir, datafs, backup_location, keep, full, verbose, gzip, additional):
+def backup_main(bin_dir, datafs, backup_location, keep, full, 
+                verbose, gzip, additional):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
@@ -28,13 +38,18 @@ def backup_main(bin_dir, datafs, backup_location, keep, full, verbose, gzip, add
         location = backup_location + '_' + a
         logger.info("Backing up database file: %s to %s...",
                     fs, location)
-        os.system(repozo + ' ' +
-                  backup_arguments(fs, location, full, verbose, gzip))
+        os.system(quote_command([repozo] + 
+                                backup_arguments(fs, location, full, 
+                                                 verbose, gzip, 
+                                                 as_list=True)))
 
     logger.info("Backing up database file: %s to %s...",
                 datafs, backup_location)
-    os.system(repozo + ' ' +
-              backup_arguments(datafs, backup_location, full, verbose, gzip))
+    os.system(quote_command([repozo] + 
+                            backup_arguments(datafs, 
+                                             backup_location, full, 
+                                             verbose, gzip, 
+                                             as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(backup_location, keep)
 
@@ -47,14 +62,16 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip, addit
         location = snapshot_location + '_' + a
         logger.info("Making snapshot backup: %s to %s...",
                     fs, location)
-        os.system(repozo + ' ' +
-                  backup_arguments(fs, location,
-                                   full=True, verbose=verbose, gzip=gzip))
+        os.system(quote_command([repozo] + 
+                                backup_arguments(fs, location,
+                                                 full=True, verbose=verbose, 
+                                                 gzip=gzip, as_list=True)))
     logger.info("Making snapshot backup: %s to %s...",
                 datafs, snapshot_location)
-    os.system(repozo + ' ' +
-              backup_arguments(datafs, snapshot_location,
-                               full=True, verbose=verbose, gzip=gzip))
+    os.system(quote_command([repozo] +
+                            backup_arguments(datafs, snapshot_location,
+                                             full=True, verbose=verbose, 
+                                             gzip=gzip, as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(snapshot_location, keep)
 
@@ -74,12 +91,14 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
         location = backup_location + '_' + a
         logger.info("Restoring database file: %s to %s...",
                     location, fs)
-        os.system(repozo + ' ' +
-                  restore_arguments(fs, location, date, verbose))
+        os.system(quote_command([repozo] +
+                                restore_arguments(fs, location, date, 
+                                                  verbose, as_list=True)))
     logger.info("Restoring database file: %s to %s...",
                 backup_location, datafs)
-    os.system(repozo + ' ' +
-              restore_arguments(datafs, backup_location, date, verbose))
+    os.system(quote_command([repozo] +
+                            restore_arguments(datafs, backup_location, 
+                                              date, verbose, as_list=True)))
     logger.debug("Repozo command executed.")
 
 
@@ -88,7 +107,7 @@ def backup_arguments(datafs=None,
                      full=False,
                      verbose=False,
                      gzip=False,
-                     ):
+                     as_list=False):
     """
       >>> backup_arguments()
       Traceback (most recent call last):
@@ -104,8 +123,10 @@ def backup_arguments(datafs=None,
         raise RuntimeError("Missing locations.")
     arguments = []
     arguments.append('--backup')
-    arguments.append('-f %s' % datafs)
-    arguments.append('-r %s' % backup_location)
+    arguments.append('-f')
+    arguments.append(datafs)
+    arguments.append('-r')
+    arguments.append(backup_location)
     if full:
         # By default, there's an incremental backup, if possible.
         arguments.append('-F')
@@ -117,16 +138,18 @@ def backup_arguments(datafs=None,
         arguments.append('--verbose')
     if gzip:
         arguments.append('--gzip')
-    args = ' '.join(arguments)
-    logger.debug("Repozo arguments used: %s", args)
-    return args
+
+    logger.debug("Repozo arguments used: %s", ' '.join(arguments))
+    if as_list:
+        return arguments
+    return ' '.join(arguments)
 
 
 def restore_arguments(datafs=None,
                       backup_location=None,
                       date=None,
                       verbose=False,
-                      ):
+                      as_list=False):
     """
       >>> restore_arguments()
       Traceback (most recent call last):
@@ -140,16 +163,23 @@ def restore_arguments(datafs=None,
         raise RuntimeError("Missing locations.")
     arguments = []
     arguments.append('--recover')
-    arguments.append('-o %s' % datafs)
-    arguments.append('-r %s' % backup_location)
+    arguments.append('-o')
+    arguments.append(datafs)
+    arguments.append('-r')
+    arguments.append(backup_location)
+
     if date is not None:
         logger.debug("Restore as of date %r requested.", date)
-        arguments.append('-D %s' % date)
+        arguments.append('-D')
+        arguments.append(date)
     if verbose:
         arguments.append('--verbose')
-    args = ' '.join(arguments)
-    logger.debug("Repozo arguments used: %s", args)
-    return args
+    if as_list:
+        return arguments
+    logger.debug("Repozo arguments used: %s", ' '.join(arguments))
+    if as_list:
+        return arguments
+    return ' '.join(arguments)
 
 
 def cleanup(backup_location, keep=0):
