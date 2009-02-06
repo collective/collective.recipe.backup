@@ -1,7 +1,8 @@
 1.0 (unreleased)
 ================
 
-- Nothing changed yet.
+- Quote all paths and arguments so that it works on paths that contain
+  spaces (specially on Windows). [sidnei]
 
 
 0.9 (2008-12-05)
