@@ -1,4 +1,4 @@
-1.0 (unreleased)
+1.0 (2009-02-06)
 ================
 
 - Quote all paths and arguments so that it works on paths that contain
