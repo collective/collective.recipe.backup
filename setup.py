@@ -17,7 +17,7 @@ long_description = (
     'Detailed Documentation\n'
     '**********************\n'
     + '\n' +
-    read('collective', 'recipe', 'backup', 'README.txt')
+    read('src', 'collective', 'recipe', 'backup', 'README.txt')
     + '\n' +
     'Contributors\n'
     '************\n'
@@ -27,7 +27,7 @@ long_description = (
     'Change history\n'
     '**************\n'
     + '\n' +
-    read('collective', 'recipe', 'backup', 'CHANGES.txt')
+    read('src', 'collective', 'recipe', 'backup', 'CHANGES.txt')
     )
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {
@@ -55,7 +55,8 @@ setup(name='collective.recipe.backup',
       author_email='reinout@vanrees.org',
       url='https://svn.plone.org/svn/collective/buildout/collective.recipe.backup',
       license='GPL',
-      packages=find_packages(exclude=['ez_setup']),
+      package_dir={'': 'src'},
+      packages=find_packages('src'),
       namespace_packages=['collective', 'collective.recipe'],
       include_package_data=True,
       zip_safe=False,
