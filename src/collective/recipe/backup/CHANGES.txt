@@ -1,7 +1,9 @@
 1.1 (unreleased)
 ================
 
-- Nothing changed yet.
+- Moved everything into a src/ subdirectory to ease testing on buildbot (which
+  would grab all egss in the eggs/ dir that buildbot's mechanism creates.
+  [reinout]
 
 
 1.0 (2009-02-06)
