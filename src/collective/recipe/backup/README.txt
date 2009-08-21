@@ -149,7 +149,7 @@ We'll use all options::
     ... [backup]
     ... recipe = collective.recipe.backup
     ... location = ${buildout:directory}/myproject
-    ... keep = 3
+    ... keep = 2
     ... datafs = subfolder/myproject.fs
     ... full = true
     ... debug = true
@@ -279,3 +279,44 @@ And a restore restores all three backups::
     INFO: Restoring...
     INFO: Restoring...
     INFO: Restoring...
+
+We fake three old backups in all the (snapshot)backup directories to
+test if the 'keep' parameter is working correctly.
+
+    >>> dirs = ('var/backups', 'var/snapshotbackups')
+    >>> for tail in ('', '_catalog', '_another'):
+    ...     for dir in dirs:
+    ...         dir = dir + tail
+    ...         for i in range(3):
+    ...             write(dir, '%d.fs' % i, 'sample fs')
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Backing up database file:...var/backups_catalog...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Backing up database file:...var/backups_another...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Backing up database file:...var/backups...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    <BLANKLINE>
+
+Now unfortunately if you would do "ls('var/backups')" here in the test
+you would still see all three files; apparently buildout and the
+system do not interact correctly here, as in real life the superfluous
+backups are really gone.  So we will have to trust the above note that
+old backups have been removed.
+
+Same for the snapshot backups:
+
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Making snapshot backup:...var/snapshotbackups_catalog...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Making snapshot backup:...var/snapshotbackups_another...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Making snapshot backup:...var/snapshotbackups...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    <BLANKLINE>

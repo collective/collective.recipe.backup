@@ -42,6 +42,8 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
                                 backup_arguments(fs, location, full, 
                                                  verbose, gzip, 
                                                  as_list=True)))
+        logger.debug("Repozo command executed.")
+        cleanup(location, keep)
 
     logger.info("Backing up database file: %s to %s...",
                 datafs, backup_location)
@@ -66,6 +68,9 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip, addit
                                 backup_arguments(fs, location,
                                                  full=True, verbose=verbose, 
                                                  gzip=gzip, as_list=True)))
+        logger.debug("Repozo command executed.")
+        cleanup(location, keep)
+
     logger.info("Making snapshot backup: %s to %s...",
                 datafs, snapshot_location)
     os.system(quote_command([repozo] +

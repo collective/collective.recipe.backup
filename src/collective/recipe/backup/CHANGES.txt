@@ -1,6 +1,11 @@
 1.1 (unreleased)
 ================
 
+- Run the cleanup script (removing too old backups that we no longer
+  want to keep) for additional file storages as well.
+  Fixes https://bugs.launchpad.net/collective.buildout/+bug/408224
+  [maurits]
+
 - Moved everything into a src/ subdirectory to ease testing on buildbot (which
   would grab all egss in the eggs/ dir that buildbot's mechanism creates.
   [reinout]
