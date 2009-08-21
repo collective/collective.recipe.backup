@@ -43,8 +43,10 @@ class Recipe(object):
     def install(self):
         """Installer"""
         buildout_dir = self.options['buildout_dir']
-        backup_location = construct_path(buildout_dir, self.options['location'])
-        snapshot_location = construct_path(buildout_dir, self.options['snapshotlocation'])
+        backup_location = construct_path(
+            buildout_dir, self.options['location'])
+        snapshot_location = construct_path(
+            buildout_dir, self.options['snapshotlocation'])
         if not os.path.isdir(backup_location):
             os.makedirs(backup_location)
             logger.info('Created %s', backup_location)

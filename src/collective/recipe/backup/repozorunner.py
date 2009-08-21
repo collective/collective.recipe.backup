@@ -19,17 +19,19 @@ import sys
 
 logger = logging.getLogger('backup')
 
+
 def quote_command(command):
     # Quote the program name, so it works even if it contains spaces
     command = " ".join(['"%s"' % x for x in command])
-    if sys.platform[:3].lower() == 'win': 
-        # odd, but true: the windows cmd processor can't handle more than 
-        # one quoted item per string unless you add quotes around the 
-        # whole line. 
-        command = '"%s"' % command 
+    if sys.platform[:3].lower() == 'win':
+        # odd, but true: the windows cmd processor can't handle more than
+        # one quoted item per string unless you add quotes around the
+        # whole line.
+        command = '"%s"' % command
     return command
 
-def backup_main(bin_dir, datafs, backup_location, keep, full, 
+
+def backup_main(bin_dir, datafs, backup_location, keep, full,
                 verbose, gzip, additional):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
@@ -38,25 +40,26 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
         location = backup_location + '_' + a
         logger.info("Backing up database file: %s to %s...",
                     fs, location)
-        os.system(quote_command([repozo] + 
-                                backup_arguments(fs, location, full, 
-                                                 verbose, gzip, 
+        os.system(quote_command([repozo] +
+                                backup_arguments(fs, location, full,
+                                                 verbose, gzip,
                                                  as_list=True)))
         logger.debug("Repozo command executed.")
         cleanup(location, keep)
 
     logger.info("Backing up database file: %s to %s...",
                 datafs, backup_location)
-    os.system(quote_command([repozo] + 
-                            backup_arguments(datafs, 
-                                             backup_location, full, 
-                                             verbose, gzip, 
+    os.system(quote_command([repozo] +
+                            backup_arguments(datafs,
+                                             backup_location, full,
+                                             verbose, gzip,
                                              as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(backup_location, keep)
 
 
-def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip, additional):
+def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
+                  additional):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
@@ -64,9 +67,9 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip, addit
         location = snapshot_location + '_' + a
         logger.info("Making snapshot backup: %s to %s...",
                     fs, location)
-        os.system(quote_command([repozo] + 
+        os.system(quote_command([repozo] +
                                 backup_arguments(fs, location,
-                                                 full=True, verbose=verbose, 
+                                                 full=True, verbose=verbose,
                                                  gzip=gzip, as_list=True)))
         logger.debug("Repozo command executed.")
         cleanup(location, keep)
@@ -75,7 +78,7 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip, addit
                 datafs, snapshot_location)
     os.system(quote_command([repozo] +
                             backup_arguments(datafs, snapshot_location,
-                                             full=True, verbose=verbose, 
+                                             full=True, verbose=verbose,
                                              gzip=gzip, as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(snapshot_location, keep)
@@ -97,12 +100,12 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
         logger.info("Restoring database file: %s to %s...",
                     location, fs)
         os.system(quote_command([repozo] +
-                                restore_arguments(fs, location, date, 
+                                restore_arguments(fs, location, date,
                                                   verbose, as_list=True)))
     logger.info("Restoring database file: %s to %s...",
                 backup_location, datafs)
     os.system(quote_command([repozo] +
-                            restore_arguments(datafs, backup_location, 
+                            restore_arguments(datafs, backup_location,
                                               date, verbose, as_list=True)))
     logger.debug("Repozo command executed.")
 
@@ -120,7 +123,8 @@ def backup_arguments(datafs=None,
       RuntimeError: Missing locations.
       >>> backup_arguments(datafs='in/Data.fs', backup_location='out')
       '--backup -f in/Data.fs -r out'
-      >>> backup_arguments(datafs='in/Data.fs', backup_location='out', full=True)
+      >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
+      ...                  full=True)
       '--backup -f in/Data.fs -r out -F'
 
     """
@@ -298,8 +302,8 @@ def cleanup(backup_location, keep=0):
     """
     keep = int(keep) # Making sure.
     if not keep:
-        logger.debug("Value of 'keep' is %r, we don't want to remove anything.",
-                     keep)
+        logger.debug(
+            "Value of 'keep' is %r, we don't want to remove anything.", keep)
         return
     logger.debug("Trying to clean up old backups.")
     filenames = os.listdir(backup_location)
