@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 
 def read(*rnames):
-    return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+    return open(os.path.join(*rnames)).read()
 
 version = '1.2dev'
 
