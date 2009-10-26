@@ -1,4 +1,4 @@
-1.2 (unreleased)
+1.2 (2009-10-26)
 ================
 
 - The part name is now reflected in the created scripts and var/ directories.
