@@ -203,6 +203,15 @@ In our case the ``--backup ...`` lines above are just the mock repozo script
 that still prints something. So it proves that the command is executed, but it
 won't end up in the output.
 
+Speaking of cron jobs?  Take a look at `zc.recipe.usercrontab
+<http://pypi.python.org/pypi/z3c.recipe.usercrontab>`_ if you want to handle
+cronjobs from within your buildout.  For example::
+
+    [backupcronjob]
+    recipe = z3c.recipe.usercrontab
+    times = 0 12 * * *
+    command = ${buildout:directory}/bin/backup
+
 
 Advanced usage: multiple Data.fs files
 ======================================
