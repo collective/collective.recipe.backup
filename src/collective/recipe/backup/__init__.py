@@ -15,10 +15,19 @@ class Recipe(object):
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
         buildout_dir = self.buildout['buildout']['directory']
+        if self.name == 'backup':
+            backup_name = 'backup'
+            snapshot_name = 'snapshotbackup'
+            restore_name = 'restore'
+        else:
+            backup_name = self.name
+            snapshot_name = self.name + '-snapshot'
+            restore_name = self.name + '-restore'
+
         backup_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', 'backups'))
+            os.path.join(buildout_dir, 'var', backup_name + 's'))
         snapshot_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', 'snapshotbackups'))
+            os.path.join(buildout_dir, 'var', snapshot_name + 's'))
         datafs = os.path.abspath(
             os.path.join(buildout_dir, 'var', 'filestorage', 'Data.fs'))
 
@@ -37,6 +46,9 @@ class Recipe(object):
         python = buildout['buildout']['python']
         options['executable'] = buildout[python]['executable']
         options['bin-directory'] = buildout['buildout']['bin-directory']
+        options['backup_name'] = backup_name
+        options['snapshot_name'] = snapshot_name
+        options['restore_name'] = restore_name
         check_for_true(options, ['full', 'debug', 'gzip'])
         self.options = options
 
@@ -102,26 +114,32 @@ additional = %(additional)r
         opts['backup_location'] = backup_location
         opts['snapshot_location'] = snapshot_location
         opts['additional'] = additional
+
         initialization = initialization_template % opts
         requirements, ws = self.egg.working_set(['collective.recipe.backup',
                                                  'zc.buildout',
                                                  'zc.recipe.egg'])
         scripts = zc.buildout.easy_install.scripts(
-            [('backup', 'collective.recipe.backup.repozorunner',
+            [(self.options['backup_name'],
+              'collective.recipe.backup.repozorunner',
               'backup_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, backup_location, keep, full, verbose, gzip, additional',
+            arguments=('bin_dir, datafs, backup_location, ' +
+                       'keep, full, verbose, gzip, additional'),
             initialization=initialization)
-        scripts = zc.buildout.easy_install.scripts(
-            [('snapshotbackup', 'collective.recipe.backup.repozorunner',
+        scripts += zc.buildout.easy_install.scripts(
+            [(self.options['snapshot_name'],
+              'collective.recipe.backup.repozorunner',
               'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, snapshot_location, keep, verbose, gzip, additional',
+            arguments=('bin_dir, datafs, snapshot_location, keep, ' +
+                       'verbose, gzip, additional'),
             initialization=initialization)
-        scripts = zc.buildout.easy_install.scripts(
-            [('restore', 'collective.recipe.backup.repozorunner',
+        scripts += zc.buildout.easy_install.scripts(
+            [(self.options['restore_name'],
+              'collective.recipe.backup.repozorunner',
               'restore_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],

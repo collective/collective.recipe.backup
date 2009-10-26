@@ -92,6 +92,67 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
     INFO: Making snapshot backup:...
 
 
+Names of created scripts
+------------------------
+
+A backup part will normally be called ``[backup]``, leading to a
+``bin/backup`` and ``bin/snapshotbackup``.  Should you name your part
+something else,  the script names will also be different as will the created
+``var/`` directories (since version 1.2):
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = plonebackup
+    ...
+    ... [plonebackup]
+    ... recipe = collective.recipe.backup
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing plonebackup.
+    backup: Created /sample-buildout/var/plonebackups
+    backup: Created /sample-buildout/var/plonebackup-snapshots
+    Generated script '/sample-buildout/bin/plonebackup'.
+    Generated script '/sample-buildout/bin/plonebackup-snapshot'.
+    Generated script '/sample-buildout/bin/plonebackup-restore'.
+
+Note that the ``restore`` and ``snapshotbackup`` script name used when the
+name is ``[backup]`` is now prefixed with the part name:
+
+    >>> ls('bin')
+    -  buildout
+    -  plonebackup
+    -  plonebackup-restore
+    -  plonebackup-snapshot
+    -  repozo
+
+In the var/ directory, the existing backups and snapshotbackups directories
+are still present.  The recipe of course never removes that kind of directory!
+The different part name *did* result in two directories named after the part:
+
+    >>> ls('var')
+    d  backups
+    d  plonebackup-snapshots
+    d  plonebackups
+    d  snapshotbackups
+
+For the rest of the tests we use the ``[backup]`` name again.  And we clean up
+the ``var/plonebackups`` and ``var/plonebackup-snaphots`` dirs:
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... """)
+    >>> dont_care = system(buildout) # doctest:+ELLIPSIS
+    >>> rmdir('var/plonebackups')
+    >>> rmdir('var/plonebackup-snapshots')
+
+
 Supported options
 =================
 

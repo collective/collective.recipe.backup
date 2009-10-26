@@ -1,7 +1,12 @@
 1.2 (unreleased)
 ================
 
-- Nothing changed yet.
+- The part name is now reflected in the created scripts and var/ directories.
+  Originally bin/backup, bin/snapshotbackup, bin/restore and var/backups
+  plus var/snapshotbackups were hardcoded.  Those are still there when you
+  name your part ``[backup]``.  With a part named ``[NAME]``, you get
+  bin/NAME, bin/NAME-snapshot, bin/NAME-restore and var/NAMEs plus
+  var/NAME-snapshots.  Request by aclark for plone.org.  [reinout]
 
 
 1.1 (2009-08-21)
