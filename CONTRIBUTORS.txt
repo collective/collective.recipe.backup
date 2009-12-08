@@ -4,6 +4,8 @@ van Rees and Maurits van Rees, both from `Zest software`_
 
 Creating the buildout recipe was done by Reinout_ with some fixes by Maurits_.
 
+The snapshotrestore script was added by Nejc Zupan (`niteoweb
+<http://www.niteoweb.com>`_).
 
 
 .. _Zest software: http://zestsoftware.nl/
