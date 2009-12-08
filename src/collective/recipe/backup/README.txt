@@ -16,7 +16,7 @@ The simplest way to use it to add a part in ``buildout.cfg`` like this::
     ... recipe = collective.recipe.backup
     ... """)
 
-Running the buildout adds a backup, snapshotbackup and restore scripts to the
+Running the buildout adds a backup, snapshotbackup, restore and snapshotrestore scripts to the
 ``bin/`` directory and, by default, it creates the ``var/backups`` and
 ``var/snapshotbackups`` dirs::
 
@@ -27,6 +27,7 @@ Running the buildout adds a backup, snapshotbackup and restore scripts to the
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> ls('var')
     d  backups
@@ -36,7 +37,7 @@ Running the buildout adds a backup, snapshotbackup and restore scripts to the
     -  buildout
     -  restore
     -  snapshotbackup
-
+    -  snapshotrestore
 
 Backup
 ------
@@ -65,6 +66,12 @@ You can restore the very latest backup with ``bin/restore``::
 
     >>> print system('bin/restore')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    INFO: Restoring...
+
+You can restore the very latest snapshotbackup with ``bin/snapshotrestore``::
+
+    >>> print system('bin/snapshotrestore')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
     INFO: Restoring...
 
 You can also restore the backup as of a certain date. Just pass a date
@@ -116,8 +123,9 @@ something else,  the script names will also be different as will the created
     Generated script '/sample-buildout/bin/plonebackup'.
     Generated script '/sample-buildout/bin/plonebackup-snapshot'.
     Generated script '/sample-buildout/bin/plonebackup-restore'.
+    Generated script '/sample-buildout/bin/plonebackup-snapshotrestore'.
 
-Note that the ``restore`` and ``snapshotbackup`` script name used when the
+Note that the ``restore``, ``snapshotbackup`` and ``snapshotrestore`` script name used when the
 name is ``[backup]`` is now prefixed with the part name:
 
     >>> ls('bin')
@@ -125,6 +133,7 @@ name is ``[backup]`` is now prefixed with the part name:
     -  plonebackup
     -  plonebackup-restore
     -  plonebackup-snapshot
+    -  plonebackup-snapshotrestore
     -  repozo
 
 In the var/ directory, the existing backups and snapshotbackups directories
@@ -225,6 +234,7 @@ We'll use all options::
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
 
 Backups are now stored in the ``/myproject`` folder inside buildout and the
@@ -308,6 +318,7 @@ directories named that way::
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> ls('var')
     d  backups

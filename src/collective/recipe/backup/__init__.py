@@ -19,10 +19,12 @@ class Recipe(object):
             backup_name = 'backup'
             snapshot_name = 'snapshotbackup'
             restore_name = 'restore'
+            snapshotrestore_name = 'snapshotrestore'
         else:
             backup_name = self.name
             snapshot_name = self.name + '-snapshot'
             restore_name = self.name + '-restore'
+            snapshotrestore_name = self.name + '-snapshotrestore'
 
         backup_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', backup_name + 's'))
@@ -49,6 +51,7 @@ class Recipe(object):
         options['backup_name'] = backup_name
         options['snapshot_name'] = snapshot_name
         options['restore_name'] = restore_name
+        options['snapshotrestore_name'] = snapshotrestore_name
         check_for_true(options, ['full', 'debug', 'gzip'])
         self.options = options
 
@@ -144,6 +147,14 @@ additional = %(additional)r
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments='bin_dir, datafs, backup_location, verbose, additional',
+            initialization=initialization)
+        scripts += zc.buildout.easy_install.scripts(
+            [(self.options['snapshotrestore_name'],
+              'collective.recipe.backup.repozorunner',
+              'restore_main')],
+            #requirements,
+            ws, self.options['executable'], self.options['bin-directory'],
+            arguments='bin_dir, datafs, snapshot_location, verbose, additional',
             initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
