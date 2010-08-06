@@ -3,6 +3,22 @@ Easy zope backup/restore recipe for buildout
 
 .. contents::
 
+
+This recipe is a wrapper around the ``bin/repozo`` script in your zope
+buildout.  It requires that this script is already made available.  If
+this is not the case, you will get an error like this when you run one
+of the scripts: ``bin/repozo: No such file or directory``.  You should
+be fine when you are on Plone 3 or when you are on Plone 4 and are using
+``plone.recipe.zeoserver``.  If this is not the case, the easiest way
+of getting a ``bin/repozo`` script is to add a new section in your
+buildout.cfg (do not forget to add it in the ``parts`` directive)::
+
+  [repozo]
+  recipe = zc.recipe.egg
+  eggs = ZODB3
+  scripts = repozo
+
+
 ``bin/repozo`` is a zope script to make backups of your Data.fs. Looking up
 the settings can be a chore. And you have to pick a directory where to put the
 backups. This recipe provides **sensible defaults** for your common backup

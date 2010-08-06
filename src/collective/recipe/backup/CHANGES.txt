@@ -1,7 +1,11 @@
 1.4 (unreleased)
 ================
 
-- Nothing changed yet.
+- Added documentation about how to get the required bin/repozo script
+  in your buildout if for some reason you do not have it yet (like on
+  Plone 4 when you do not have a zeo setup).
+  Thanks to Vincent Fretin for the extra buildout lines.
+  [maurits]
 
 
 1.3 (2009-12-08)
