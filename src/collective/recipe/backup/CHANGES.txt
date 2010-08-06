@@ -1,4 +1,4 @@
-1.4 (unreleased)
+1.4 (2010-08-06)
 ================
 
 - Added documentation about how to get the required bin/repozo script
