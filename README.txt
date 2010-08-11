@@ -34,8 +34,16 @@ tasks. Making backups a piece of cake is important!
 
 Some extra information:
 
-- Code repository: https://svn.plone.org/svn/collective/buildout/collective.recipe.backup
-- Questions and comments to mailto:reinout@vanrees.org
+- Code repository: http://svn.plone.org/svn/collective/buildout/collective.recipe.backup
+- Questions and comments to mailto:reinout@vanrees.org and  mailto:maurits@vanrees.org.
+
+.. ATTENTION::
+  If your buildout uses blobstorage to store files (see the
+  ``var/blobstorage`` directory, if it exists), those files are
+  currently not backed up by this recipe.  You will have to do
+  something yourself (create a script that makes a tarball, or
+  uses scp or rsync or something like that).  A future version of this
+  recipe may deal with this.
 
 
 .. _instancemanager: http://plone.org/products/instance-manager
