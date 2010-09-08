@@ -1,4 +1,4 @@
-1.5 (unreleased)
+1.5 (2010-09-08)
 ================
 
 - Fix: when running buildout with a config in a separate directory
