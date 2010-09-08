@@ -1,7 +1,13 @@
 1.5 (unreleased)
 ================
 
-- Nothing changed yet.
+- Fix: when running buildout with a config in a separate directory
+  (like ``bin/buildout -c conf/prod.cfg``) the default backup
+  directories are no longer created inside that separate directory.
+  If you previously manually specified one of the location,
+  snapshotlocation, or datafs parameters to work around this, you can
+  probably remove those lines.  So: slightly saner defaults.
+  [maurits]
 
 
 1.4 (2010-08-06)

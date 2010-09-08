@@ -14,7 +14,15 @@ class Recipe(object):
 
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
-        buildout_dir = self.buildout['buildout']['directory']
+        # self.buildout['buildout']['directory'] is not always the
+        # main directory, but is the directory that contains the
+        # config file, so if you do 'main/bin/buildout -c
+        # conf/prod.cfg' the 'directory' is main/conf instead of the
+        # expected main.  So we use the parent of the bin-directory
+        # instead.
+        #buildout_dir = self.buildout['buildout']['directory']
+        bin_dir = self.buildout['buildout']['bin-directory']
+        buildout_dir = os.path.join(bin_dir, os.path.pardir)
         if self.name == 'backup':
             backup_name = 'backup'
             snapshot_name = 'snapshotbackup'
