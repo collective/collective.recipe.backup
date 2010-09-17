@@ -208,6 +208,12 @@ additional_filestorages
     ``catalog.fs`` out of the regular ``Data.fs``. Use it to specify the extra
     filestorages. (See explanation further on).
 
+enable_snapshotrestore
+    Having a snapshotrestore script is very useful in development
+    environments, but can be harmful in a production buildout. The script
+    restores the latest snapshot directly to your filestorage without asking
+    any questions whatsoever. If you don't want a snapshotrestore, set this
+    option to false.
 
 We'll use all options::
 
@@ -225,6 +231,7 @@ We'll use all options::
     ... debug = true
     ... snapshotlocation = snap/my
     ... gzip = false
+    ... enable_snapshotrestore = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -401,3 +408,42 @@ Same for the snapshot backups:
     INFO: Making snapshot backup:...var/snapshotbackups...
     INFO: Removed old backups, the latest 2 full backups have been kept.
     <BLANKLINE>
+    
+
+Test disabling the snapshotrestore script  
+
+Remove the snapshotrestore first::
+    >>> remove('bin/snapshotrestore')
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  repozo
+    -  restore
+    -  snapshotbackup
+
+And now generat a new buildout with enable_snapshotrestore set to false. The script should not be generated now. 
+    
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... enable_snapshotrestore = false
+    ... """)
+
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+
+    <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  repozo
+    -  restore
+    -  snapshotbackup

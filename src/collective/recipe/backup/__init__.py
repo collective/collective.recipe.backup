@@ -50,7 +50,7 @@ class Recipe(object):
         options.setdefault('debug', 'false')
         options.setdefault('gzip', 'true')
         options.setdefault('additional_filestorages', '')
-
+        options.setdefault('enable_snapshotrestore', 'true')
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
         python = buildout['buildout']['python']
@@ -156,14 +156,15 @@ additional = %(additional)r
             ws, self.options['executable'], self.options['bin-directory'],
             arguments='bin_dir, datafs, backup_location, verbose, additional',
             initialization=initialization)
-        scripts += zc.buildout.easy_install.scripts(
-            [(self.options['snapshotrestore_name'],
-              'collective.recipe.backup.repozorunner',
-              'restore_main')],
-            #requirements,
-            ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, snapshot_location, verbose, additional',
-            initialization=initialization)
+        if self.options['enable_snapshotrestore']=='true':
+            scripts += zc.buildout.easy_install.scripts(
+                [(self.options['snapshotrestore_name'],
+                  'collective.recipe.backup.repozorunner',
+                  'restore_main')],
+                #requirements,
+                ws, self.options['executable'], self.options['bin-directory'],
+                arguments='bin_dir, datafs, snapshot_location, verbose, additional',
+                initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
         return scripts

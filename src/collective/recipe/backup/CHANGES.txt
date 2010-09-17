@@ -1,8 +1,10 @@
 1.6 (unreleased)
 ================
 
-- Nothing changed yet.
-
+- Added the option enable_snapshotrestore so that the creation of the script
+  can be removed. Backwards compatible, if you don't specify it the script
+  will still be created.
+  [fredvd]
 
 1.5 (2010-09-08)
 ================
