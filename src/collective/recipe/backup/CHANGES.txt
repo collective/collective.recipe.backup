@@ -1,4 +1,4 @@
-1.6 (unreleased)
+1.6 (2010-09-21)
 ================
 
 - Added the option enable_snapshotrestore so that the creation of the
