@@ -1,10 +1,13 @@
 1.6 (unreleased)
 ================
 
-- Added the option enable_snapshotrestore so that the creation of the script
-  can be removed. Backwards compatible, if you don't specify it the script
-  will still be created.
+- Added the option enable_snapshotrestore so that the creation of the
+  script can be removed. Backwards compatible, if you don't specify it
+  the script will still be created. Rationale: you may not want this
+  script in a production buildout where mistakenly using
+  snapshotrestore instead of snapshotbackup could hurt.
   [fredvd]
+
 
 1.5 (2010-09-08)
 ================

@@ -421,7 +421,7 @@ Remove the snapshotrestore first::
     -  restore
     -  snapshotbackup
 
-And now generat a new buildout with enable_snapshotrestore set to false. The script should not be generated now. 
+And now generate a new buildout with enable_snapshotrestore set to false. The script should not be generated now. 
     
     >>> write('buildout.cfg',
     ... """
