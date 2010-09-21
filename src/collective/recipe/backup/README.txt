@@ -410,18 +410,10 @@ Same for the snapshot backups:
     <BLANKLINE>
     
 
-Test disabling the snapshotrestore script  
-
-Remove the snapshotrestore first::
-    >>> remove('bin/snapshotrestore')
-    >>> ls('bin')
-    -  backup
-    -  buildout
-    -  repozo
-    -  restore
-    -  snapshotbackup
-
-And now generate a new buildout with enable_snapshotrestore set to false. The script should not be generated now. 
+Test disabling the snapshotrestore script.  We generate a new buildout
+with enable_snapshotrestore set to false. The script should not be
+generated now (and buildout will actually remove the previously
+generated script).
     
     >>> write('buildout.cfg',
     ... """
