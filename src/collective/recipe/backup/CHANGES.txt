@@ -1,8 +1,13 @@
 1.7 (unreleased)
 ================
 
-- Nothing changed yet.
-
+- Fix generated repozo commands to work also
+  when recipe is configured to have a non **Data.fs**
+  main db plus additional filestorages.
+  e.g.:
+  datafs= var/filestorage/main.fs
+  additional = catalog
+  [hplocher]
 
 1.6 (2010-09-21)
 ================
