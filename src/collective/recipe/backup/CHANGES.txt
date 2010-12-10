@@ -1,4 +1,4 @@
-1.7 (unreleased)
+1.7 (2010-12-10)
 ================
 
 - Fix generated repozo commands to work also
