@@ -487,7 +487,6 @@ not been implemented yet, so we get an error:
     INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
-    INFO: 0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage
@@ -502,7 +501,6 @@ Let's try that some more.
     INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage to blobstorage.1.
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
-    INFO: 0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage
@@ -530,7 +528,6 @@ Now remove an item:
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage to blobstorage.1.
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
-    INFO: 0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage

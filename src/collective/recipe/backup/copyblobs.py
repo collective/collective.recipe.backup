@@ -20,6 +20,8 @@ import os
 import logging
 logger = logging.getLogger('backup')
 
+from collective.recipe.backup import utils
+
 SOURCE = 'blobstorage'
 BACKUP_DIR = 'backups'
 
@@ -128,6 +130,7 @@ def backup_blobs(source, destination, full):
             source=source,
             dest=destination)
     logger.info(cmd)
-    # XXX Get output in a different way, or at least errors.
-    output = os.system(cmd)
-    logger.info(output)
+    output = utils.system(cmd)
+    if output:
+        # If we have output, this means there was an error.
+        logger.error(output)
