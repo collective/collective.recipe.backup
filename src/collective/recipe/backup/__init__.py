@@ -28,11 +28,15 @@ class Recipe(object):
             snapshot_name = 'snapshotbackup'
             restore_name = 'restore'
             snapshotrestore_name = 'snapshotrestore'
+            blob_backup_name = 'blobstoragebackup'
+            blob_snapshot_name = 'blobstoragesnapshot'
         else:
             backup_name = self.name
             snapshot_name = self.name + '-snapshot'
             restore_name = self.name + '-restore'
             snapshotrestore_name = self.name + '-snapshotrestore'
+            blob_backup_name = self.name + '-blobstorage'
+            blob_snapshot_name = self.name + '-blobstoragesnapshot'
 
         backup_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', backup_name + 's'))
@@ -40,10 +44,16 @@ class Recipe(object):
             os.path.join(buildout_dir, 'var', snapshot_name + 's'))
         datafs = os.path.abspath(
             os.path.join(buildout_dir, 'var', 'filestorage', 'Data.fs'))
+        blob_backup_dir = os.path.abspath(
+            os.path.join(buildout_dir, 'var', blob_backup_name + 's'))
+        blob_snapshot_dir = os.path.abspath(
+            os.path.join(buildout_dir, 'var', blob_snapshot_name + 's'))
 
         options.setdefault('buildout_dir', buildout_dir)
         options.setdefault('location', backup_dir)
         options.setdefault('snapshotlocation', snapshot_dir)
+        options.setdefault('blobbackuplocation', blob_backup_dir)
+        options.setdefault('blobsnapshotlocation', blob_snapshot_dir)
         options.setdefault('keep', '2')
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')
@@ -51,6 +61,7 @@ class Recipe(object):
         options.setdefault('gzip', 'true')
         options.setdefault('additional_filestorages', '')
         options.setdefault('enable_snapshotrestore', 'true')
+        options.setdefault('blob-storage', '')
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
         python = buildout['buildout']['python']
@@ -76,6 +87,22 @@ class Recipe(object):
         if not os.path.isdir(snapshot_location):
             os.makedirs(snapshot_location)
             logger.info('Created %s', snapshot_location)
+
+        # Blob backup.
+        if self.options['blob-storage']:
+            blob_backup_location = construct_path(
+                buildout_dir, self.options['blobbackuplocation'])
+            blob_snapshot_location = construct_path(
+                buildout_dir, self.options['blobsnapshotlocation'])
+            if not os.path.isdir(blob_backup_location):
+                os.makedirs(blob_backup_location)
+                logger.info('Created %s', blob_backup_location)
+            if not os.path.isdir(blob_snapshot_location):
+                os.makedirs(blob_snapshot_location)
+                logger.info('Created %s', blob_snapshot_location)
+        else:
+            blob_backup_location = ''
+            blob_snapshot_location = ''
 
         additional = self.options['additional_filestorages']
         if additional:
@@ -113,6 +140,8 @@ datafs = %(datafs)r
 keep = %(keep)s
 backup_location = %(backup_location)r
 snapshot_location = %(snapshot_location)r
+blob_backup_location = %(blob_backup_location)r
+blob_snapshot_location = %(blob_snapshot_location)r
 full = %(full)s
 verbose = %(debug)s
 gzip = %(gzip)s
@@ -124,6 +153,8 @@ additional = %(additional)r
         opts['datafs'] = datafs
         opts['backup_location'] = backup_location
         opts['snapshot_location'] = snapshot_location
+        opts['blob_backup_location'] = blob_backup_location
+        opts['blob_snapshot_location'] = blob_snapshot_location
         opts['additional'] = additional
 
         initialization = initialization_template % opts
@@ -136,8 +167,9 @@ additional = %(additional)r
               'backup_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments=('bin_dir, datafs, backup_location, ' +
-                       'keep, full, verbose, gzip, additional'),
+            arguments=('bin_dir, datafs, backup_location, '
+                       'keep, full, verbose, gzip, additional, '
+                       'blob_backup_location'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['snapshot_name'],
@@ -145,8 +177,8 @@ additional = %(additional)r
               'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments=('bin_dir, datafs, snapshot_location, keep, ' +
-                       'verbose, gzip, additional'),
+            arguments=('bin_dir, datafs, snapshot_location, keep, '
+                       'verbose, gzip, additional, blob_snapshot_location'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['restore_name'],
@@ -154,7 +186,8 @@ additional = %(additional)r
               'restore_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, backup_location, verbose, additional',
+            arguments=('bin_dir, datafs, backup_location, verbose, '
+                       'additional, blob_backup_location'),
             initialization=initialization)
         if self.options['enable_snapshotrestore'] == 'true':
             scripts += zc.buildout.easy_install.scripts(
@@ -164,7 +197,7 @@ additional = %(additional)r
                 #requirements,
                 ws, self.options['executable'], self.options['bin-directory'],
                 arguments=('bin_dir, datafs, snapshot_location, verbose, '
-                           'additional'),
+                           'additional, blob_snapshot_location'),
                 initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.

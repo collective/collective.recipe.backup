@@ -5,7 +5,7 @@ Just to isolate some test differences, we run an empty buildout once::
 
     >>> ignore = system(buildout)
 
-The simplest way to use it to add a part in ``buildout.cfg`` like this::
+The simplest way to use it is to add a part in ``buildout.cfg`` like this::
 
     >>> write('buildout.cfg',
     ... """
@@ -438,3 +438,50 @@ generated script).
     -  repozo
     -  restore
     -  snapshotbackup
+
+
+Blob storage
+------------
+
+New in this recipe is that we backup the blob storage.  Plone 4 uses a
+blob storage to store files on the file system.  In Plone 3 this is
+optional.  When this is used, it should be backed up of course.  You
+must specify the source blob-storage directory where Plone (or Zope)
+stores its blobs:
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob-storage = ${buildout:directory}/var/blobstorage
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    backup: Created /sample-buildout/var/blobstoragebackups
+    backup: Created /sample-buildout/var/blobstoragesnapshots
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  repozo
+    -  restore
+    -  snapshotbackup
+    -  snapshotrestore
+
+Test the snapshotbackup first, as that should be easiest.  This has
+not been implemented yet, so we get an error:
+
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Making snapshot backup:...var/snapshotbackups...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    ERROR: Should snapshot backup blobs to /sample-buildout/var/blobstoragesnapshots
+    <BLANKLINE>

@@ -32,7 +32,7 @@ def quote_command(command):
 
 
 def backup_main(bin_dir, datafs, backup_location, keep, full,
-                verbose, gzip, additional):
+                verbose, gzip, additional, blob_backup_location):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
@@ -57,10 +57,12 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
                                              as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(backup_location, keep)
+    if blob_backup_location:
+        logger.error("Should backup blobs to %s", blob_backup_location)
 
 
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
-                  additional):
+                  additional, blob_snapshot_location):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
@@ -84,9 +86,13 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                                              gzip=gzip, as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(snapshot_location, keep)
+    if blob_snapshot_location:
+        logger.error("Should snapshot backup blobs to %s",
+                    blob_snapshot_location)
 
 
-def restore_main(bin_dir, datafs, backup_location, verbose, additional):
+def restore_main(bin_dir, datafs, backup_location, verbose, additional,
+                 blob_backup_location):
     """Main method, gets called by generated bin/restore."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.debug("If things break: did you stop zope?")
@@ -111,6 +117,9 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
                             restore_arguments(datafs, backup_location,
                                               date, verbose, as_list=True)))
     logger.debug("Repozo command executed.")
+    if blob_backup_location:
+        logger.error("Should restore (snapshot) blobs to %s",
+                    blob_backup_location)
 
 
 def backup_arguments(datafs=None,
