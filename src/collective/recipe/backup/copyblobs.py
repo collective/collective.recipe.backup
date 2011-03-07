@@ -16,7 +16,6 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 
 """
 
-import sys
 import os
 
 SOURCE = 'blobstorage'
@@ -78,8 +77,9 @@ prev_link = os.path.join('..', SOURCE + '.1')
 prev = os.path.join(BACKUP_DIR, SOURCE + '.1')
 dest = os.path.join(BACKUP_DIR, SOURCE + '.0')
 if os.path.isdir(prev):
-    # Hardlink against the previous directory.
-    #rsync -a --delete --link-dest=../blobcache.1 blobcache/  backups/blobcache.0/
+    # Hardlink against the previous directory.  Done by hand it would be:
+    # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
+    #    backups/blobstorage.0/
     cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % dict(
         link=prev_link,
         source=SOURCE,

@@ -156,14 +156,15 @@ additional = %(additional)r
             ws, self.options['executable'], self.options['bin-directory'],
             arguments='bin_dir, datafs, backup_location, verbose, additional',
             initialization=initialization)
-        if self.options['enable_snapshotrestore']=='true':
+        if self.options['enable_snapshotrestore'] == 'true':
             scripts += zc.buildout.easy_install.scripts(
                 [(self.options['snapshotrestore_name'],
                   'collective.recipe.backup.repozorunner',
                   'restore_main')],
                 #requirements,
                 ws, self.options['executable'], self.options['bin-directory'],
-                arguments='bin_dir, datafs, snapshot_location, verbose, additional',
+                arguments=('bin_dir, datafs, snapshot_location, verbose, '
+                           'additional'),
                 initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.

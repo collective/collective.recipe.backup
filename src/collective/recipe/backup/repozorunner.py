@@ -303,7 +303,7 @@ def cleanup(backup_location, keep=0):
       -  9.fs
 
     """
-    keep = int(keep) # Making sure.
+    keep = int(keep)  # Making sure.
     if not keep:
         logger.debug(
             "Value of 'keep' is %r, we don't want to remove anything.", keep)
@@ -330,7 +330,7 @@ def cleanup(backup_location, keep=0):
         fullbackups.reverse()
         logger.debug("Full backups, sorted by date, newest first: %r.",
                   [f[0] for f in fullbackups])
-        oldest_backup_to_keep = fullbackups[(num_backups-1)]
+        oldest_backup_to_keep = fullbackups[(num_backups - 1)]
         logger.debug("Oldest backup to keep: %s", oldest_backup_to_keep[0])
         last_date_to_keep = oldest_backup_to_keep[1]
         logger.debug("The oldest backup we get to keep is from %s.",
