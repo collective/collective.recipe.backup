@@ -478,17 +478,18 @@ stores its blobs:
     >>> mkdir('var/blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
 
-Test the snapshotbackup first, as that should be easiest.  This has
-not been implemented yet, so we get an error:
+Test the snapshotbackup first, as that should be easiest.
 
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Making snapshot backup:...var/snapshotbackups...
     INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
+    d  blobstorage.0
+    >>> ls('var/blobstoragesnapshots/blobstorage.0')
     d  blobstorage
 
 Let's try that some more.
@@ -499,22 +500,22 @@ Let's try that some more.
     INFO: Making snapshot backup:...var/snapshotbackups...
     INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: Renaming blobstorage to blobstorage.1.
-    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
-    d  blobstorage
+    d  blobstorage.0
     d  blobstorage.1
-    >>> ls('var/blobstoragesnapshots/blobstorage')
+    >>> ls('var/blobstoragesnapshots/blobstorage.0/blobstorage')
     -  blob1.txt
     -  blob2.txt
-    >>> ls('var/blobstoragesnapshots/blobstorage.1')
+    >>> ls('var/blobstoragesnapshots/blobstorage.1/blobstorage')
     -  blob1.txt
-    >>> cat('var/blobstoragesnapshots/blobstorage/blob1.txt')
+    >>> cat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob1.txt')
     Sample blob 1.
-    >>> cat('var/blobstoragesnapshots/blobstorage/blob2.txt')
+    >>> cat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob2.txt')
     Sample blob 2.
-    >>> cat('var/blobstoragesnapshots/blobstorage.1/blob1.txt')
+    >>> cat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
     Sample blob 1.
 
 Now remove an item:
@@ -526,19 +527,19 @@ Now remove an item:
     INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.1 to blobstorage.2.
-    INFO: Renaming blobstorage to blobstorage.1.
-    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
-    d  blobstorage
+    d  blobstorage.0
     d  blobstorage.1
     d  blobstorage.2
-    >>> ls('var/blobstoragesnapshots/blobstorage')
+    >>> ls('var/blobstoragesnapshots/blobstorage.0/blobstorage')
     -  blob1.txt
-    >>> ls('var/blobstoragesnapshots/blobstorage.1')
+    >>> ls('var/blobstoragesnapshots/blobstorage.1/blobstorage')
     -  blob1.txt
     -  blob2.txt
-    >>> ls('var/blobstoragesnapshots/blobstorage.2')
+    >>> ls('var/blobstoragesnapshots/blobstorage.2/blobstorage')
     -  blob1.txt
 
 Let's see how a bin/backup goes:
@@ -548,11 +549,13 @@ Let's see how a bin/backup goes:
     INFO: Backing up database file: ...
     INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragebackups')
+    d  blobstorage.0
+    >>> ls('var/blobstoragebackups/blobstorage.0')
     d  blobstorage
-    >>> ls('var/blobstoragebackups/blobstorage')
+    >>> ls('var/blobstoragebackups/blobstorage.0/blobstorage')
     -  blob1.txt
 
 We try again with an extra 'blob':
@@ -563,15 +566,31 @@ We try again with an extra 'blob':
     INFO: Backing up database file: ...
     INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: Renaming blobstorage to blobstorage.1.
-    INFO: rsync -a --delete --link-dest=blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragebackups')
-    d  blobstorage
+    d  blobstorage.0
     d  blobstorage.1
-    >>> ls('var/blobstoragebackups/blobstorage')
+    >>> ls('var/blobstoragebackups/blobstorage.0/blobstorage')
     -  blob1.txt
     -  blob2.txt
-    >>> ls('var/blobstoragebackups/blobstorage.1')
+    >>> ls('var/blobstoragebackups/blobstorage.1/blobstorage')
     -  blob1.txt
 
+Let's check the inodes of two files, to see if they are the same.  Not
+sure if this works on all operating systems.
+
+    >>> import os
+    >>> stat_0 = os.stat('var/blobstoragebackups/blobstorage.0/blobstorage/blob1.txt')
+    >>> stat_1 = os.stat('var/blobstoragebackups/blobstorage.1/blobstorage/blob1.txt')
+    >>> stat_0.st_ino == stat_1.st_ino
+    True
+
+For the snapshot blob backups, the inodes should *not* be the same, as
+they are full copies:
+
+    >>> stat_0 = os.stat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob1.txt')
+    >>> stat_1 = os.stat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
+    >>> stat_0.st_ino == stat_1.st_ino
+    False

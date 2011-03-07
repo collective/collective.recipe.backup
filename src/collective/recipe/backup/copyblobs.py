@@ -87,13 +87,6 @@ def rotate_directories(container, name):
         logger.info("Renaming %s to %s.", directory, new_name)
         os.rename(os.path.join(container, directory),
                   os.path.join(container, new_name))
-    # We also expect the latest backup to have been placed in
-    # container/name:
-    latest = os.path.join(container, name)
-    if os.path.exists(latest):
-        new_name = '%s.1' % name
-        logger.info("Renaming %s to %s.", name, new_name)
-        os.rename(latest, os.path.join(container, new_name))
 
 
 def backup_blobs(source, destination, full):
@@ -107,28 +100,35 @@ def backup_blobs(source, destination, full):
     are done with rsync and hard links to safe disk space.  Full
     backups only use rsync (we might want to simply copy in this
     case).
+
+    Note that we end up with something like var/blobstorage copied to
+    var/blobbackups/blobstorage.0/blobstorage.  We could copy the
+    contents of var/blobstorage directly to blobstorage.0, but then
+    the disk space safing hard links do not work.
     """
     base_name = os.path.basename(source)
     rotate_directories(destination, base_name)
 
     prev = os.path.join(destination, base_name + '.1')
+    dest = os.path.join(destination, base_name + '.0')
     if (not full) and os.path.exists(prev):
         # Make a 'partial' backup by reusing the previous backup.
         if not os.path.isdir(prev):
             # Should have been caught already.
             raise Exception("%s must be a directory" % prev)
         # Hardlink against the previous directory.  Done by hand it would be:
-        # rsync -a --delete --link-dest=blobstorage.1 blobstorage/ backups/
-        prev_link = base_name + '.1'
+        # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
+        #     backups/blobstorage.0
+        prev_link = os.path.join(os.pardir, base_name + '.1')
         cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % \
               dict(link=prev_link,
                    source=source,
-                   dest=destination)
+                   dest=dest)
     else:
         # No previous directory to hardlink against.
         cmd = 'rsync -a %(source)s %(dest)s' % dict(
             source=source,
-            dest=destination)
+            dest=dest)
     logger.info(cmd)
     output = utils.system(cmd)
     if output:
