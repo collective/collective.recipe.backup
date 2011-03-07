@@ -22,29 +22,6 @@ SOURCE = 'blobstorage'
 BACKUP_DIR = 'backups'
 
 
-def safe_cmp_backups(a, b):
-    """Compare backups.
-
-    a and b are expected to be something like blobstorage.0 and
-    blobstorage.1, which should be sorted numerically.
-
-    We try not to break when we get passed something else though.
-    """
-    try:
-        a_start, a_num = a.rsplit('.', 1)
-        b_start, b_num = b.rsplit('.', 1)
-    except ValueError:
-        return cmp(a, b)
-    if a_start != b_start:
-        return cmp(a_start, b_start)
-    try:
-        a_num = int(a_num)
-        b_num = int(b_num)
-    except (ValueError, TypeError):
-        return cmp(a, b)
-    return cmp(a_num, b_num)
-
-
 def strict_cmp_backups(a, b):
     """Compare backups.
 
