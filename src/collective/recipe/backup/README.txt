@@ -431,7 +431,6 @@ generated script).
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-
     <BLANKLINE>
     >>> ls('bin')
     -  backup
