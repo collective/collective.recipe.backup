@@ -17,6 +17,8 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 """
 
 import os
+import logging
+logger = logging.getLogger('backup')
 
 SOURCE = 'blobstorage'
 BACKUP_DIR = 'backups'
@@ -37,35 +39,90 @@ def strict_cmp_backups(a, b):
     return cmp(a_num, b_num)
 
 
-# Find directories blobstorage.0, blobstorage.1, etc:
-previous_backups = [d for d in os.listdir(BACKUP_DIR)
-                    if d.startswith(SOURCE + '.')]
-sorted_backups = sorted(previous_backups, cmp=strict_cmp_backups, reverse=True)
+def get_valid_directories(container, name):
+    """Get subdirectories in container that start with 'name'.
 
-# Rotate the directories.
-for directory in sorted_backups:
-    new_num = int(directory.split('.')[-1]) + 1
-    new_name = '%s.%s' % (SOURCE, new_num)
-    print "Renaming %s to %s." % (directory, new_name)
-    os.rename(os.path.join(BACKUP_DIR, directory),
-              os.path.join(BACKUP_DIR, new_name))
+    Subdirectories are expected to be something like blobstorage.0,
+    blobstorage.1, etc.  We refuse to work when an accepted name is
+    not actually a directory as this will mess up our logic further
+    on.  No one should manually add files or directories here.
+    """
+    valid_entries = []
+    for entry in os.listdir(container):
+        if not entry.startswith(name + '.'):
+            continue
+        try:
+            entry_start, entry_num = entry.rsplit('.', 1)
+        except ValueError:
+            # This is not the entry we are looking for.
+            continue
+        if entry_start != name:
+            # Maybe something like 'blobstorage.break.me.0'
+            logger.warn("Ignoring entry %s in %s", entry, container)
+            continue
+        try:
+            entry_num = int(entry_num)
+        except (ValueError, TypeError):
+            continue
+        # Looks like we have a winner.  It must be a directory though.
+        if not os.path.isdir(entry):
+            raise Exception("Refusing to rotate %s as it is not a directory." %
+                            entry)
+        valid_entries.append(entry)
+    return valid_entries
 
-prev_link = os.path.join('..', SOURCE + '.1')
-prev = os.path.join(BACKUP_DIR, SOURCE + '.1')
-dest = os.path.join(BACKUP_DIR, SOURCE + '.0')
-if os.path.isdir(prev):
-    # Hardlink against the previous directory.  Done by hand it would be:
-    # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
-    #    backups/blobstorage.0/
-    cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % dict(
-        link=prev_link,
-        source=SOURCE,
-        dest=dest)
-else:
-    # No previous directory to hardlink against.
-    cmd = 'rsync -a %(source)s %(dest)s' % dict(
-        source=SOURCE,
-        dest=dest)
-print cmd
-# XXX Get output in a different way, or at least errors.
-print os.system(cmd)
+
+def rotate_directories(container, name):
+    """Rotate subdirectories in container that start with 'name'.
+    """
+    previous_backups = get_valid_directories(container, name)
+    sorted_backups = sorted(previous_backups, cmp=strict_cmp_backups,
+                            reverse=True)
+    # Rotate the directories.
+    for directory in sorted_backups:
+        new_num = int(directory.split('.')[-1]) + 1
+        new_name = '%s.%s' % (name, new_num)
+        logger.info("Renaming %s to %s.", directory, new_name)
+        os.rename(os.path.join(container_DIR, directory),
+                  os.path.join(container, new_name))
+
+
+def backup_blobs(source, destination, full):
+    """Copy blobs from source to destination.
+
+    Source is usually something like var/blobstorage and destination
+    would be var/blobstoragebackups.  Within that destination we
+    create a subdirectory with a fresh blob backup from the source.
+
+    We can make a full backup or a partial backup.  Partial backups
+    are done with rsync and hard links to safe disk space.  Full
+    backups only use rsync (we might want to simply copy in this
+    case).
+    """
+    base_name = os.path.basename(source)
+    rotate_directories(destination, base_name)
+
+    prev = os.path.join(destination, base_name + '.1')
+    dest = os.path.join(destination, base_name + '.0')
+    if (not full) and os.path.exists(prev):
+        # Make a 'partial' backup by reusing the previous backup.
+        if not os.path.isdir(prev):
+            # Should have been caught already.
+            raise Exception("%s must be a directory" % prev)
+        # Hardlink against the previous directory.  Done by hand it would be:
+        # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
+        #    backups/blobstorage.0/
+        prev_link = os.path.join(os.pardir, base_name + '.1')
+        cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % dict(
+            link=prev_link,
+            source=source,
+            dest=dest)
+    else:
+        # No previous directory to hardlink against.
+        cmd = 'rsync -a %(source)s %(dest)s' % dict(
+            source=source,
+            dest=dest)
+    logger.info(cmd)
+    # XXX Get output in a different way, or at least errors.
+    output = os.system(cmd)
+    logger.info(output)

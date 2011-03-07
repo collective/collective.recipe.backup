@@ -142,6 +142,7 @@ backup_location = %(backup_location)r
 snapshot_location = %(snapshot_location)r
 blob_backup_location = %(blob_backup_location)r
 blob_snapshot_location = %(blob_snapshot_location)r
+blob_storage_source = %(blob_storage_source)r
 full = %(full)s
 verbose = %(debug)s
 gzip = %(gzip)s
@@ -155,6 +156,7 @@ additional = %(additional)r
         opts['snapshot_location'] = snapshot_location
         opts['blob_backup_location'] = blob_backup_location
         opts['blob_snapshot_location'] = blob_snapshot_location
+        opts['blob_storage_source'] = opts['blob-storage']
         opts['additional'] = additional
 
         initialization = initialization_template % opts
@@ -169,7 +171,7 @@ additional = %(additional)r
             ws, self.options['executable'], self.options['bin-directory'],
             arguments=('bin_dir, datafs, backup_location, '
                        'keep, full, verbose, gzip, additional, '
-                       'blob_backup_location'),
+                       'blob_backup_location, blob_storage_source'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['snapshot_name'],
@@ -178,7 +180,8 @@ additional = %(additional)r
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments=('bin_dir, datafs, snapshot_location, keep, '
-                       'verbose, gzip, additional, blob_snapshot_location'),
+                       'verbose, gzip, additional, blob_snapshot_location, '
+                       'blob_storage_source'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['restore_name'],
@@ -187,7 +190,8 @@ additional = %(additional)r
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments=('bin_dir, datafs, backup_location, verbose, '
-                       'additional, blob_backup_location'),
+                       'additional, blob_backup_location, '
+                       'blob_storage_source'),
             initialization=initialization)
         if self.options['enable_snapshotrestore'] == 'true':
             scripts += zc.buildout.easy_install.scripts(
@@ -197,7 +201,8 @@ additional = %(additional)r
                 #requirements,
                 ws, self.options['executable'], self.options['bin-directory'],
                 arguments=('bin_dir, datafs, snapshot_location, verbose, '
-                           'additional, blob_snapshot_location'),
+                           'additional, blob_snapshot_location, '
+                           'blob_storage_source'),
                 initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
