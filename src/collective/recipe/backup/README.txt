@@ -518,3 +518,28 @@ Let's try that some more.
     Sample blob 2.
     >>> cat('var/blobstoragesnapshots/blobstorage.1/blob1.txt')
     Sample blob 1.
+
+Now remove an item:
+
+    >>> remove('var', 'blobstorage', 'blob2.txt')
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Making snapshot backup:...var/snapshotbackups...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.1 to blobstorage.2.
+    INFO: Renaming blobstorage to blobstorage.1.
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
+    INFO: 0
+    <BLANKLINE>
+    >>> ls('var/blobstoragesnapshots')
+    d  blobstorage
+    d  blobstorage.1
+    d  blobstorage.2
+    >>> ls('var/blobstoragesnapshots/blobstorage')
+    -  blob1.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.1')
+    -  blob1.txt
+    -  blob2.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.2')
+    -  blob1.txt
