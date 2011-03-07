@@ -16,9 +16,9 @@ The simplest way to use it to add a part in ``buildout.cfg`` like this::
     ... recipe = collective.recipe.backup
     ... """)
 
-Running the buildout adds a backup, snapshotbackup, restore and snapshotrestore scripts to the
-``bin/`` directory and, by default, it creates the ``var/backups`` and
-``var/snapshotbackups`` dirs::
+Running the buildout adds a backup, snapshotbackup, restore and
+snapshotrestore scripts to the ``bin/`` directory and, by default, it
+creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
 
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
