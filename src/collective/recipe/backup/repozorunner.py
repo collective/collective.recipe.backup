@@ -118,7 +118,9 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                                               date, verbose, as_list=True)))
     logger.debug("Repozo command executed.")
     if blob_backup_location:
-        logger.error("Should restore (snapshot) blobs to %s",
+        # We might want to just give the user some instructions to do
+        # this himself.
+        logger.error("Should restore (snapshot) blobs from %s",
                     blob_backup_location)
 
 
