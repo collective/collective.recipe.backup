@@ -540,3 +540,38 @@ Now remove an item:
     -  blob2.txt
     >>> ls('var/blobstoragesnapshots/blobstorage.2')
     -  blob1.txt
+
+Let's see how a bin/backup goes:
+
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Backing up database file: ...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups
+    <BLANKLINE>
+    >>> ls('var/blobstoragebackups')
+    d  blobstorage
+    >>> ls('var/blobstoragebackups/blobstorage')
+    -  blob1.txt
+
+We try again with an extra 'blob':
+
+    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Backing up database file: ...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Renaming blobstorage to blobstorage.1.
+    INFO: rsync -a --delete --link-dest=blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups
+    <BLANKLINE>
+    >>> ls('var/blobstoragebackups')
+    d  blobstorage
+    d  blobstorage.1
+    >>> ls('var/blobstoragebackups/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+    >>> ls('var/blobstoragebackups/blobstorage.1')
+    -  blob1.txt
+

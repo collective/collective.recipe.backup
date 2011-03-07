@@ -118,8 +118,8 @@ def backup_blobs(source, destination, full):
             # Should have been caught already.
             raise Exception("%s must be a directory" % prev)
         # Hardlink against the previous directory.  Done by hand it would be:
-        # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/ backups/
-        prev_link = os.path.join(os.pardir, base_name + '.1')
+        # rsync -a --delete --link-dest=blobstorage.1 blobstorage/ backups/
+        prev_link = base_name + '.1'
         cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % \
               dict(link=prev_link,
                    source=source,
