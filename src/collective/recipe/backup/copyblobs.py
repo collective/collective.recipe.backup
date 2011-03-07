@@ -65,7 +65,7 @@ def get_valid_directories(container, name):
         except (ValueError, TypeError):
             continue
         # Looks like we have a winner.  It must be a directory though.
-        if not os.path.isdir(entry):
+        if not os.path.isdir(os.path.join(container, entry)):
             raise Exception("Refusing to rotate %s as it is not a directory." %
                             entry)
         valid_entries.append(entry)
@@ -83,8 +83,15 @@ def rotate_directories(container, name):
         new_num = int(directory.split('.')[-1]) + 1
         new_name = '%s.%s' % (name, new_num)
         logger.info("Renaming %s to %s.", directory, new_name)
-        os.rename(os.path.join(container_DIR, directory),
+        os.rename(os.path.join(container, directory),
                   os.path.join(container, new_name))
+    # We also expect the latest backup to have been placed in
+    # container/name:
+    latest = os.path.join(container, name)
+    if os.path.exists(latest):
+        new_name = '%s.1' % name
+        logger.info("Renaming %s to %s.", name, new_name)
+        os.rename(latest, os.path.join(container, new_name))
 
 
 def backup_blobs(source, destination, full):
@@ -103,25 +110,23 @@ def backup_blobs(source, destination, full):
     rotate_directories(destination, base_name)
 
     prev = os.path.join(destination, base_name + '.1')
-    dest = os.path.join(destination, base_name + '.0')
     if (not full) and os.path.exists(prev):
         # Make a 'partial' backup by reusing the previous backup.
         if not os.path.isdir(prev):
             # Should have been caught already.
             raise Exception("%s must be a directory" % prev)
         # Hardlink against the previous directory.  Done by hand it would be:
-        # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
-        #    backups/blobstorage.0/
+        # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/ backups/
         prev_link = os.path.join(os.pardir, base_name + '.1')
-        cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % dict(
-            link=prev_link,
-            source=source,
-            dest=dest)
+        cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % \
+              dict(link=prev_link,
+                   source=source,
+                   dest=destination)
     else:
         # No previous directory to hardlink against.
         cmd = 'rsync -a %(source)s %(dest)s' % dict(
             source=source,
-            dest=dest)
+            dest=destination)
     logger.info(cmd)
     # XXX Get output in a different way, or at least errors.
     output = os.system(cmd)

@@ -475,6 +475,8 @@ stores its blobs:
     -  restore
     -  snapshotbackup
     -  snapshotrestore
+    >>> mkdir('var/blobstorage')
+    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
 
 Test the snapshotbackup first, as that should be easiest.  This has
 not been implemented yet, so we get an error:
@@ -483,5 +485,36 @@ not been implemented yet, so we get an error:
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Making snapshot backup:...var/snapshotbackups...
     INFO: Removed old backups, the latest 2 full backups have been kept.
-    ERROR: Should snapshot backup blobs to /sample-buildout/var/blobstoragesnapshots
+    INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
+    INFO: 0
     <BLANKLINE>
+    >>> ls('var/blobstoragesnapshots')
+    d  blobstorage
+
+Let's try that some more.
+
+    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Making snapshot backup:...var/snapshotbackups...
+    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage to blobstorage.1.
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots
+    INFO: 0
+    <BLANKLINE>
+    >>> ls('var/blobstoragesnapshots')
+    d  blobstorage
+    d  blobstorage.1
+    >>> ls('var/blobstoragesnapshots/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.1')
+    -  blob1.txt
+    >>> cat('var/blobstoragesnapshots/blobstorage/blob1.txt')
+    Sample blob 1.
+    >>> cat('var/blobstoragesnapshots/blobstorage/blob2.txt')
+    Sample blob 2.
+    >>> cat('var/blobstoragesnapshots/blobstorage.1/blob1.txt')
+    Sample blob 1.
