@@ -31,11 +31,26 @@ def strict_cmp_backups(a, b):
 
     a and b MUST be something like blobstorage.0 and
     blobstorage.1, which should be sorted numerically.
+
+    >>> strict_cmp_backups('foo.0', 'foo.1')
+    -1
+    >>> strict_cmp_backups('foo.0', 'foo.0')
+    0
+    >>> strict_cmp_backups('foo.1', 'foo.0')
+    1
+    >>> strict_cmp_backups('foo.9', 'foo.10')
+    -1
+    >>> strict_cmp_backups('foo.1', 'bar.1')
+    Traceback (most recent call last):
+    ...
+    ValueError: Not the same start for directories: 'foo.1' vs 'bar.1'
+
     """
     a_start, a_num = a.rsplit('.', 1)
     b_start, b_num = b.rsplit('.', 1)
     if a_start != b_start:
-        raise Exception('Not the same start for directories: %r vs %r', a, b)
+        raise ValueError(
+            "Not the same start for directories: %r vs %r" % (a, b))
     a_num = int(a_num)
     b_num = int(b_num)
     return cmp(a_num, b_num)

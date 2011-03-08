@@ -9,13 +9,14 @@ import zc.buildout.tests
 import zc.buildout.testing
 import collective.recipe.backup
 from collective.recipe.backup import repozorunner
+from collective.recipe.backup import copyblobs
 from zope.testing import doctest, renormalizing
 
 # Importing modules so that we can install their eggs in the test buildout.
 import zc.recipe.egg
 
-optionflags =  (doctest.ELLIPSIS |
-                doctest.NORMALIZE_WHITESPACE)
+optionflags = (doctest.ELLIPSIS |
+               doctest.NORMALIZE_WHITESPACE)
 
 
 def setUp(test):
@@ -62,6 +63,21 @@ def test_suite():
                 ),
             doctest.DocTestSuite(
                 collective.recipe.backup,
+                setUp=setUp,
+                tearDown=zc.buildout.testing.buildoutTearDown,
+                optionflags=optionflags,
+                checker=renormalizing.RENormalizing([
+                        # If want to clean up the doctest output you
+                        # can register additional regexp normalizers
+                        # here. The format is a two-tuple with the RE
+                        # as the first item and the replacement as the
+                        # second item, e.g.
+                        # (re.compile('my-[rR]eg[eE]ps'), 'my-regexps')
+                        zc.buildout.testing.normalize_path,
+                                 ])
+                ),
+            doctest.DocTestSuite(
+                copyblobs,
                 setUp=setUp,
                 tearDown=zc.buildout.testing.buildoutTearDown,
                 optionflags=optionflags,
