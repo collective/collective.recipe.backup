@@ -96,11 +96,7 @@ def get_valid_directories(container, name):
     for entry in os.listdir(container):
         if not entry.startswith(name + '.'):
             continue
-        try:
-            entry_start, entry_num = entry.rsplit('.', 1)
-        except ValueError:
-            # This is not the entry we are looking for.
-            continue
+        entry_start, entry_num = entry.rsplit('.', 1)
         if entry_start != name:
             # Maybe something like 'blobstorage.break.me.0'
             logger.warn("Ignoring entry %s in %s", entry, container)
