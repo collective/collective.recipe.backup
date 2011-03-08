@@ -63,6 +63,30 @@ def get_valid_directories(container, name):
     blobstorage.1, etc.  We refuse to work when an accepted name is
     not actually a directory as this will mess up our logic further
     on.  No one should manually add files or directories here.
+
+    Using the zc.buildout tools we create some directories and files:
+
+    >>> mkdir('dirtest')
+    >>> get_valid_directories('dirtest', 'a')
+    []
+    >>> for d in ['a', 'a.0', 'a.1', 'a.bar.2', 'a.bar']:
+    ...     mkdir('dirtest', d)
+    >>> get_valid_directories('dirtest', 'a')
+    ['a.0', 'a.1']
+    >>> get_valid_directories('dirtest', 'bar')
+    []
+
+    We break when encountering a correct name that is a file where we
+    expect a directory, as this will break the rotating functionality.
+
+    >>> write('dirtest', 'a.3', "Test file.")
+    >>> get_valid_directories('dirtest', 'a')
+    Traceback (most recent call last):
+    ...
+    Exception: Refusing to rotate a.3 as it is not a directory.
+    >>> get_valid_directories('dirtest', 'bar')
+    []
+
     """
     valid_entries = []
     for entry in os.listdir(container):
