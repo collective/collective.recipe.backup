@@ -161,7 +161,7 @@ def rotate_directories(container, name):
                   os.path.join(container, new_name))
 
 
-def backup_blobs(source, destination, full):
+def backup_blobs(source, destination, full=False):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -177,6 +177,121 @@ def backup_blobs(source, destination, full):
     var/blobbackups/blobstorage.0/blobstorage.  We could copy the
     contents of var/blobstorage directly to blobstorage.0, but then
     the disk space safing hard links do not work.
+
+    Again, let's test this using the tools from zc.buildout:
+
+    >>> mkdir('blobs')
+    >>> write('blobs', 'one.txt', "File One")
+    >>> write('blobs', 'two.txt', "File Two")
+    >>> write('blobs', 'three.txt', "File Three")
+    >>> mkdir('blobs', 'dir')
+    >>> mkdir('backups')
+    >>> backup_blobs('blobs', 'backups')
+    >>> ls('backups')
+    d  blobs.0
+    >>> ls('backups', 'blobs.0')
+    d  blobs
+    >>> ls('backups', 'blobs.0', 'blobs')
+    d  dir
+    -  one.txt
+    -  three.txt
+    -  two.txt
+
+    Change some stuff.
+
+    >>> write('blobs', 'one.txt', "Changed File One")
+    >>> write('blobs', 'four.txt', "File Four")
+    >>> remove('blobs', 'two.txt')
+    >>> backup_blobs('blobs', 'backups')
+    >>> ls('backups')
+    d  blobs.0
+    d  blobs.1
+    >>> ls('backups', 'blobs.1', 'blobs')
+    d  dir
+    -  one.txt
+    -  three.txt
+    -  two.txt
+    >>> ls('backups', 'blobs.0', 'blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    >>> cat('backups', 'blobs.1', 'blobs', 'one.txt')
+    File One
+    >>> cat('backups', 'blobs.0', 'blobs', 'one.txt')
+    Changed File One
+
+    Check the file stats to see if they are really hard links:
+
+    >>> import os
+    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs', 'three.txt'))
+    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs', 'three.txt'))
+    >>> stat_0.st_ino == stat_1.st_ino
+    True
+
+    Cleanup:
+
+    >>> remove('blobs')
+    >>> remove('backups')
+
+    We do exactly the same (if developers remember to copy changes
+    done above to below) but now using full backups.
+
+    >>> mkdir('blobs')
+    >>> write('blobs', 'one.txt', "File One")
+    >>> write('blobs', 'two.txt', "File Two")
+    >>> write('blobs', 'three.txt', "File Three")
+    >>> mkdir('blobs', 'dir')
+    >>> mkdir('backups')
+    >>> backup_blobs('blobs', 'backups', full=True)
+    >>> ls('backups')
+    d  blobs.0
+    >>> ls('backups', 'blobs.0')
+    d  blobs
+    >>> ls('backups', 'blobs.0', 'blobs')
+    d  dir
+    -  one.txt
+    -  three.txt
+    -  two.txt
+
+    Change some stuff.
+
+    >>> write('blobs', 'one.txt', "Changed File One")
+    >>> write('blobs', 'four.txt', "File Four")
+    >>> remove('blobs', 'two.txt')
+    >>> backup_blobs('blobs', 'backups', full=True)
+    >>> ls('backups')
+    d  blobs.0
+    d  blobs.1
+    >>> ls('backups', 'blobs.1', 'blobs')
+    d  dir
+    -  one.txt
+    -  three.txt
+    -  two.txt
+    >>> ls('backups', 'blobs.0', 'blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    >>> cat('backups', 'blobs.1', 'blobs', 'one.txt')
+    File One
+    >>> cat('backups', 'blobs.0', 'blobs', 'one.txt')
+    Changed File One
+
+    Check the file stats.  Since we did full copies these should not
+    be hard links but really different files.
+
+    >>> import os
+    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs', 'three.txt'))
+    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs', 'three.txt'))
+    >>> stat_0.st_ino == stat_1.st_ino
+    False
+
+    Cleanup:
+
+    >>> remove('blobs')
+    >>> remove('backups')
+
     """
     base_name = os.path.basename(source)
     rotate_directories(destination, base_name)
