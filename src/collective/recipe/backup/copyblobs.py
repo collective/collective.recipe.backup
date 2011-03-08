@@ -87,6 +87,10 @@ def get_valid_directories(container, name):
     >>> get_valid_directories('dirtest', 'bar')
     []
 
+    Cleanup:
+
+    >>> remove('dirtest')
+
     """
     valid_entries = []
     for entry in os.listdir(container):
@@ -115,6 +119,35 @@ def get_valid_directories(container, name):
 
 def rotate_directories(container, name):
     """Rotate subdirectories in container that start with 'name'.
+
+    Using the zc.buildout tools we create some directories and files:
+
+    >>> mkdir('dirtest')
+    >>> rotate_directories('dirtest', 'a')
+    >>> for d in ['a.0', 'a.1', 'a.2', 'a.9']:
+    ...     mkdir('dirtest', d)
+    >>> ls('dirtest')
+    d  a.0
+    d  a.1
+    d  a.2
+    d  a.9
+    >>> rotate_directories('dirtest', 'a')
+    >>> ls('dirtest')
+    d  a.1
+    d  a.10
+    d  a.2
+    d  a.3
+    >>> rotate_directories('dirtest', 'a')
+    >>> ls('dirtest')
+    d  a.11
+    d  a.2
+    d  a.3
+    d  a.4
+
+    Cleanup:
+
+    >>> remove('dirtest')
+
     """
     previous_backups = get_valid_directories(container, name)
     sorted_backups = sorted(previous_backups, cmp=strict_cmp_backups,
