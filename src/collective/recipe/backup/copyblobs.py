@@ -18,7 +18,7 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 
 import os
 import logging
-logger = logging.getLogger('backup')
+logger = logging.getLogger('blobs')
 
 from collective.recipe.backup import utils
 

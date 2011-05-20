@@ -18,7 +18,7 @@ import sys
 
 from collective.recipe.backup.copyblobs import backup_blobs
 
-logger = logging.getLogger('backup')
+logger = logging.getLogger('repozorunner')
 
 
 def quote_command(command):
@@ -33,8 +33,7 @@ def quote_command(command):
 
 
 def backup_main(bin_dir, datafs, backup_location, keep, full,
-                verbose, gzip, additional, blob_backup_location,
-                blob_storage_source):
+                verbose, gzip, additional):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
@@ -59,14 +58,10 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
                                              as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(backup_location, keep)
-    if blob_backup_location:
-        logger.info("Backing up blobs from %s to %s", blob_storage_source,
-                    blob_backup_location)
-        backup_blobs(blob_storage_source, blob_backup_location, full)
 
 
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
-                  additional, blob_snapshot_location, blob_storage_source):
+                  additional):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
@@ -90,14 +85,9 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                                              gzip=gzip, as_list=True)))
     logger.debug("Repozo command executed.")
     cleanup(snapshot_location, keep)
-    if blob_snapshot_location:
-        logger.info("Backing up snapshot of blobs from %s to %s",
-                    blob_storage_source, blob_snapshot_location)
-        backup_blobs(blob_storage_source, blob_snapshot_location, full=True)
 
 
-def restore_main(bin_dir, datafs, backup_location, verbose, additional,
-                 blob_backup_location, blob_storage_source):
+def restore_main(bin_dir, datafs, backup_location, verbose, additional):
     """Main method, gets called by generated bin/restore."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.debug("If things break: did you stop zope?")
@@ -122,11 +112,6 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                             restore_arguments(datafs, backup_location,
                                               date, verbose, as_list=True)))
     logger.debug("Repozo command executed.")
-    if blob_backup_location:
-        # We might want to just give the user some instructions to do
-        # this himself.
-        logger.error("Restoring (snapshot) blobs from %s to %s",
-                    blob_backup_location, blob_storage_source)
 
 
 def backup_arguments(datafs=None,

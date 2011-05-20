@@ -62,6 +62,8 @@ class Recipe(object):
         options.setdefault('additional_filestorages', '')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('blob-storage', '')
+        options.setdefault('only_blobs', 'false')
+        options.setdefault('backup_blobs', 'true')
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
         python = buildout['buildout']['python']
@@ -71,7 +73,8 @@ class Recipe(object):
         options['snapshot_name'] = snapshot_name
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
-        check_for_true(options, ['full', 'debug', 'gzip'])
+        check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
+                                 'backup_blobs'])
         self.options = options
 
     def install(self):
@@ -147,6 +150,8 @@ full = %(full)s
 verbose = %(debug)s
 gzip = %(gzip)s
 additional = %(additional)r
+only_blobs = %(only_blobs)s
+backup_blobs = %(backup_blobs)s
 """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -158,6 +163,12 @@ additional = %(additional)r
         opts['blob_snapshot_location'] = blob_snapshot_location
         opts['blob_storage_source'] = opts['blob-storage']
         opts['additional'] = additional
+        opts['only_blobs'] = opts['only-blobs']
+        opts['backup_blobs'] = opts['backup-blobs']
+
+        if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
+            raise zc.buildout.UserError(
+                "Cannot have backup-blobs false and only-blobs true.")
 
         initialization = initialization_template % opts
         requirements, ws = self.egg.working_set(['collective.recipe.backup',
@@ -165,44 +176,45 @@ additional = %(additional)r
                                                  'zc.recipe.egg'])
         scripts = zc.buildout.easy_install.scripts(
             [(self.options['backup_name'],
-              'collective.recipe.backup.repozorunner',
+              'collective.recipe.backup.main',
               'backup_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments=('bin_dir, datafs, backup_location, '
                        'keep, full, verbose, gzip, additional, '
-                       'blob_backup_location, blob_storage_source'),
+                       'blob_backup_location, blob_storage_source',
+                       'backup_blobs', 'only_blobs'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['snapshot_name'],
-              'collective.recipe.backup.repozorunner',
+              'collective.recipe.backup.main',
               'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments=('bin_dir, datafs, snapshot_location, keep, '
                        'verbose, gzip, additional, blob_snapshot_location, '
-                       'blob_storage_source'),
+                       'blob_storage_source', 'backup_blobs', 'only_blobs'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['restore_name'],
-              'collective.recipe.backup.repozorunner',
+              'collective.recipe.backup.main',
               'restore_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
             arguments=('bin_dir, datafs, backup_location, verbose, '
                        'additional, blob_backup_location, '
-                       'blob_storage_source'),
+                       'blob_storage_source', 'backup_blobs', 'only_blobs'),
             initialization=initialization)
         if self.options['enable_snapshotrestore'] == 'true':
             scripts += zc.buildout.easy_install.scripts(
                 [(self.options['snapshotrestore_name'],
-                  'collective.recipe.backup.repozorunner',
+                  'collective.recipe.backup.main',
                   'restore_main')],
                 #requirements,
                 ws, self.options['executable'], self.options['bin-directory'],
                 arguments=('bin_dir, datafs, snapshot_location, verbose, '
                            'additional, blob_snapshot_location, '
-                           'blob_storage_source'),
+                           'blob_storage_source', 'backup_blobs', 'only_blobs'),
                 initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
