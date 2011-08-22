@@ -232,6 +232,7 @@ We'll use all options::
     ... snapshotlocation = snap/my
     ... gzip = false
     ... enable_snapshotrestore = true
+    ... backup_blobs = false
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -309,6 +310,7 @@ option::
     ... additional_filestorages =
     ...     catalog
     ...     another
+    ... backup_blobs = false
     ... """)
 
 The additional backups have to be stored separate from the ``Data.fs``
@@ -423,6 +425,7 @@ generated script).
     ... [backup]
     ... recipe = collective.recipe.backup
     ... enable_snapshotrestore = false
+    ... backup_blobs = false
     ... """)
 
     >>> print system(buildout) # doctest:+ELLIPSIS
@@ -484,7 +487,7 @@ Test the snapshotbackup first, as that should be easiest.
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Making snapshot backup:...var/snapshotbackups...
     INFO: Removed old backups, the latest 2 full backups have been kept.
-    INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
@@ -499,7 +502,7 @@ Let's try that some more.
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Making snapshot backup:...var/snapshotbackups...
     INFO: Removed old backups, the latest 2 full backups have been kept.
-    INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
@@ -525,7 +528,7 @@ Now remove an item:
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Making snapshot backup:...var/snapshotbackups...
     INFO: Removed old backups, the latest 2 full backups have been kept.
-    INFO: Backing up snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0

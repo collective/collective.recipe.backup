@@ -163,12 +163,10 @@ backup_blobs = %(backup_blobs)s
         opts['blob_snapshot_location'] = blob_snapshot_location
         opts['blob_storage_source'] = opts['blob-storage']
         opts['additional'] = additional
-        opts['only_blobs'] = opts['only-blobs']
-        opts['backup_blobs'] = opts['backup-blobs']
 
         if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
             raise zc.buildout.UserError(
-                "Cannot have backup-blobs false and only-blobs true.")
+                "Cannot have backup_blobs false and only_blobs true.")
 
         initialization = initialization_template % opts
         requirements, ws = self.egg.working_set(['collective.recipe.backup',
@@ -180,10 +178,12 @@ backup_blobs = %(backup_blobs)s
               'backup_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
+            # Note: no commas at the end of lines in the arguments; it
+            # must not be a tuple, it is just string concatenation.
             arguments=('bin_dir, datafs, backup_location, '
                        'keep, full, verbose, gzip, additional, '
-                       'blob_backup_location, blob_storage_source',
-                       'backup_blobs', 'only_blobs'),
+                       'blob_backup_location, blob_storage_source, '
+                       'backup_blobs, only_blobs'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['snapshot_name'],
@@ -191,9 +191,11 @@ backup_blobs = %(backup_blobs)s
               'snapshot_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
+            # Note: no commas at the end of lines in the arguments; it
+            # must not be a tuple, it is just string concatenation.
             arguments=('bin_dir, datafs, snapshot_location, keep, '
                        'verbose, gzip, additional, blob_snapshot_location, '
-                       'blob_storage_source', 'backup_blobs', 'only_blobs'),
+                       'blob_storage_source, backup_blobs, only_blobs'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['restore_name'],
@@ -201,9 +203,11 @@ backup_blobs = %(backup_blobs)s
               'restore_main')],
             #requirements,
             ws, self.options['executable'], self.options['bin-directory'],
+            # Note: no commas at the end of lines in the arguments; it
+            # must not be a tuple, it is just string concatenation.
             arguments=('bin_dir, datafs, backup_location, verbose, '
                        'additional, blob_backup_location, '
-                       'blob_storage_source', 'backup_blobs', 'only_blobs'),
+                       'blob_storage_source, backup_blobs, only_blobs'),
             initialization=initialization)
         if self.options['enable_snapshotrestore'] == 'true':
             scripts += zc.buildout.easy_install.scripts(
@@ -212,9 +216,11 @@ backup_blobs = %(backup_blobs)s
                   'restore_main')],
                 #requirements,
                 ws, self.options['executable'], self.options['bin-directory'],
+                # Note: no commas at the end of lines in the arguments; it
+                # must not be a tuple, it is just string concatenation.
                 arguments=('bin_dir, datafs, snapshot_location, verbose, '
                            'additional, blob_snapshot_location, '
-                           'blob_storage_source', 'backup_blobs', 'only_blobs'),
+                           'blob_storage_source, backup_blobs, only_blobs'),
                 initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.

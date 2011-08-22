@@ -4,7 +4,7 @@ import logging
 import sys
 
 from collective.recipe.backup import copyblobs
-from collective.recipe.backup import repozo
+from collective.recipe.backup import repozorunner
 
 logger = logging.getLogger('backup')
 
@@ -14,8 +14,9 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
                 blob_storage_source, backup_blobs, only_blobs):
     """Main method, gets called by generated bin/backup."""
     if not only_blobs:
-        repozo.backup_main(bin_dir, datafs, backup_location, keep, full,
-                           verbose, gzip, additional)
+        repozorunner.backup_main(
+            bin_dir, datafs, backup_location, keep, full, verbose, gzip,
+            additional)
     if not backup_blobs:
         return
     if not blob_backup_location:
@@ -34,8 +35,9 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                   backup_blobs, only_blobs):
     """Main method, gets called by generated bin/snapshotbackup."""
     if not only_blobs:
-        repozo.snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose,
-                             gzip, additional)
+        repozorunner.snapshot_main(
+            bin_dir, datafs, snapshot_location, keep, verbose, gzip,
+            additional)
     if not backup_blobs:
         return
     if not blob_snapshot_location:
@@ -56,8 +58,8 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
     """Main method, gets called by generated bin/restore."""
 
     if not only_blobs:
-        repozo.restore_main(bin_dir, datafs, backup_location, verbose,
-                            additional)
+        repozorunner.restore_main(
+            bin_dir, datafs, backup_location, verbose, additional)
     if not backup_blobs:
         return
     if not blob_backup_location:
