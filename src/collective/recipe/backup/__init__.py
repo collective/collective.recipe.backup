@@ -64,6 +64,20 @@ class Recipe(object):
         options.setdefault('blob-storage', '')
         options.setdefault('only_blobs', 'false')
         options.setdefault('backup_blobs', 'true')
+        if not options['blob-storage']:
+            # Try to get the blob-storage location from the
+            # instance/zeoclient part, if it is available.
+            parts = buildout['buildout']['parts']
+            part_names = parts.split()
+            blobstorage = ''
+            for part_name in part_names:
+                part = self.buildout[part_name]
+                if part.get('recipe') == 'plone.recipe.zope2instance':
+                    blobstorage = part.get('blob-storage')
+                    if blobstorage:
+                        options['blob-storage'] = blobstorage
+                        break
+
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
         python = buildout['buildout']['python']

@@ -10,6 +10,7 @@ The simplest way to use it is to add a part in ``buildout.cfg`` like this::
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -110,6 +111,7 @@ something else,  the script names will also be different as will the created
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = plonebackup
     ...
     ... [plonebackup]
@@ -152,6 +154,7 @@ the ``var/plonebackups`` and ``var/plonebackup-snaphots`` dirs:
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -215,11 +218,42 @@ enable_snapshotrestore
     any questions whatsoever. If you don't want a snapshotrestore, set this
     option to false.
 
-We'll use all options::
+blob-storage
+    Location of the directory where the blobs (binary large objects)
+    are stored.  This is used in Plone 4 and higher, or on Plone 3 if
+    you use plone.app.blob.  This option is ignored if backup_blobs is
+    false.  The location is not set by default.  When there is a part
+    using plone.recipe.zope2instance, we check if that has a
+    blob-storage option and use that as default.
+
+backup_blobs
+    Backup the blob storage.  This requires the blob-storage location to be set.
+    True by default.  TODO: maybe only warn if no blob-storage is set,
+    at least if no blob-storage option can be found in an
+    instance/zeoclient part.
+
+blobbackuplocation
+    Directory where the blob storage will be backed up to.  Defaults
+    to ``var/blobstoragebackups`` inside the buildout directory.
+
+blobsnapshotlocation
+    Directory where the blob storage snapshots will be created.
+    Defaults to ``var/blobstoragesnapshots`` inside the buildout
+    directory.
+
+only_blobs
+    Only backup blob storage, not the Data.fs.  False by default.  May
+    be a useful option if for example you want to create one
+    bin/filestoragebackup script and one bin/blobstoragebackup script,
+    using only_blobs in one and backup_blobs in the other.
+
+
+We'll use all options, except the blob options for now::
 
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -303,6 +337,7 @@ option::
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -420,6 +455,7 @@ generated script).
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -450,19 +486,55 @@ New in this recipe is that we backup the blob storage.  Plone 4 uses a
 blob storage to store files on the file system.  In Plone 3 this is
 optional.  When this is used, it should be backed up of course.  You
 must specify the source blob-storage directory where Plone (or Zope)
-stores its blobs:
+stores its blobs.  When we do not set it specifically, we try to get
+the location from the plone.recipe.zope2instance recipe when it is
+used::
 
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
-    ... parts = backup
+    ... # For some reason this is now needed:
+    ... index = http://pypi.python.org/simple
+    ... # Avoid suddenly updating zc.buildout or other packages:
+    ... newest = false
+    ... parts = instance backup
+    ... versions = versions
+    ...
+    ... [versions]
+    ... # A slightly older version that does not rely on the Zope2 egg
+    ... plone.recipe.zope2instance = 3.9
+    ... mailinglogger = 3.3
+    ... 
+    ... [instance]
+    ... recipe = plone.recipe.zope2instance
+    ... user = admin:admin
+    ... blob-storage = ${buildout:directory}/var/somewhere
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
-    ... blob-storage = ${buildout:directory}/var/blobstorage
     ... """)
+
+We need a mock mkzopeinstance script in the bin directory for the
+zope2instance recipe to work:
+
+    >>> write('bin/mkzopeinstance', """
+    ... import sys
+    ... import os
+    ... path = sys.argv[2]
+    ... os.mkdir(path)
+    ... os.mkdir(os.path.join(path, 'etc'))
+    ... """)
+
+We run the buildout:
+
     >>> print system(buildout) # doctest:+ELLIPSIS
+    Getting distribution for 'plone.recipe.zope2instance==3.9'.
+    Got plone.recipe.zope2instance 3.9.
+    Getting distribution for 'mailinglogger==3.3'.
+    Got mailinglogger 3.3.0.
     Uninstalling backup.
+    Installing instance.
+    Generated script '/sample-buildout/bin/instance'.
     Installing backup.
     backup: Created /sample-buildout/var/blobstoragebackups
     backup: Created /sample-buildout/var/blobstoragesnapshots
@@ -474,12 +546,46 @@ stores its blobs:
     >>> ls('bin')
     -  backup
     -  buildout
+    -  instance
+    -  mkzopeinstance
+    -  repozo
+    -  restore
+    -  snapshotbackup
+    -  snapshotrestore
+
+We can override the blob source location if needed:
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob-storage = ${buildout:directory}/var/blobstorage
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Uninstalling instance.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  instance
+    -  mkzopeinstance
     -  repozo
     -  restore
     -  snapshotbackup
     -  snapshotrestore
     >>> mkdir('var/blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
+
 
 Test the snapshotbackup first, as that should be easiest.
 
