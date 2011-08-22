@@ -218,7 +218,7 @@ enable_snapshotrestore
     any questions whatsoever. If you don't want a snapshotrestore, set this
     option to false.
 
-blob-storage
+blob_storage
     Location of the directory where the blobs (binary large objects)
     are stored.  This is used in Plone 4 and higher, or on Plone 3 if
     you use plone.app.blob.  This option is ignored if backup_blobs is
@@ -226,10 +226,14 @@ blob-storage
     using plone.recipe.zope2instance, we check if that has a
     blob-storage option and use that as default.
 
+blob-storage
+    Alternative spelling for the preferred blob_storage, as
+    plone.recipe.zope2instance spells it as blob-storage.  Pick one.
+
 backup_blobs
-    Backup the blob storage.  This requires the blob-storage location to be set.
-    True by default.  TODO: maybe only warn if no blob-storage is set,
-    at least if no blob-storage option can be found in an
+    Backup the blob storage.  This requires the blob_storage location to be set.
+    True by default.  TODO: maybe only warn if no blob_storage is set,
+    at least if no blob_storage option can be found in an
     instance/zeoclient part.
 
 blobbackuplocation
@@ -485,7 +489,7 @@ Blob storage
 New in this recipe is that we backup the blob storage.  Plone 4 uses a
 blob storage to store files on the file system.  In Plone 3 this is
 optional.  When this is used, it should be backed up of course.  You
-must specify the source blob-storage directory where Plone (or Zope)
+must specify the source blob_storage directory where Plone (or Zope)
 stores its blobs.  When we do not set it specifically, we try to get
 the location from the plone.recipe.zope2instance recipe when it is
 used::
@@ -563,7 +567,7 @@ We can override the blob source location if needed:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
-    ... blob-storage = ${buildout:directory}/var/blobstorage
+    ... blob_storage = ${buildout:directory}/var/blobstorage
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.

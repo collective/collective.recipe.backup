@@ -61,22 +61,35 @@ class Recipe(object):
         options.setdefault('gzip', 'true')
         options.setdefault('additional_filestorages', '')
         options.setdefault('enable_snapshotrestore', 'true')
-        options.setdefault('blob-storage', '')
         options.setdefault('only_blobs', 'false')
         options.setdefault('backup_blobs', 'true')
-        if not options['blob-storage']:
+        # Accept both blob-storage (used by
+        # plone.recipe.zope2instance) and blob_storage (as we use
+        # underscores everywhere).
+        options.setdefault('blob-storage', '')
+        options.setdefault('blob_storage', '')
+        if options['blob-storage'] != options['blob_storage']:
+            if options['blob-storage'] and options['blob_storage']:
+                # Both options have been set explicitly, which is
+                # wrong.
+                raise zc.buildout.UserError(
+                    "Both blob_storage and blob-storage have been set. "
+                    "Please pick one.")
+        blob_storage = options['blob-storage'] or options['blob_storage']
+        if not blob_storage:
             # Try to get the blob-storage location from the
             # instance/zeoclient part, if it is available.
             parts = buildout['buildout']['parts']
             part_names = parts.split()
-            blobstorage = ''
+            blob_storage = ''
             for part_name in part_names:
                 part = self.buildout[part_name]
                 if part.get('recipe') == 'plone.recipe.zope2instance':
-                    blobstorage = part.get('blob-storage')
-                    if blobstorage:
-                        options['blob-storage'] = blobstorage
+                    blob_storage = part.get('blob-storage')
+                    if blob_storage:
                         break
+        # Make sure the options are the same, for good measure.
+        options['blob-storage'] = options['blob_storage'] = blob_storage
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
@@ -106,7 +119,7 @@ class Recipe(object):
             logger.info('Created %s', snapshot_location)
 
         # Blob backup.
-        if self.options['blob-storage']:
+        if self.options['blob_storage']:
             blob_backup_location = construct_path(
                 buildout_dir, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(
@@ -175,7 +188,7 @@ backup_blobs = %(backup_blobs)s
         opts['snapshot_location'] = snapshot_location
         opts['blob_backup_location'] = blob_backup_location
         opts['blob_snapshot_location'] = blob_snapshot_location
-        opts['blob_storage_source'] = opts['blob-storage']
+        opts['blob_storage_source'] = opts['blob_storage']
         opts['additional'] = additional
 
         if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
