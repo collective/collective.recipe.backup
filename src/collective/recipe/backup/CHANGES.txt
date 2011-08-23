@@ -1,7 +1,13 @@
 1.8 (unreleased)
 ================
 
-- Nothing changed yet.
+- Also find filestorage file located in its own directory as created by
+  collective.recipe.filestorage.
+  [kleist]
+
+- Factor out the construction of the path for filestorage file
+  to a new helper function.
+  [kleist]
 
 
 1.7 (2010-12-10)
