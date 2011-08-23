@@ -108,7 +108,10 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
                      "a date that we have to pass to repozo: %s.", date)
         logger.info("Date restriction: restoring state at %s." % date)
     for a in additional:
-        fs = get_fs(datafs, a)
+        # TODO: rethink this, until then: do it the old way
+        # fs = get_fs(datafs, a)
+        filestorage_dir = os.path.split(datafs)[0]
+        fs = os.path.join(filestorage_dir, '%s.fs' % a)
         location = backup_location + '_' + a
         logger.info("Restoring database file: %s to %s...",
                     location, fs)
