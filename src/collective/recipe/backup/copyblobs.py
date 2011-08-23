@@ -317,3 +317,21 @@ def backup_blobs(source, destination, full=False):
     if output:
         # If we have output, this means there was an error.
         logger.error(output)
+
+
+def restore_blobs(source, destination):
+    """Restore blobs from source to destination.
+
+    XXX I wonder if you can do this quickly with rsync.
+    """
+    if os.path.exists(destination):
+        os.remove(destination)
+    # XXX Untested yet.
+    cmd = 'rsync -a %(source)s %(dest)s' % dict(
+        source=source,
+        dest=destination)
+    logger.info(cmd)
+    output = utils.system(cmd)
+    if output:
+        # If we have output, this means there was an error.
+        logger.error(output)

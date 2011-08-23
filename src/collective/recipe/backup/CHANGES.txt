@@ -1,7 +1,11 @@
 1.8 (unreleased)
 ================
 
-- Nothing changed yet.
+- Backup and restore blobs, using rsync (work in progress).
+  [maurits]
+
+- Ask if the user is sure before doing a restore.
+  [maurits]
 
 
 1.7 (2010-12-10)

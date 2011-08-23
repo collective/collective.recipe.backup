@@ -40,7 +40,7 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
         filestorage_dir = os.path.split(datafs)[0]
         fs = os.path.join(filestorage_dir, '%s.fs' % a)
         location = backup_location + '_' + a
-        logger.info("Backing up database file: %s to %s...",
+        logger.info("Please wait while backing up database file: %s to %s",
                     fs, location)
         os.system(quote_command([repozo] +
                                 backup_arguments(fs, location, full,
@@ -49,7 +49,7 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
         logger.debug("Repozo command executed.")
         cleanup(location, keep)
 
-    logger.info("Backing up database file: %s to %s...",
+    logger.info("Please wait while backing up database file: %s to %s",
                 datafs, backup_location)
     os.system(quote_command([repozo] +
                             backup_arguments(datafs,
@@ -68,7 +68,7 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
         filestorage_dir = os.path.split(datafs)[0]
         fs = os.path.join(filestorage_dir, '%s.fs' % a)
         location = snapshot_location + '_' + a
-        logger.info("Making snapshot backup: %s to %s...",
+        logger.info("Please wait while making snapshot backup: %s to %s",
                     fs, location)
         os.system(quote_command([repozo] +
                                 backup_arguments(fs, location,
@@ -77,7 +77,7 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
         logger.debug("Repozo command executed.")
         cleanup(location, keep)
 
-    logger.info("Making snapshot backup: %s to %s...",
+    logger.info("Please wait while making snapshot backup: %s to %s",
                 datafs, snapshot_location)
     os.system(quote_command([repozo] +
                             backup_arguments(datafs, snapshot_location,
@@ -101,12 +101,12 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
         filestorage_dir = os.path.split(datafs)[0]
         fs = os.path.join(filestorage_dir, '%s.fs' % a)
         location = backup_location + '_' + a
-        logger.info("Restoring database file: %s to %s...",
+        logger.info("Please wait while restoring database file: %s to %s",
                     location, fs)
         os.system(quote_command([repozo] +
                                 restore_arguments(fs, location, date,
                                                   verbose, as_list=True)))
-    logger.info("Restoring database file: %s to %s...",
+    logger.info("Please wait while restoring database file: %s to %s",
                 backup_location, datafs)
     os.system(quote_command([repozo] +
                             restore_arguments(datafs, backup_location,

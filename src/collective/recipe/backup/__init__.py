@@ -62,7 +62,6 @@ class Recipe(object):
         options.setdefault('additional_filestorages', '')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('only_blobs', 'false')
-        options.setdefault('backup_blobs', 'true')
         # Accept both blob-storage (used by
         # plone.recipe.zope2instance) and blob_storage (as we use
         # underscores everywhere).
@@ -90,6 +89,15 @@ class Recipe(object):
                         break
         # Make sure the options are the same, for good measure.
         options['blob-storage'] = options['blob_storage'] = blob_storage
+
+        # We usually want backup_blobs to be true, but we should not
+        # complain when there really is no blob-storage.
+        options.setdefault('backup_blobs', '')
+        if options['backup_blobs'] == '':
+            if bool(blob_storage):
+                options['backup_blobs'] = 'True'
+            else:
+                options['backup_blobs'] = 'False'
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 

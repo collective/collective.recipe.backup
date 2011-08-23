@@ -28,3 +28,42 @@ def system(command, input=''):
     o.close()
     e.close()
     return result
+
+
+def ask(question, default=True, exact=False):
+    """Ask the question in y/n form and return True/False.
+
+    If you don't want a default 'yes', set default to None (or to False if you
+    want a default 'no').
+
+    With exact=True, we want to get a literal 'yes' or 'no', at least
+    when it does not match the default.
+
+    """
+    while True:
+        yn = 'y/n'
+        if default is True:
+            yn = 'Y/n'
+        if default is False:
+            yn = 'y/N'
+        q = question + " (%s)? " % yn
+        input = raw_input(q)
+        if input:
+            answer = input
+        else:
+            answer = ''
+        if not answer and default is not None:
+            return default
+        if exact and answer.lower() not in ('yes', 'no'):
+            print ("Please explicitly answer yes/no in full "
+                   "(or accept the default)")
+            continue
+        if answer:
+            answer = answer[0].lower()
+            if answer == 'y':
+                return True
+            if answer == 'n':
+                return False
+        # We really want an answer.
+        print 'Please explicitly answer y/n'
+        continue
