@@ -561,9 +561,9 @@ zope2instance recipe to work:
 We run the buildout:
 
     >>> print system(buildout) # doctest:+ELLIPSIS
-    Getting distribution for 'plone.recipe.zope2instance==3.9'.
+    Getting distribution for 'plone.recipe.zope2instance==3.9'...
     Got plone.recipe.zope2instance 3.9.
-    Getting distribution for 'mailinglogger==3.3'.
+    Getting distribution for 'mailinglogger==3.3'...
     Got mailinglogger 3.3.0.
     Uninstalling backup.
     Installing instance.
