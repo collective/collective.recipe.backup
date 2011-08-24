@@ -771,3 +771,122 @@ The snapshotrestore works too::
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+
+We can tell buildout that we only want to backup blobs or specifically
+do not want to backup the blobs.
+
+Combining blob_backup=false and only_blobs=true will not work::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... backup_blobs = false
+    ... only_blobs = true
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    While:
+      Installing backup.
+    Error: Cannot have backup_blobs false and only_blobs true.
+    <BLANKLINE>
+
+Specifying backup_blobs and only_blobs might be useful in case you
+want to separate this into several scripts::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = filebackup blobbackup
+    ...
+    ... [filebackup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... backup_blobs = false
+    ... 
+    ... [blobbackup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... only_blobs = true
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing filebackup.
+    backup: Created /sample-buildout/var/filebackups
+    backup: Created /sample-buildout/var/filebackup-snapshots
+    backup: Created /sample-buildout/var/filebackup-blobstorages
+    backup: Created /sample-buildout/var/filebackup-blobstoragesnapshots
+    Generated script '/sample-buildout/bin/filebackup'.
+    Generated script '/sample-buildout/bin/filebackup-snapshot'.
+    Generated script '/sample-buildout/bin/filebackup-restore'.
+    Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
+    Installing blobbackup.
+    backup: Created /sample-buildout/var/blobbackups
+    backup: Created /sample-buildout/var/blobbackup-snapshots
+    backup: Created /sample-buildout/var/blobbackup-blobstorages
+    backup: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
+    Generated script '/sample-buildout/bin/blobbackup'.
+    Generated script '/sample-buildout/bin/blobbackup-snapshot'.
+    Generated script '/sample-buildout/bin/blobbackup-restore'.
+    Generated script '/sample-buildout/bin/blobbackup-snapshotrestore'.
+    <BLANKLINE>
+
+Now we test it.  First the backup.  The filebackup now only backs up
+the filestorage::
+
+    >>> print system('bin/filebackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups --gzip
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackups
+    <BLANKLINE>
+    >>> print system('bin/filebackup-snapshot')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots -F --gzip
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackup-snapshots
+    <BLANKLINE>
+
+And blobbackup only backs up the blobstorage::
+
+    >>> print system('bin/blobbackup')
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstorages
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstorages/blobstorage.0
+    <BLANKLINE>
+    >>> print system('bin/blobbackup-snapshot')
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstoragesnapshots
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0
+    <BLANKLINE>
+
+Now test the restore::
+
+    >>> print system('bin/filebackup-restore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/filebackups to /sample-buildout/var/filestorage/Data.fs
+    <BLANKLINE>
+    >>> print system('bin/filebackup-snapshotrestore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/filebackup-snapshots to /sample-buildout/var/filestorage/Data.fs
+    <BLANKLINE>
+    >>> print system('bin/blobbackup-restore', input='yes\n')
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstorages to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> print system('bin/blobbackup-snapshotrestore', input='yes\n')
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
