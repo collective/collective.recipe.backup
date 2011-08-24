@@ -64,8 +64,8 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
         question += "This will replace the blobstorage.\n"
     question += "Are you sure?"
     if not utils.ask(question, default=False, exact=True):
-        logger.error("Not restoring.")
-        sys.exit(1)
+        logger.info("Not restoring.")
+        sys.exit(0)
 
     if not only_blobs:
         repozorunner.restore_main(

@@ -734,3 +734,33 @@ they are full copies:
     >>> stat_1 = os.stat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
     >>> stat_0.st_ino == stat_1.st_ino
     False
+
+Now try a restore::
+
+    >>> print system('bin/restore', input='no')
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (y/N)? INFO: Not restoring.
+    <BLANKLINE>
+    >>> print system('bin/restore', input='yes')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (y/N)? INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+
+The snapshotrestore works too::
+
+    >>> print system('bin/snapshotrestore', input='yes')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (y/N)? INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
