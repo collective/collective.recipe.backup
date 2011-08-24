@@ -18,7 +18,7 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 
 import os
 import logging
-import shutil
+#import shutil
 logger = logging.getLogger('blobs')
 
 from collective.recipe.backup import utils
@@ -323,23 +323,23 @@ def backup_blobs(source, destination, full=False):
 def restore_blobs(source, destination):
     """Restore blobs from source to destination.
 
-    XXX I wonder if you can do this quickly with rsync by leaving the
-    old directory in place.
+    We could remove the destination first (with
+    'shutil.rmtree(destination)'), but an 'rsync -a --delete' works
+    faster.
 
-    XXX Untested yet.
+    Note that trailing slashes in source and destination do matter, so
+    be careful with that otherwise you may end up with something like
+    var/blobstorage/blobstorage
     """
-    if os.path.exists(destination):
-        logger.info("Removing %s", destination)
-        shutil.rmtree(destination)
     if destination.endswith(os.sep):
         # strip that separator
         destination = destination[:-len(os.sep)]
-    # Be careful not to end up with something like
-    # var/blobstorage/blobstorage
     base_name = os.path.basename(destination)
     dest_dir = os.path.dirname(destination)
     last_source = os.path.join(source, base_name + '.0', base_name)
-    cmd = 'rsync -a %(source)s %(dest)s' % dict(
+    # You should end up with something like this:
+    #rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
+    cmd = 'rsync -a --delete %(source)s %(dest)s' % dict(
         source=last_source,
         dest=dest_dir)
     logger.info(cmd)
