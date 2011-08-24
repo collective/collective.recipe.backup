@@ -42,10 +42,12 @@ def ask(question, default=True, exact=False):
     """
     while True:
         yn = 'y/n'
+        if exact:
+            yn = 'yes/no'
         if default is True:
-            yn = 'Y/n'
+            yn = yn.replace('y', 'Y')
         if default is False:
-            yn = 'y/N'
+            yn = yn.replace('n', 'N')
         q = question + " (%s)? " % yn
         input = raw_input(q)
         if input:
