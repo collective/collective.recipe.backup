@@ -166,9 +166,10 @@ def backup_blobs(source, destination, full=False):
     create a subdirectory with a fresh blob backup from the source.
 
     We can make a full backup or a partial backup.  Partial backups
-    are done with rsync and hard links to safe disk space.  Full
-    backups only use rsync (we might want to simply copy in this
-    case).
+    are done with rsync and hard links to safe disk space.  Actually,
+    full backups used to avoid the hard links, but that did not really
+    have any extra value, so now it does the same thing, just in its
+    own directory.
 
     Note that we end up with something like var/blobstorage copied to
     var/blobbackups/blobstorage.0/blobstorage.  We could copy the
