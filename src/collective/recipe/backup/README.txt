@@ -60,6 +60,14 @@ By default, backups are done in ``var/backups``::
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
 
+We will wait a short time after each backup, to avoid some problems
+while testing: when a few backups are made in short succession, the
+oldest is deleted (we keep two by default), but systems may get
+confused when this is too fast after each other.
+
+    >>> import time
+    >>> time.sleep(0.1)
+
 
 Restore
 -------
@@ -115,6 +123,7 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     <BLANKLINE>
+    >>> time.sleep(0.1)
 
 
 Names of created scripts
@@ -304,6 +313,7 @@ Backups are now stored in the ``/myproject`` folder inside buildout and the
 Data.fs location is handled correctly despite not being an absolute path::
 
     >>> output = system('bin/backup')
+    >>> time.sleep(0.1)
     >>> print output
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject...
@@ -316,6 +326,7 @@ errors here::
 The same is true for the snapshot backup.
 
     >>> output = system('bin/snapshotbackup')
+    >>> time.sleep(0.1)
     >>> print output
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
     INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/snap/my
@@ -337,9 +348,10 @@ get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
 
     >>> print system('bin/backup -q')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
+    >>> time.sleep(0.1)
     >>> print system('bin/backup --quiet')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
-
+    >>> time.sleep(0.1)
 
 In our case the ``--backup ...`` lines above are just the mock repozo script
 that still prints something. So it proves that the command is executed, but it
@@ -413,6 +425,7 @@ mildly irritating, but the other way around users can get real errors::
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
+    >>> time.sleep(0.1)
 
 Same with snapshot backups::
 
@@ -424,6 +437,7 @@ Same with snapshot backups::
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/snapshotbackups_another
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     <BLANKLINE>
+    >>> time.sleep(0.1)
 
 And a restore restores all three backups::
 
@@ -442,29 +456,39 @@ And a restore restores all three backups::
 We fake three old backups in all the (snapshot)backup directories to
 test if the 'keep' parameter is working correctly.
 
+    >>> import os
+    >>> next_mod_time = time.time() - 1000
+    >>> def add_backup(dir, name):  # same as in the tests in repozorunner.py
+    ...     global next_mod_time
+    ...     write(dir, name, 'sample fs')
+    ...     # Change modification time, every new file is 10 seconds older.
+    ...     os.utime(join(dir, name), (next_mod_time, next_mod_time))
+    ...     next_mod_time += 10
     >>> dirs = ('var/backups', 'var/snapshotbackups')
     >>> for tail in ('', '_catalog', '_another'):
     ...     for dir in dirs:
     ...         dir = dir + tail
-    ...         for i in range(3):
-    ...             write(dir, '%d.fs' % i, 'sample fs')
+    ...         for i in reversed(range(3)):
+    ...             add_backup(dir, '%d.fs' % i)
+    >>> ls('var/backups')  # Before
+    -  0.fs
+    -  1.fs
+    -  2.fs
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     <BLANKLINE>
-
-Now unfortunately if you would do "ls('var/backups')" here in the test
-you would still see all three files; apparently buildout and the
-system do not interact correctly here, as in real life the superfluous
-backups are really gone.  So we will have to trust the above note that
-old backups have been removed.
+    >>> time.sleep(0.1)
+    >>> ls('var/backups')  # After
+    -  0.fs
+    -  1.fs
 
 Same for the snapshot backups:
 
@@ -473,13 +497,13 @@ Same for the snapshot backups:
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/snapshotbackups_catalog
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/snapshotbackups_another
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     <BLANKLINE>
-    
+    >>> time.sleep(0.1)
 
 Test disabling the snapshotrestore script.  We generate a new buildout
 with enable_snapshotrestore set to false. The script should not be
@@ -625,10 +649,10 @@ Test the snapshotbackup first, as that should be easiest.
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
-    INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
+    >>> time.sleep(0.1)
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
     >>> ls('var/blobstoragesnapshots/blobstorage.0')
@@ -640,11 +664,11 @@ Let's try that some more.
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
-    INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
+    >>> time.sleep(0.1)
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
     d  blobstorage.1
@@ -666,12 +690,12 @@ Now remove an item:
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
-    INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
+    >>> time.sleep(0.1)
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
     d  blobstorage.1
@@ -689,10 +713,10 @@ Let's see how a bin/backup goes:
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
-    INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
     <BLANKLINE>
+    >>> time.sleep(0.1)
     >>> ls('var/blobstoragebackups')
     d  blobstorage.0
     >>> ls('var/blobstoragebackups/blobstorage.0')
@@ -706,11 +730,11 @@ We try again with an extra 'blob':
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
-    INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
     <BLANKLINE>
+    >>> time.sleep(0.1)
     >>> ls('var/blobstoragebackups')
     d  blobstorage.0
     d  blobstorage.1
@@ -863,10 +887,12 @@ the filestorage::
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackups
     <BLANKLINE>
+    >>> time.sleep(0.1)
     >>> print system('bin/filebackup-snapshot')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackup-snapshots
     <BLANKLINE>
+    >>> time.sleep(0.1)
 
 And blobbackup only backs up the blobstorage::
 
@@ -874,10 +900,12 @@ And blobbackup only backs up the blobstorage::
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstorages
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstorages/blobstorage.0
     <BLANKLINE>
+    >>> time.sleep(0.1)
     >>> print system('bin/blobbackup-snapshot')
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstoragesnapshots
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
+    >>> time.sleep(0.1)
 
 Now test the restore::
 
