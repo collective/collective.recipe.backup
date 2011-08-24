@@ -230,10 +230,11 @@ additional_filestorages
 
 enable_snapshotrestore
     Having a snapshotrestore script is very useful in development
-    environments, but can be harmful in a production buildout. The script
-    restores the latest snapshot directly to your filestorage without asking
-    any questions whatsoever. If you don't want a snapshotrestore, set this
-    option to false.
+    environments, but can be harmful in a production buildout. The
+    script restores the latest snapshot directly to your filestorage
+    and it used to do this without asking any questions whatsoever
+    (this has been changed to require an explicit 'yes' as answer).
+    If you don't want a snapshotrestore, set this option to false.
 
 blob_storage
     Location of the directory where the blobs (binary large objects)
