@@ -248,10 +248,10 @@ blob-storage
     plone.recipe.zope2instance spells it as blob-storage.  Pick one.
 
 backup_blobs
-    Backup the blob storage.  This requires the blob_storage location to be set.
-    True by default.  TODO: maybe only warn if no blob_storage is set,
-    at least if no blob_storage option can be found in an
-    instance/zeoclient part.
+    Backup the blob storage.  This requires the blob_storage location
+    to be set.  If no blob_storage location has been set and we cannot
+    find one by looking in a plone.recipe.zope2instance part, we
+    default to False, otherwise to True.
 
 blobbackuplocation
     Directory where the blob storage will be backed up to.  Defaults
@@ -287,7 +287,6 @@ We'll use all options, except the blob options for now::
     ... snapshotlocation = snap/my
     ... gzip = false
     ... enable_snapshotrestore = true
-    ... backup_blobs = false
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -374,7 +373,6 @@ option::
     ... additional_filestorages =
     ...     catalog
     ...     another
-    ... backup_blobs = false
     ... """)
 
 The additional backups have to be stored separate from the ``Data.fs``
@@ -496,7 +494,6 @@ generated script).
     ... [backup]
     ... recipe = collective.recipe.backup
     ... enable_snapshotrestore = false
-    ... backup_blobs = false
     ... """)
 
     >>> print system(buildout) # doctest:+ELLIPSIS
@@ -775,6 +772,27 @@ The snapshotrestore works too::
 We can tell buildout that we only want to backup blobs or specifically
 do not want to backup the blobs.
 
+When we explicitly set backup_blobs to true, we must have a
+blob_storage option, otherwise buildout quits::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... backup_blobs = true
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    While:
+      Installing backup.
+    Error: backup_blobs is true, but no blob_storage could be found.
+    <BLANKLINE>
+
 Combining blob_backup=false and only_blobs=true will not work::
 
     >>> write('buildout.cfg',
@@ -790,7 +808,6 @@ Combining blob_backup=false and only_blobs=true will not work::
     ... only_blobs = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
     Installing backup.
     While:
       Installing backup.

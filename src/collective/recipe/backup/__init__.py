@@ -202,6 +202,9 @@ backup_blobs = %(backup_blobs)s
         if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
             raise zc.buildout.UserError(
                 "Cannot have backup_blobs false and only_blobs true.")
+        if opts['backup_blobs'] == 'True' and not opts['blob_storage']:
+            raise zc.buildout.UserError(
+                "backup_blobs is true, but no blob_storage could be found.")
 
         initialization = initialization_template % opts
         requirements, ws = self.egg.working_set(['collective.recipe.backup',
