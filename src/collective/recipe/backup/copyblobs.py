@@ -18,6 +18,7 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 
 import os
 import logging
+import shutil
 logger = logging.getLogger('blobs')
 
 from collective.recipe.backup import utils
@@ -322,14 +323,25 @@ def backup_blobs(source, destination, full=False):
 def restore_blobs(source, destination):
     """Restore blobs from source to destination.
 
-    XXX I wonder if you can do this quickly with rsync.
+    XXX I wonder if you can do this quickly with rsync by leaving the
+    old directory in place.
+
+    XXX Untested yet.
     """
     if os.path.exists(destination):
-        os.remove(destination)
-    # XXX Untested yet.
+        logger.info("Removing %s", destination)
+        shutil.rmtree(destination)
+    if destination.endswith(os.sep):
+        # strip that separator
+        destination = destination[:-len(os.sep)]
+    # Be careful not to end up with something like
+    # var/blobstorage/blobstorage
+    base_name = os.path.basename(destination)
+    dest_dir = os.path.dirname(destination)
+    last_source = os.path.join(source, base_name + '.0', base_name)
     cmd = 'rsync -a %(source)s %(dest)s' % dict(
-        source=source,
-        dest=destination)
+        source=last_source,
+        dest=dest_dir)
     logger.info(cmd)
     output = utils.system(cmd)
     if output:

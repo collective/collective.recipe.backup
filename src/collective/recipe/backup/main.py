@@ -80,7 +80,4 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
         sys.exit(1)
     logger.info("Restoring blobs from %s to %s", blob_backup_location,
                 blob_storage_source)
-    #copyblobs.restore_blobs(blob_storage_source, blob_backup_location)
-    logger.error("Sorry, restoring blobs has not been implemented yet. "
-                 "Please copy them yourself.")
-    sys.exit(1)
+    copyblobs.restore_blobs(blob_backup_location, blob_storage_source)
