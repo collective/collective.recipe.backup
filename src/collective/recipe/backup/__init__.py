@@ -61,6 +61,7 @@ class Recipe(object):
         options.setdefault('gzip', 'true')
         options.setdefault('additional_filestorages', '')
         options.setdefault('enable_snapshotrestore', 'true')
+        options.setdefault('use_rsync', 'true')
         options.setdefault('only_blobs', 'false')
         # Accept both blob-storage (used by
         # plone.recipe.zope2instance) and blob_storage (as we use
@@ -109,7 +110,7 @@ class Recipe(object):
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
         check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
-                                 'backup_blobs'])
+                                 'backup_blobs', 'use_rsync'])
         self.options = options
 
     def install(self):
@@ -187,6 +188,7 @@ gzip = %(gzip)s
 additional = %(additional)r
 only_blobs = %(only_blobs)s
 backup_blobs = %(backup_blobs)s
+use_rsync = %(use_rsync)s
 """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -221,7 +223,7 @@ backup_blobs = %(backup_blobs)s
             arguments=('bin_dir, datafs, backup_location, '
                        'keep, full, verbose, gzip, additional, '
                        'blob_backup_location, blob_storage_source, '
-                       'backup_blobs, only_blobs'),
+                       'backup_blobs, only_blobs, use_rsync'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['snapshot_name'],
@@ -233,7 +235,8 @@ backup_blobs = %(backup_blobs)s
             # must not be a tuple, it is just string concatenation.
             arguments=('bin_dir, datafs, snapshot_location, keep, '
                        'verbose, gzip, additional, blob_snapshot_location, '
-                       'blob_storage_source, backup_blobs, only_blobs'),
+                       'blob_storage_source, backup_blobs, only_blobs, '
+                       'use_rsync'),
             initialization=initialization)
         scripts += zc.buildout.easy_install.scripts(
             [(self.options['restore_name'],
@@ -245,7 +248,8 @@ backup_blobs = %(backup_blobs)s
             # must not be a tuple, it is just string concatenation.
             arguments=('bin_dir, datafs, backup_location, verbose, '
                        'additional, blob_backup_location, '
-                       'blob_storage_source, backup_blobs, only_blobs'),
+                       'blob_storage_source, backup_blobs, only_blobs, '
+                       'use_rsync'),
             initialization=initialization)
         if self.options['enable_snapshotrestore'] == 'true':
             scripts += zc.buildout.easy_install.scripts(
@@ -258,7 +262,8 @@ backup_blobs = %(backup_blobs)s
                 # must not be a tuple, it is just string concatenation.
                 arguments=('bin_dir, datafs, snapshot_location, verbose, '
                            'additional, blob_snapshot_location, '
-                           'blob_storage_source, backup_blobs, only_blobs'),
+                           'blob_storage_source, backup_blobs, only_blobs,'
+                           'use_rsync'),
                 initialization=initialization)
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.

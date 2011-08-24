@@ -18,7 +18,7 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 
 import os
 import logging
-#import shutil
+import shutil
 logger = logging.getLogger('blobs')
 
 from collective.recipe.backup import utils
@@ -158,7 +158,7 @@ def rotate_directories(container, name):
                   os.path.join(container, new_name))
 
 
-def backup_blobs(source, destination, full=False):
+def backup_blobs(source, destination, full=False, use_rsync=True):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -170,6 +170,10 @@ def backup_blobs(source, destination, full=False):
     full backups used to avoid the hard links, but that did not really
     have any extra value, so now it does the same thing, just in its
     own directory.
+
+    With 'use_rsync' at the default True, we use rsync to copy,
+    otherwise we use shutil.copytree.  This is mostly there for
+    systems that don't have rsync available.  rsync is recommended.
 
     Note that we end up with something like var/blobstorage copied to
     var/blobbackups/blobstorage.0/blobstorage.  We could copy the
@@ -300,36 +304,49 @@ def backup_blobs(source, destination, full=False):
 
     prev = os.path.join(destination, base_name + '.1')
     dest = os.path.join(destination, base_name + '.0')
-    if os.path.exists(prev):
-        # Make a 'partial' backup by reusing the previous backup.  We
-        # might not want to do this for full backups, but this is a
-        # lot faster and the end result really is the same, so why
-        # not.
-        if not os.path.isdir(prev):
-            # Should have been caught already.
-            raise Exception("%s must be a directory" % prev)
-        # Hardlink against the previous directory.  Done by hand it would be:
-        # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
-        #     backups/blobstorage.0
-        prev_link = os.path.join(os.pardir, base_name + '.1')
-        cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % \
-              dict(link=prev_link,
-                   source=source,
-                   dest=dest)
+    if use_rsync:
+        if os.path.exists(prev):
+            # Make a 'partial' backup by reusing the previous backup.  We
+            # might not want to do this for full backups, but this is a
+            # lot faster and the end result really is the same, so why
+            # not.
+            if not os.path.isdir(prev):
+                # Should have been caught already.
+                raise Exception("%s must be a directory" % prev)
+            # Hardlink against the previous directory.  Done by hand it would be:
+            # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
+            #     backups/blobstorage.0
+            prev_link = os.path.join(os.pardir, base_name + '.1')
+            cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % \
+                  dict(link=prev_link,
+                       source=source,
+                       dest=dest)
+        else:
+            # No previous directory to hardlink against.
+            cmd = 'rsync -a %(source)s %(dest)s' % dict(
+                source=source, dest=dest)
+        logger.info(cmd)
+        output = utils.system(cmd)
+        if output:
+            # If we have output, this means there was an error.
+            logger.error(output)
+        return
     else:
-        # No previous directory to hardlink against.
-        cmd = 'rsync -a %(source)s %(dest)s' % dict(
-            source=source,
-            dest=dest)
-    logger.info(cmd)
-    output = utils.system(cmd)
-    if output:
-        # If we have output, this means there was an error.
-        logger.error(output)
+        if not os.path.exists(dest):
+            # The parent directory must exist for shutil.copytree
+            # in python2.4.
+            os.mkdir(dest)
+        dest = os.path.join(dest, base_name)
+        logger.info("Copying %s to %s", source, dest)
+        shutil.copytree(source, dest)
 
 
-def restore_blobs(source, destination):
+def restore_blobs(source, destination, use_rsync=True):
     """Restore blobs from source to destination.
+
+    With 'use_rsync' at the default True, we use rsync to copy,
+    otherwise we use shutil.copytree.  This is mostly there for
+    systems that don't have rsync available.  rsync is recommended.
 
     We could remove the destination first (with
     'shutil.rmtree(destination)'), but an 'rsync -a --delete' works
@@ -347,11 +364,19 @@ def restore_blobs(source, destination):
     last_source = os.path.join(source, base_name + '.0', base_name)
     # You should end up with something like this:
     #rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
-    cmd = 'rsync -a --delete %(source)s %(dest)s' % dict(
-        source=last_source,
-        dest=dest_dir)
-    logger.info(cmd)
-    output = utils.system(cmd)
-    if output:
-        # If we have output, this means there was an error.
-        logger.error(output)
+    if use_rsync:
+        cmd = 'rsync -a --delete %(source)s %(dest)s' % dict(
+            source=last_source,
+            dest=dest_dir)
+        logger.info(cmd)
+        output = utils.system(cmd)
+        if output:
+            # If we have output, this means there was an error.
+            logger.error(output)
+        return
+    else:
+        if os.path.exists(destination):
+            logger.info("Removing %s", destination)
+            shutil.rmtree(destination)
+        logger.info("Copying %s to %s", last_source, destination)
+        shutil.copytree(last_source, destination)

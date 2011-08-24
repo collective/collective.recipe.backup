@@ -269,6 +269,13 @@ only_blobs
     bin/filestoragebackup script and one bin/blobstoragebackup script,
     using only_blobs in one and backup_blobs in the other.
 
+use_rsync
+    Use rsync with hard links for backing up the blobs.  Default is
+    true.  rsync is probably not available on all machines though, and
+    I guess hard links will not work on Windows.  When you set this to
+    false, we fall back to a simple copy (``shutil.copytree`` from
+    python in fact).
+
 
 We'll use all options, except the blob options for now::
 
@@ -912,3 +919,81 @@ Now test the restore::
     INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+
+
+No rsync
+--------
+
+If you cannot use rsync and hard links (which may not work on Windows)
+you can set ``use_rsync = false``.  Then we will do a simple copy.
+
+    >>> remove('var', 'blobstoragebackups')  # cleanup from previous runs
+    >>> remove('var', 'blobstoragesnapshots')  # cleanup from previous runs
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... only_blobs = true
+    ... use_rsync = false
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling blobbackup.
+    Uninstalling filebackup.
+    Installing backup.
+    backup: Created /sample-buildout/var/blobstoragebackups
+    backup: Created /sample-buildout/var/blobstoragesnapshots
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> output = system('bin/backup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    <BLANKLINE>
+    >>> output = system('bin/backup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    <BLANKLINE>
+    >>> output = system('bin/restore', input='yes\n')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
+    INFO: Removing /sample-buildout/var/blobstorage
+    INFO: Copying /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
+    <BLANKLINE>
+    >>> output = system('bin/snapshotbackup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    <BLANKLINE>
+    >>> output = system('bin/snapshotrestore', input='yes\n')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: Removing /sample-buildout/var/blobstorage
+    INFO: Copying /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
+    <BLANKLINE>
+

@@ -12,7 +12,7 @@ logger = logging.getLogger('backup')
 
 def backup_main(bin_dir, datafs, backup_location, keep, full,
                 verbose, gzip, additional, blob_backup_location,
-                blob_storage_source, backup_blobs, only_blobs):
+                blob_storage_source, backup_blobs, only_blobs, use_rsync):
     """Main method, gets called by generated bin/backup."""
     if not only_blobs:
         repozorunner.backup_main(
@@ -28,12 +28,13 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
         sys.exit(1)
     logger.info("Please wait while backing up blobs from %s to %s",
                 blob_storage_source, blob_backup_location)
-    copyblobs.backup_blobs(blob_storage_source, blob_backup_location, full)
+    copyblobs.backup_blobs(blob_storage_source, blob_backup_location, full,
+                           use_rsync)
 
 
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                   additional, blob_snapshot_location, blob_storage_source,
-                  backup_blobs, only_blobs):
+                  backup_blobs, only_blobs, use_rsync):
     """Main method, gets called by generated bin/snapshotbackup."""
     if not only_blobs:
         repozorunner.snapshot_main(
@@ -50,12 +51,12 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
     logger.info("Please wait while making snapshot of blobs from %s to %s",
                 blob_storage_source, blob_snapshot_location)
     copyblobs.backup_blobs(blob_storage_source, blob_snapshot_location,
-                           full=True)
+                           full=True, use_rsync=use_rsync)
 
 
 def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                  blob_backup_location, blob_storage_source, backup_blobs,
-                 only_blobs):
+                 only_blobs, use_rsync):
     """Main method, gets called by generated bin/restore."""
     question = '\n'
     if not only_blobs:
@@ -80,4 +81,5 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
         sys.exit(1)
     logger.info("Restoring blobs from %s to %s", blob_backup_location,
                 blob_storage_source)
-    copyblobs.restore_blobs(blob_backup_location, blob_storage_source)
+    copyblobs.restore_blobs(blob_backup_location, blob_storage_source,
+                            use_rsync)
