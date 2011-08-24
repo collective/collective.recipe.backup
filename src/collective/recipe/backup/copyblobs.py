@@ -221,8 +221,10 @@ def backup_blobs(source, destination, full=False):
     Check the file stats to see if they are really hard links:
 
     >>> import os
-    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs', 'three.txt'))
-    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs', 'three.txt'))
+    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs',
+    ...                               'three.txt'))
+    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs',
+    ...                               'three.txt'))
     >>> stat_0.st_ino == stat_1.st_ino
     True
 
@@ -279,8 +281,10 @@ def backup_blobs(source, destination, full=False):
     be hard links but really different files.
 
     >>> import os
-    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs', 'three.txt'))
-    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs', 'three.txt'))
+    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs',
+    ...                               'three.txt'))
+    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs',
+    ...                               'three.txt'))
     >>> stat_0.st_ino == stat_1.st_ino
     False
 
