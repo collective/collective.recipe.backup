@@ -277,8 +277,8 @@ def backup_blobs(source, destination, full=False):
     >>> cat('backups', 'blobs.0', 'blobs', 'one.txt')
     Changed File One
 
-    Check the file stats.  Since we did full copies these should not
-    be hard links but really different files.
+    Check the file stats.  We did full copies, but these should still
+    be hard links.
 
     >>> import os
     >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs',
@@ -286,7 +286,7 @@ def backup_blobs(source, destination, full=False):
     >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs',
     ...                               'three.txt'))
     >>> stat_0.st_ino == stat_1.st_ino
-    False
+    True
 
     Cleanup:
 
@@ -299,8 +299,11 @@ def backup_blobs(source, destination, full=False):
 
     prev = os.path.join(destination, base_name + '.1')
     dest = os.path.join(destination, base_name + '.0')
-    if (not full) and os.path.exists(prev):
-        # Make a 'partial' backup by reusing the previous backup.
+    if os.path.exists(prev):
+        # Make a 'partial' backup by reusing the previous backup.  We
+        # might not want to do this for full backups, but this is a
+        # lot faster and the end result really is the same, so why
+        # not.
         if not os.path.isdir(prev):
             # Should have been caught already.
             raise Exception("%s must be a directory" % prev)

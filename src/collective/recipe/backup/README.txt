@@ -643,7 +643,7 @@ Let's try that some more.
     INFO: Removed old backups, the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
@@ -670,7 +670,7 @@ Now remove an item:
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
@@ -729,13 +729,14 @@ sure if this works on all operating systems.
     >>> stat_0.st_ino == stat_1.st_ino
     True
 
-For the snapshot blob backups, the inodes should *not* be the same, as
-they are full copies:
+We could to things differently for the snapshot blob backups, as they
+should be full copies, but using hard links they also really are full
+copies, so also in this case the inodes can be the same::
 
     >>> stat_0 = os.stat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob1.txt')
     >>> stat_1 = os.stat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
     >>> stat_0.st_ino == stat_1.st_ino
-    False
+    True
 
 Now try a restore::
 
