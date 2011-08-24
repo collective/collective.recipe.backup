@@ -335,7 +335,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True):
         if not os.path.exists(dest):
             # The parent directory must exist for shutil.copytree
             # in python2.4.
-            os.mkdir(dest)
+            os.makedirs(dest)
         dest = os.path.join(dest, base_name)
         logger.info("Copying %s to %s", source, dest)
         shutil.copytree(source, dest)

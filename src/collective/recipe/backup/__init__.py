@@ -120,15 +120,17 @@ class Recipe(object):
             buildout_dir, self.options['location'])
         snapshot_location = construct_path(
             buildout_dir, self.options['snapshotlocation'])
-        if not os.path.isdir(backup_location):
-            os.makedirs(backup_location)
-            logger.info('Created %s', backup_location)
-        if not os.path.isdir(snapshot_location):
-            os.makedirs(snapshot_location)
-            logger.info('Created %s', snapshot_location)
+        if self.options['only_blobs'] == 'False':
+            if not os.path.isdir(backup_location):
+                os.makedirs(backup_location)
+                logger.info('Created %s', backup_location)
+            if not os.path.isdir(snapshot_location):
+                os.makedirs(snapshot_location)
+                logger.info('Created %s', snapshot_location)
 
         # Blob backup.
-        if self.options['blob_storage']:
+        if self.options['backup_blobs'] == 'True' and \
+               self.options['blob_storage']:
             blob_backup_location = construct_path(
                 buildout_dir, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(

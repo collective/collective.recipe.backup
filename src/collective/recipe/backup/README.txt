@@ -849,15 +849,11 @@ want to separate this into several scripts::
     Installing filebackup.
     backup: Created /sample-buildout/var/filebackups
     backup: Created /sample-buildout/var/filebackup-snapshots
-    backup: Created /sample-buildout/var/filebackup-blobstorages
-    backup: Created /sample-buildout/var/filebackup-blobstoragesnapshots
     Generated script '/sample-buildout/bin/filebackup'.
     Generated script '/sample-buildout/bin/filebackup-snapshot'.
     Generated script '/sample-buildout/bin/filebackup-restore'.
     Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
     Installing blobbackup.
-    backup: Created /sample-buildout/var/blobbackups
-    backup: Created /sample-buildout/var/blobbackup-snapshots
     backup: Created /sample-buildout/var/blobbackup-blobstorages
     backup: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
     Generated script '/sample-buildout/bin/blobbackup'.
@@ -927,8 +923,13 @@ No rsync
 If you cannot use rsync and hard links (which may not work on Windows)
 you can set ``use_rsync = false``.  Then we will do a simple copy.
 
-    >>> remove('var', 'blobstoragebackups')  # cleanup from previous runs
-    >>> remove('var', 'blobstoragesnapshots')  # cleanup from previous runs
+First it is about time we clean up with extreme prejudice and make
+some fresh content:
+
+    >>> remove('var')  # cleanup from previous runs
+    >>> mkdir('var')
+    >>> mkdir('var/blobstorage')
+    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
@@ -941,6 +942,10 @@ you can set ``use_rsync = false``.  Then we will do a simple copy.
     ... only_blobs = true
     ... use_rsync = false
     ... """)
+
+One thing we test here is if the buildout does not create too many
+directories that will not get used because have set only_blobs=true::
+
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling blobbackup.
     Uninstalling filebackup.
@@ -952,6 +957,10 @@ you can set ``use_rsync = false``.  Then we will do a simple copy.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
+
+Check the output of bin/backup and explicitly test that rsync in
+nowhere to be found::
+
     >>> output = system('bin/backup')
     >>> 'rsync' in output
     False
@@ -959,6 +968,9 @@ you can set ``use_rsync = false``.  Then we will do a simple copy.
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
     <BLANKLINE>
+
+Try again to see that renaming/rotating keeps working::
+
     >>> output = system('bin/backup')
     >>> 'rsync' in output
     False
@@ -967,6 +979,9 @@ you can set ``use_rsync = false``.  Then we will do a simple copy.
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
     <BLANKLINE>
+
+Now a restore::
+
     >>> output = system('bin/restore', input='yes\n')
     >>> 'rsync' in output
     False
@@ -978,6 +993,9 @@ you can set ``use_rsync = false``.  Then we will do a simple copy.
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Copying /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
     <BLANKLINE>
+
+Snapshots should work too::
+
     >>> output = system('bin/snapshotbackup')
     >>> 'rsync' in output
     False
@@ -985,6 +1003,20 @@ you can set ``use_rsync = false``.  Then we will do a simple copy.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
     <BLANKLINE>
+
+Try again to see that renaming/rotating keeps working::
+
+    >>> output = system('bin/snapshotbackup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    <BLANKLINE>
+
+And the snapshotrestore::
+
     >>> output = system('bin/snapshotrestore', input='yes\n')
     >>> 'rsync' in output
     False
