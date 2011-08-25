@@ -8,6 +8,13 @@ import zc.buildout
 
 logger = logging.getLogger('backup')
 
+if hasattr(zc.buildout.easy_install, 'sitepackage_safe_scripts'):
+    # zc.buildout 1.5
+    USE_SAFE_SCRIPTS = True
+else:
+    # zc.buildout 1.4 or earlier
+    USE_SAFE_SCRIPTS = False
+
 
 class Recipe(object):
     """zc.buildout recipe"""
@@ -217,10 +224,14 @@ use_rsync = %(use_rsync)s
         # Get general options for all scripts.
         scripts = []
         initialization = initialization_template % opts
-        requirements, ws = self.egg.working_set(
+        orig_distributions, working_set = self.egg.working_set(
             ['collective.recipe.backup', 'zc.buildout', 'zc.recipe.egg'])
         executable = self.options['executable']
         dest = self.options['bin-directory']
+        site_py_dest = self.options['parts-directory']
+        creation_args = dict(
+            dest=dest, working_set=working_set, executable=executable,
+            site_py_dest=site_py_dest, initialization=initialization)
 
         # Create backup script
         reqs = [(self.options['backup_name'],
@@ -232,10 +243,9 @@ use_rsync = %(use_rsync)s
             'bin_dir, datafs, backup_location, keep, full, verbose, gzip, '
             'additional, blob_backup_location, blob_storage_source, '
             'backup_blobs, only_blobs, use_rsync')
-        scripts += zc.buildout.easy_install.scripts(
-            reqs, ws, executable, dest,
-            arguments=script_arguments,
-            initialization=initialization)
+        creation_args['reqs'] = reqs
+        creation_args['script_arguments'] = script_arguments
+        scripts += create_script(**creation_args)
 
         # Create backup snapshot script
         reqs = [(self.options['snapshot_name'],
@@ -247,10 +257,9 @@ use_rsync = %(use_rsync)s
             'bin_dir, datafs, snapshot_location, keep, verbose, gzip, '
             'additional, blob_snapshot_location, blob_storage_source, '
             'backup_blobs, only_blobs, use_rsync')
-        scripts += zc.buildout.easy_install.scripts(
-            reqs, ws, executable, dest,
-            arguments=script_arguments,
-            initialization=initialization)
+        creation_args['reqs'] = reqs
+        creation_args['script_arguments'] = script_arguments
+        scripts += create_script(**creation_args)
 
         # Create restore script
         reqs = [(self.options['restore_name'],
@@ -262,10 +271,9 @@ use_rsync = %(use_rsync)s
             'bin_dir, datafs, backup_location, verbose, additional, '
             'blob_backup_location, blob_storage_source, backup_blobs, '
             'only_blobs, use_rsync')
-        scripts += zc.buildout.easy_install.scripts(
-            reqs, ws, executable, dest,
-            arguments=script_arguments,
-            initialization=initialization)
+        creation_args['reqs'] = reqs
+        creation_args['script_arguments'] = script_arguments
+        scripts += create_script(**creation_args)
 
         # Create snapshot restore script
         if self.options['enable_snapshotrestore'] == 'true':
@@ -278,10 +286,9 @@ use_rsync = %(use_rsync)s
                 'bin_dir, datafs, snapshot_location, verbose, additional, '
                 'blob_snapshot_location, blob_storage_source, backup_blobs, '
                 'only_blobs, use_rsync')
-            scripts += zc.buildout.easy_install.scripts(
-                reqs, ws, executable, dest,
-                arguments=script_arguments,
-                initialization=initialization)
+            creation_args['reqs'] = reqs
+            creation_args['script_arguments'] = script_arguments
+            scripts += create_script(**creation_args)
 
         generated = []
         if not os.path.exists(opts['parts-directory']):
@@ -356,3 +363,30 @@ def construct_path(buildout_dir, path):
     combination = os.path.join(buildout_dir, path)
     normalized = os.path.normpath(combination)
     return normalized
+
+
+def create_script(**kwargs):
+    """Create a script.
+
+    Do this in a way that is compatible with zc.buildout 1.4 and 1.5
+    (using the sitepackage_safe_scripts in the latter case).
+
+    See http://pypi.python.org/pypi/zc.buildout/1.5.2
+    section: #updating-recipes-to-support-a-system-python
+    """
+    if USE_SAFE_SCRIPTS:
+        # zc.buildout 1.5
+        script = zc.buildout.easy_install.sitepackage_safe_scripts(
+            kwargs.get('dest'), kwargs.get('working_set'),
+            kwargs.get('executable'), kwargs.get('site_py_dest'),
+            reqs=kwargs.get('reqs'),
+            script_arguments=kwargs.get('script_arguments'),
+            initialization=kwargs.get('initialization'))
+    else:
+        # zc.buildout 1.4 or earlier
+        script = zc.buildout.easy_install.scripts(
+            kwargs.get('reqs'), kwargs.get('working_set'),
+            kwargs.get('executable'), kwargs.get('dest'),
+            arguments=kwargs.get('script_arguments'),
+            initialization=kwargs.get('initialization'))
+    return script
