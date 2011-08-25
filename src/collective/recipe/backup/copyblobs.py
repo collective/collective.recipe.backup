@@ -1,19 +1,9 @@
 """
-NOTE: THIS IS A HACK!
-
-Or rather, this is work in progress that is completely not hooked up
-to anything yet, but that is the start of something that seems to work
-when you copy it to your buildout/var directory and run it directly
-from there.
-
-Experiment with this at your own risk.
-
 The idea is to use rsync and hard links; this probably requires a
 unixy (Linux, Mac OS X) operating system.
 
 It is based on this article by Mike Rubel:
 http://www.mikerubel.org/computers/rsync_snapshots/
-
 """
 
 import os
