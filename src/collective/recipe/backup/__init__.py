@@ -223,13 +223,10 @@ use_rsync = %(use_rsync)s
 
         # Keep list of generated files/directories/scripts
         generated = []
-        if not os.path.exists(opts['parts-directory']):
-            # Introduced for site_py_dest in scripts generated with
-            # buildout 1.5+, but this directory seems to be created
-            # automatically in that version anyway; well, does not
-            # hurt.
-            # XXX Well, maybe only really do this when using
-            # zc.buildout 1.5+
+        if USE_SAFE_SCRIPTS and not os.path.exists(opts['parts-directory']):
+            # zc.buildout 1.5 wants to put a site.py into this parts
+            # directory (indicated by site_py_dest) when site-packages
+            # safe scripts are created.
             os.mkdir(opts['parts-directory'])
             generated.append(opts['parts-directory'])
 
