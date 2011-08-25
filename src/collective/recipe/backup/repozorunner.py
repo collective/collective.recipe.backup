@@ -1,9 +1,8 @@
 """Wrapper that invokes repozo.
 
-There are three main methods, these get called by the generated scripts:
-- backup_main() for bin/backup
-- snapshot_main() for bin/snapshotbackup
-- restore_main() for bin/restore.
+There are three main methods, these get called by the generated scripts. So
+backup_main() for bin/backup, snapshot_main() for bin/snapshotbackup and
+restore_main() for bin/restore.
 
 backup_arguments() and restore_arguments() determine the arguments that are to
 be passed to bin/repozo.
@@ -20,18 +19,6 @@ import sys
 
 logger = logging.getLogger('backup')
 
-def get_fs(datafs, a):
-    """Return absolute path of the filestorage file to back up."""
-    filestorage_dir = os.path.split(datafs)[0]
-    crf_file = os.path.join(filestorage_dir, a, '%s.fs' % a)
-    if os.path.isfile(crf_file):
-        # handle the case when the file resides in its own directory
-        # (e.g. ".../var/filestorage/foo/foo.fs"), this is the default
-        # when using collective.recipe.filestorage
-        return crf_file
-    else:
-        # the normal case (e.g. ".../var/filestorage/foo.fs")
-        return os.path.join(filestorage_dir, '%s.fs' % a)
 
 def quote_command(command):
     # Quote the program name, so it works even if it contains spaces
@@ -49,7 +36,8 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
-        fs = get_fs(datafs, a)
+        filestorage_dir = os.path.split(datafs)[0]
+        fs = os.path.join(filestorage_dir, '%s.fs' % a)
         location = backup_location + '_' + a
         logger.info("Backing up database file: %s to %s...",
                     fs, location)
@@ -76,7 +64,8 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
     for a in additional:
-        fs = get_fs(datafs, a)
+        filestorage_dir = os.path.split(datafs)[0]
+        fs = os.path.join(filestorage_dir, '%s.fs' % a)
         location = snapshot_location + '_' + a
         logger.info("Making snapshot backup: %s to %s...",
                     fs, location)
@@ -108,8 +97,6 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional):
                      "a date that we have to pass to repozo: %s.", date)
         logger.info("Date restriction: restoring state at %s." % date)
     for a in additional:
-        # TODO: rethink this, until then: do it the old way
-        # fs = get_fs(datafs, a)
         filestorage_dir = os.path.split(datafs)[0]
         fs = os.path.join(filestorage_dir, '%s.fs' % a)
         location = backup_location + '_' + a
