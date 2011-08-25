@@ -70,9 +70,9 @@ class Recipe(object):
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('use_rsync', 'true')
         options.setdefault('only_blobs', 'false')
-        # Accept both blob-storage (used by
-        # plone.recipe.zope2instance) and blob_storage (as we use
-        # underscores everywhere).
+        # Accept both blob-storage (used by plone.recipe.zope2instance
+        # and friends) and blob_storage (as we use underscores
+        # everywhere).
         options.setdefault('blob-storage', '')
         options.setdefault('blob_storage', '')
         if options['blob-storage'] != options['blob_storage']:
@@ -85,13 +85,18 @@ class Recipe(object):
         blob_storage = options['blob-storage'] or options['blob_storage']
         if not blob_storage:
             # Try to get the blob-storage location from the
-            # instance/zeoclient part, if it is available.
+            # instance/zeoclient/zeoserver part, if it is available.
+            blob_recipes = (
+                'plone.recipe.zeoserver',
+                'plone.recipe.zope2instance',
+                'plone.recipe.zope2zeoserver',
+                )
             parts = buildout['buildout']['parts']
             part_names = parts.split()
             blob_storage = ''
             for part_name in part_names:
                 part = self.buildout[part_name]
-                if part.get('recipe') == 'plone.recipe.zope2instance':
+                if part.get('recipe') in blob_recipes:
                     blob_storage = part.get('blob-storage')
                     if blob_storage:
                         break
@@ -305,7 +310,8 @@ use_rsync = %(use_rsync)s
     # When updating, do the same as when installing.  This is the
     # easiest, really.  And it is needed in case someone manually
     # removes e.g. var/backups or when the blob-storage location as
-    # indicated in a plone.recipe.zope2instance part has changed.
+    # indicated in a plone.recipe.zope2instance or similar part has
+    # changed.
     update = install
 
 

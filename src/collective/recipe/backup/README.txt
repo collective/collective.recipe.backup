@@ -535,8 +535,8 @@ blob storage to store files on the file system.  In Plone 3 this is
 optional.  When this is used, it should be backed up of course.  You
 must specify the source blob_storage directory where Plone (or Zope)
 stores its blobs.  When we do not set it specifically, we try to get
-the location from the plone.recipe.zope2instance recipe when it is
-used::
+the location from the plone.recipe.zope2instance recipe (or a
+zeoserver recipe) when it is used::
 
     >>> write('buildout.cfg',
     ... """
