@@ -221,8 +221,19 @@ use_rsync = %(use_rsync)s
             raise zc.buildout.UserError(
                 "backup_blobs is true, but no blob_storage could be found.")
 
+        # Keep list of generated files/directories/scripts
+        generated = []
+        if not os.path.exists(opts['parts-directory']):
+            # Introduced for site_py_dest in scripts generated with
+            # buildout 1.5+, but this directory seems to be created
+            # automatically in that version anyway; well, does not
+            # hurt.
+            # XXX Well, maybe only really do this when using
+            # zc.buildout 1.5+
+            os.mkdir(opts['parts-directory'])
+            generated.append(opts['parts-directory'])
+
         # Get general options for all scripts.
-        scripts = []
         initialization = initialization_template % opts
         orig_distributions, working_set = self.egg.working_set(
             ['collective.recipe.backup', 'zc.buildout', 'zc.recipe.egg'])
@@ -245,7 +256,7 @@ use_rsync = %(use_rsync)s
             'backup_blobs, only_blobs, use_rsync')
         creation_args['reqs'] = reqs
         creation_args['script_arguments'] = script_arguments
-        scripts += create_script(**creation_args)
+        generated += create_script(**creation_args)
 
         # Create backup snapshot script
         reqs = [(self.options['snapshot_name'],
@@ -259,7 +270,7 @@ use_rsync = %(use_rsync)s
             'backup_blobs, only_blobs, use_rsync')
         creation_args['reqs'] = reqs
         creation_args['script_arguments'] = script_arguments
-        scripts += create_script(**creation_args)
+        generated += create_script(**creation_args)
 
         # Create restore script
         reqs = [(self.options['restore_name'],
@@ -273,7 +284,7 @@ use_rsync = %(use_rsync)s
             'only_blobs, use_rsync')
         creation_args['reqs'] = reqs
         creation_args['script_arguments'] = script_arguments
-        scripts += create_script(**creation_args)
+        generated += create_script(**creation_args)
 
         # Create snapshot restore script
         if self.options['enable_snapshotrestore'] == 'true':
@@ -288,21 +299,11 @@ use_rsync = %(use_rsync)s
                 'only_blobs, use_rsync')
             creation_args['reqs'] = reqs
             creation_args['script_arguments'] = script_arguments
-            scripts += create_script(**creation_args)
+            generated += create_script(**creation_args)
 
-        generated = []
-        if not os.path.exists(opts['parts-directory']):
-            # Introduced for site_py_dest in scripts generated with
-            # buildout 1.5+, but this directory seems to be created
-            # automatically in that version anyway; well, does not
-            # hurt.
-            # XXX Well, maybe only really do this when using
-            # zc.buildout 1.5+
-            os.mkdir(opts['parts-directory'])
-            generated.append(opts['parts-directory'])
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
-        return scripts + generated
+        return generated
 
     def update(self):
         """Updater"""
