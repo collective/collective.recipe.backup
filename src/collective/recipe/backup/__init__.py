@@ -8,6 +8,13 @@ import zc.buildout
 
 logger = logging.getLogger('backup')
 
+if hasattr(zc.buildout.easy_install, 'sitepackage_safe_scripts'):
+    # zc.buildout 1.5
+    USE_SAFE_SCRIPTS = True
+else:
+    # zc.buildout 1.4 or earlier
+    USE_SAFE_SCRIPTS = False
+
 
 class Recipe(object):
     """zc.buildout recipe"""
@@ -28,11 +35,15 @@ class Recipe(object):
             snapshot_name = 'snapshotbackup'
             restore_name = 'restore'
             snapshotrestore_name = 'snapshotrestore'
+            blob_backup_name = 'blobstoragebackup'
+            blob_snapshot_name = 'blobstoragesnapshot'
         else:
             backup_name = self.name
             snapshot_name = self.name + '-snapshot'
             restore_name = self.name + '-restore'
             snapshotrestore_name = self.name + '-snapshotrestore'
+            blob_backup_name = self.name + '-blobstorage'
+            blob_snapshot_name = self.name + '-blobstoragesnapshot'
 
         backup_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', backup_name + 's'))
@@ -40,10 +51,16 @@ class Recipe(object):
             os.path.join(buildout_dir, 'var', snapshot_name + 's'))
         datafs = os.path.abspath(
             os.path.join(buildout_dir, 'var', 'filestorage', 'Data.fs'))
+        blob_backup_dir = os.path.abspath(
+            os.path.join(buildout_dir, 'var', blob_backup_name + 's'))
+        blob_snapshot_dir = os.path.abspath(
+            os.path.join(buildout_dir, 'var', blob_snapshot_name + 's'))
 
         options.setdefault('buildout_dir', buildout_dir)
         options.setdefault('location', backup_dir)
         options.setdefault('snapshotlocation', snapshot_dir)
+        options.setdefault('blobbackuplocation', blob_backup_dir)
+        options.setdefault('blobsnapshotlocation', blob_snapshot_dir)
         options.setdefault('keep', '2')
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')
@@ -51,6 +68,50 @@ class Recipe(object):
         options.setdefault('gzip', 'true')
         options.setdefault('additional_filestorages', '')
         options.setdefault('enable_snapshotrestore', 'true')
+        options.setdefault('use_rsync', 'true')
+        options.setdefault('only_blobs', 'false')
+        # Accept both blob-storage (used by plone.recipe.zope2instance
+        # and friends) and blob_storage (as we use underscores
+        # everywhere).
+        options.setdefault('blob-storage', '')
+        options.setdefault('blob_storage', '')
+        if options['blob-storage'] != options['blob_storage']:
+            if options['blob-storage'] and options['blob_storage']:
+                # Both options have been set explicitly, which is
+                # wrong.
+                raise zc.buildout.UserError(
+                    "Both blob_storage and blob-storage have been set. "
+                    "Please pick one.")
+        blob_storage = options['blob-storage'] or options['blob_storage']
+        if not blob_storage:
+            # Try to get the blob-storage location from the
+            # instance/zeoclient/zeoserver part, if it is available.
+            blob_recipes = (
+                'plone.recipe.zeoserver',
+                'plone.recipe.zope2instance',
+                'plone.recipe.zope2zeoserver',
+                )
+            parts = buildout['buildout']['parts']
+            part_names = parts.split()
+            blob_storage = ''
+            for part_name in part_names:
+                part = self.buildout[part_name]
+                if part.get('recipe') in blob_recipes:
+                    blob_storage = part.get('blob-storage')
+                    if blob_storage:
+                        break
+        # Make sure the options are the same, for good measure.
+        options['blob-storage'] = options['blob_storage'] = blob_storage
+
+        # We usually want backup_blobs to be true, but we should not
+        # complain when there really is no blob-storage.
+        options.setdefault('backup_blobs', '')
+        if options['backup_blobs'] == '':
+            if bool(blob_storage):
+                options['backup_blobs'] = 'True'
+            else:
+                options['backup_blobs'] = 'False'
+
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
         python = buildout['buildout']['python']
@@ -60,7 +121,12 @@ class Recipe(object):
         options['snapshot_name'] = snapshot_name
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
-        check_for_true(options, ['full', 'debug', 'gzip'])
+        check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
+                                 'backup_blobs', 'use_rsync'])
+
+        # For site_py_dest in scripts generated with buildout 1.5+:
+        options['parts-directory'] = os.path.join(
+            buildout['buildout']['parts-directory'], self.name)
         self.options = options
 
     def install(self):
@@ -70,12 +136,30 @@ class Recipe(object):
             buildout_dir, self.options['location'])
         snapshot_location = construct_path(
             buildout_dir, self.options['snapshotlocation'])
-        if not os.path.isdir(backup_location):
-            os.makedirs(backup_location)
-            logger.info('Created %s', backup_location)
-        if not os.path.isdir(snapshot_location):
-            os.makedirs(snapshot_location)
-            logger.info('Created %s', snapshot_location)
+        if self.options['only_blobs'] == 'False':
+            if not os.path.isdir(backup_location):
+                os.makedirs(backup_location)
+                logger.info('Created %s', backup_location)
+            if not os.path.isdir(snapshot_location):
+                os.makedirs(snapshot_location)
+                logger.info('Created %s', snapshot_location)
+
+        # Blob backup.
+        if self.options['backup_blobs'] == 'True' and \
+               self.options['blob_storage']:
+            blob_backup_location = construct_path(
+                buildout_dir, self.options['blobbackuplocation'])
+            blob_snapshot_location = construct_path(
+                buildout_dir, self.options['blobsnapshotlocation'])
+            if not os.path.isdir(blob_backup_location):
+                os.makedirs(blob_backup_location)
+                logger.info('Created %s', blob_backup_location)
+            if not os.path.isdir(blob_snapshot_location):
+                os.makedirs(blob_snapshot_location)
+                logger.info('Created %s', blob_snapshot_location)
+        else:
+            blob_backup_location = ''
+            blob_snapshot_location = ''
 
         additional = self.options['additional_filestorages']
         if additional:
@@ -113,10 +197,16 @@ datafs = %(datafs)r
 keep = %(keep)s
 backup_location = %(backup_location)r
 snapshot_location = %(snapshot_location)r
+blob_backup_location = %(blob_backup_location)r
+blob_snapshot_location = %(blob_snapshot_location)r
+blob_storage_source = %(blob_storage_source)r
 full = %(full)s
 verbose = %(debug)s
 gzip = %(gzip)s
 additional = %(additional)r
+only_blobs = %(only_blobs)s
+backup_blobs = %(backup_blobs)s
+use_rsync = %(use_rsync)s
 """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -124,54 +214,105 @@ additional = %(additional)r
         opts['datafs'] = datafs
         opts['backup_location'] = backup_location
         opts['snapshot_location'] = snapshot_location
+        opts['blob_backup_location'] = blob_backup_location
+        opts['blob_snapshot_location'] = blob_snapshot_location
+        opts['blob_storage_source'] = opts['blob_storage']
         opts['additional'] = additional
 
+        if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
+            raise zc.buildout.UserError(
+                "Cannot have backup_blobs false and only_blobs true.")
+        if opts['backup_blobs'] == 'True' and not opts['blob_storage']:
+            raise zc.buildout.UserError(
+                "backup_blobs is true, but no blob_storage could be found.")
+
+        # Keep list of generated files/directories/scripts
+        generated = []
+        if USE_SAFE_SCRIPTS and not os.path.exists(opts['parts-directory']):
+            # zc.buildout 1.5 wants to put a site.py into this parts
+            # directory (indicated by site_py_dest) when site-packages
+            # safe scripts are created.
+            os.mkdir(opts['parts-directory'])
+            generated.append(opts['parts-directory'])
+
+        # Get general options for all scripts.
         initialization = initialization_template % opts
-        requirements, ws = self.egg.working_set(['collective.recipe.backup',
-                                                 'zc.buildout',
-                                                 'zc.recipe.egg'])
-        scripts = zc.buildout.easy_install.scripts(
-            [(self.options['backup_name'],
-              'collective.recipe.backup.repozorunner',
-              'backup_main')],
-            #requirements,
-            ws, self.options['executable'], self.options['bin-directory'],
-            arguments=('bin_dir, datafs, backup_location, ' +
-                       'keep, full, verbose, gzip, additional'),
-            initialization=initialization)
-        scripts += zc.buildout.easy_install.scripts(
-            [(self.options['snapshot_name'],
-              'collective.recipe.backup.repozorunner',
-              'snapshot_main')],
-            #requirements,
-            ws, self.options['executable'], self.options['bin-directory'],
-            arguments=('bin_dir, datafs, snapshot_location, keep, ' +
-                       'verbose, gzip, additional'),
-            initialization=initialization)
-        scripts += zc.buildout.easy_install.scripts(
-            [(self.options['restore_name'],
-              'collective.recipe.backup.repozorunner',
-              'restore_main')],
-            #requirements,
-            ws, self.options['executable'], self.options['bin-directory'],
-            arguments='bin_dir, datafs, backup_location, verbose, additional',
-            initialization=initialization)
-        if self.options['enable_snapshotrestore']=='true':
-            scripts += zc.buildout.easy_install.scripts(
-                [(self.options['snapshotrestore_name'],
-                  'collective.recipe.backup.repozorunner',
-                  'restore_main')],
-                #requirements,
-                ws, self.options['executable'], self.options['bin-directory'],
-                arguments='bin_dir, datafs, snapshot_location, verbose, additional',
-                initialization=initialization)
+        orig_distributions, working_set = self.egg.working_set(
+            ['collective.recipe.backup', 'zc.buildout', 'zc.recipe.egg'])
+        executable = self.options['executable']
+        dest = self.options['bin-directory']
+        site_py_dest = self.options['parts-directory']
+        creation_args = dict(
+            dest=dest, working_set=working_set, executable=executable,
+            site_py_dest=site_py_dest, initialization=initialization)
+
+        # Create backup script
+        reqs = [(self.options['backup_name'],
+                 'collective.recipe.backup.main',
+                 'backup_main')]
+        # Note: no commas at the end of lines in the arguments; it
+        # must not be a tuple, it is just string concatenation.
+        script_arguments = (
+            'bin_dir, datafs, backup_location, keep, full, verbose, gzip, '
+            'additional, blob_backup_location, blob_storage_source, '
+            'backup_blobs, only_blobs, use_rsync')
+        creation_args['reqs'] = reqs
+        creation_args['script_arguments'] = script_arguments
+        generated += create_script(**creation_args)
+
+        # Create backup snapshot script
+        reqs = [(self.options['snapshot_name'],
+                 'collective.recipe.backup.main',
+                 'snapshot_main')]
+        # Note: no commas at the end of lines in the arguments; it
+        # must not be a tuple, it is just string concatenation.
+        script_arguments = (
+            'bin_dir, datafs, snapshot_location, keep, verbose, gzip, '
+            'additional, blob_snapshot_location, blob_storage_source, '
+            'backup_blobs, only_blobs, use_rsync')
+        creation_args['reqs'] = reqs
+        creation_args['script_arguments'] = script_arguments
+        generated += create_script(**creation_args)
+
+        # Create restore script
+        reqs = [(self.options['restore_name'],
+                 'collective.recipe.backup.main',
+                 'restore_main')]
+        # Note: no commas at the end of lines in the arguments; it
+        # must not be a tuple, it is just string concatenation.
+        script_arguments = (
+            'bin_dir, datafs, backup_location, verbose, additional, '
+            'blob_backup_location, blob_storage_source, backup_blobs, '
+            'only_blobs, use_rsync')
+        creation_args['reqs'] = reqs
+        creation_args['script_arguments'] = script_arguments
+        generated += create_script(**creation_args)
+
+        # Create snapshot restore script
+        if self.options['enable_snapshotrestore'] == 'true':
+            reqs = [(self.options['snapshotrestore_name'],
+                     'collective.recipe.backup.main',
+                     'restore_main')]
+            # Note: no commas at the end of lines in the arguments; it
+            # must not be a tuple, it is just string concatenation.
+            script_arguments = (
+                'bin_dir, datafs, snapshot_location, verbose, additional, '
+                'blob_snapshot_location, blob_storage_source, backup_blobs, '
+                'only_blobs, use_rsync')
+            creation_args['reqs'] = reqs
+            creation_args['script_arguments'] = script_arguments
+            generated += create_script(**creation_args)
+
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
-        return scripts
+        return generated
 
-    def update(self):
-        """Updater"""
-        pass
+    # When updating, do the same as when installing.  This is the
+    # easiest, really.  And it is needed in case someone manually
+    # removes e.g. var/backups or when the blob-storage location as
+    # indicated in a plone.recipe.zope2instance or similar part has
+    # changed.
+    update = install
 
 
 def check_for_true(options, keys):
@@ -228,3 +369,30 @@ def construct_path(buildout_dir, path):
     combination = os.path.join(buildout_dir, path)
     normalized = os.path.normpath(combination)
     return normalized
+
+
+def create_script(**kwargs):
+    """Create a script.
+
+    Do this in a way that is compatible with zc.buildout 1.4 and 1.5
+    (using the sitepackage_safe_scripts in the latter case).
+
+    See http://pypi.python.org/pypi/zc.buildout/1.5.2
+    section: #updating-recipes-to-support-a-system-python
+    """
+    if USE_SAFE_SCRIPTS:
+        # zc.buildout 1.5
+        script = zc.buildout.easy_install.sitepackage_safe_scripts(
+            kwargs.get('dest'), kwargs.get('working_set'),
+            kwargs.get('executable'), kwargs.get('site_py_dest'),
+            reqs=kwargs.get('reqs'),
+            script_arguments=kwargs.get('script_arguments'),
+            initialization=kwargs.get('initialization'))
+    else:
+        # zc.buildout 1.4 or earlier
+        script = zc.buildout.easy_install.scripts(
+            kwargs.get('reqs'), kwargs.get('working_set'),
+            kwargs.get('executable'), kwargs.get('dest'),
+            arguments=kwargs.get('script_arguments'),
+            initialization=kwargs.get('initialization'))
+    return script

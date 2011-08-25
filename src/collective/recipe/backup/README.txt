@@ -5,20 +5,21 @@ Just to isolate some test differences, we run an empty buildout once::
 
     >>> ignore = system(buildout)
 
-The simplest way to use it to add a part in ``buildout.cfg`` like this::
+The simplest way to use it is to add a part in ``buildout.cfg`` like this::
 
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
     ... """)
 
-Running the buildout adds a backup, snapshotbackup, restore and snapshotrestore scripts to the
-``bin/`` directory and, by default, it creates the ``var/backups`` and
-``var/snapshotbackups`` dirs::
+Running the buildout adds a backup, snapshotbackup, restore and
+snapshotrestore scripts to the ``bin/`` directory and, by default, it
+creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
 
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
@@ -56,7 +57,8 @@ By default, backups are done in ``var/backups``::
 
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
-    INFO: Backing up database file: ...
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    <BLANKLINE>
 
 
 Restore
@@ -64,24 +66,39 @@ Restore
 
 You can restore the very latest backup with ``bin/restore``::
 
-    >>> print system('bin/restore')
+    >>> print system('bin/restore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
-    INFO: Restoring...
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+    <BLANKLINE>
 
 You can restore the very latest snapshotbackup with ``bin/snapshotrestore``::
 
-    >>> print system('bin/snapshotrestore')
+    >>> print system('bin/snapshotrestore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
-    INFO: Restoring...
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
 
 You can also restore the backup as of a certain date. Just pass a date
 argument. According to repozo: specify UTC (not local) time.  The format is
 ``yyyy-mm-dd[-hh[-mm[-ss]]]``.
 
-    >>> print system('bin/restore 1972-12-25')
+    >>> print system('bin/restore 1972-12-25', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D 1972-12-25
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at 1972-12-25.
-    INFO: Restoring...
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+
+Note that restoring to a specific date does not currently work for
+blobstorage, but it should not really matter there, as for new or
+changed blobfiles a new file is created, so you would just have a few
+extra unused files.
 
 
 Snapshots
@@ -96,7 +113,8 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
-    INFO: Making snapshot backup:...
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
+    <BLANKLINE>
 
 
 Names of created scripts
@@ -110,6 +128,7 @@ something else,  the script names will also be different as will the created
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = plonebackup
     ...
     ... [plonebackup]
@@ -152,6 +171,7 @@ the ``var/plonebackups`` and ``var/plonebackup-snaphots`` dirs:
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -210,16 +230,59 @@ additional_filestorages
 
 enable_snapshotrestore
     Having a snapshotrestore script is very useful in development
-    environments, but can be harmful in a production buildout. The script
-    restores the latest snapshot directly to your filestorage without asking
-    any questions whatsoever. If you don't want a snapshotrestore, set this
-    option to false.
+    environments, but can be harmful in a production buildout. The
+    script restores the latest snapshot directly to your filestorage
+    and it used to do this without asking any questions whatsoever
+    (this has been changed to require an explicit 'yes' as answer).
+    If you don't want a snapshotrestore, set this option to false.
 
-We'll use all options::
+blob_storage
+    Location of the directory where the blobs (binary large objects)
+    are stored.  This is used in Plone 4 and higher, or on Plone 3 if
+    you use plone.app.blob.  This option is ignored if backup_blobs is
+    false.  The location is not set by default.  When there is a part
+    using plone.recipe.zope2instance, we check if that has a
+    blob-storage option and use that as default.
+
+blob-storage
+    Alternative spelling for the preferred blob_storage, as
+    plone.recipe.zope2instance spells it as blob-storage.  Pick one.
+
+backup_blobs
+    Backup the blob storage.  This requires the blob_storage location
+    to be set.  If no blob_storage location has been set and we cannot
+    find one by looking in a plone.recipe.zope2instance part, we
+    default to False, otherwise to True.
+
+blobbackuplocation
+    Directory where the blob storage will be backed up to.  Defaults
+    to ``var/blobstoragebackups`` inside the buildout directory.
+
+blobsnapshotlocation
+    Directory where the blob storage snapshots will be created.
+    Defaults to ``var/blobstoragesnapshots`` inside the buildout
+    directory.
+
+only_blobs
+    Only backup blob storage, not the Data.fs.  False by default.  May
+    be a useful option if for example you want to create one
+    bin/filestoragebackup script and one bin/blobstoragebackup script,
+    using only_blobs in one and backup_blobs in the other.
+
+use_rsync
+    Use rsync with hard links for backing up the blobs.  Default is
+    true.  rsync is probably not available on all machines though, and
+    I guess hard links will not work on Windows.  When you set this to
+    false, we fall back to a simple copy (``shutil.copytree`` from
+    python in fact).
+
+
+We'll use all options, except the blob options for now::
 
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -247,15 +310,23 @@ We'll use all options::
 Backups are now stored in the ``/myproject`` folder inside buildout and the
 Data.fs location is handled correctly despite not being an absolute path::
 
-    >>> print system('bin/backup')
+    >>> output = system('bin/backup')
+    >>> print output
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
-    INFO: Backing up database file: ...
+    INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject...
+
+The '...' could filter out too many things, so we explicitly look for
+errors here::
+
+    >>> if 'ERROR' in output: print output
 
 The same is true for the snapshot backup.
 
-    >>> print system('bin/snapshotbackup')
+    >>> output = system('bin/snapshotbackup')
+    >>> print output
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
-    INFO: Making snapshot backup:...
+    INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/snap/my
+    >>> if 'ERROR' in output: print output
 
 Untested in this file, as it would create directories in your root or your
 home dir, are absolute links (starting with a '/') or directories in your home
@@ -275,7 +346,6 @@ get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     >>> print system('bin/backup --quiet')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
-
 
 In our case the ``--backup ...`` lines above are just the mock repozo script
 that still prints something. So it proves that the command is executed, but it
@@ -302,6 +372,7 @@ option::
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -344,9 +415,10 @@ mildly irritating, but the other way around users can get real errors::
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
-    INFO: Backing up database file: ...
-    INFO: Backing up database file: ...
-    INFO: Backing up database file: ...
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    <BLANKLINE>
 
 Same with snapshot backups::
 
@@ -354,46 +426,61 @@ Same with snapshot backups::
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
-    INFO: Making snapshot backup: ...
-    INFO: Making snapshot backup: ...
-    INFO: Making snapshot backup: ...
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/snapshotbackups_catalog
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/snapshotbackups_another
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
+    <BLANKLINE>
 
 And a restore restores all three backups::
 
-    >>> print system('bin/restore')
+    >>> print system('bin/restore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
     --recover -o /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
-    INFO: Restoring...
-    INFO: Restoring...
-    INFO: Restoring...
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups_catalog to /sample-buildout/var/filestorage/catalog.fs
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups_another to /sample-buildout/var/filestorage/another.fs
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+    <BLANKLINE>
 
 We fake three old backups in all the (snapshot)backup directories to
 test if the 'keep' parameter is working correctly.
 
+    >>> import os
+    >>> import time
+    >>> next_mod_time = time.time() - 1000
+    >>> def add_backup(dir, name):  # same as in the tests in repozorunner.py
+    ...     global next_mod_time
+    ...     write(dir, name, 'sample fs')
+    ...     # Change modification time, every new file is 10 seconds older.
+    ...     os.utime(join(dir, name), (next_mod_time, next_mod_time))
+    ...     next_mod_time += 10
     >>> dirs = ('var/backups', 'var/snapshotbackups')
     >>> for tail in ('', '_catalog', '_another'):
     ...     for dir in dirs:
     ...         dir = dir + tail
-    ...         for i in range(3):
-    ...             write(dir, '%d.fs' % i, 'sample fs')
+    ...         for i in reversed(range(3)):
+    ...             add_backup(dir, '%d.fs' % i)
+    >>> ls('var/backups')  # Before
+    -  0.fs
+    -  1.fs
+    -  2.fs
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
-    INFO: Backing up database file:...var/backups_catalog...
-    INFO: Removed old backups, the latest 2 full backups have been kept.
-    INFO: Backing up database file:...var/backups_another...
-    INFO: Removed old backups, the latest 2 full backups have been kept.
-    INFO: Backing up database file:...var/backups...
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     <BLANKLINE>
-
-Now unfortunately if you would do "ls('var/backups')" here in the test
-you would still see all three files; apparently buildout and the
-system do not interact correctly here, as in real life the superfluous
-backups are really gone.  So we will have to trust the above note that
-old backups have been removed.
+    >>> ls('var/backups')  # After
+    -  0.fs
+    -  1.fs
 
 Same for the snapshot backups:
 
@@ -401,14 +488,13 @@ Same for the snapshot backups:
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
-    INFO: Making snapshot backup:...var/snapshotbackups_catalog...
-    INFO: Removed old backups, the latest 2 full backups have been kept.
-    INFO: Making snapshot backup:...var/snapshotbackups_another...
-    INFO: Removed old backups, the latest 2 full backups have been kept.
-    INFO: Making snapshot backup:...var/snapshotbackups...
-    INFO: Removed old backups, the latest 2 full backups have been kept.
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/snapshotbackups_catalog
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/snapshotbackups_another
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
+    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
     <BLANKLINE>
-    
 
 Test disabling the snapshotrestore script.  We generate a new buildout
 with enable_snapshotrestore set to false. The script should not be
@@ -418,6 +504,7 @@ generated script).
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
+    ... newest = false
     ... parts = backup
     ...
     ... [backup]
@@ -431,7 +518,6 @@ generated script).
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-
     <BLANKLINE>
     >>> ls('bin')
     -  backup
@@ -439,3 +525,507 @@ generated script).
     -  repozo
     -  restore
     -  snapshotbackup
+
+
+Blob storage
+------------
+
+New in this recipe is that we backup the blob storage.  Plone 4 uses a
+blob storage to store files on the file system.  In Plone 3 this is
+optional.  When this is used, it should be backed up of course.  You
+must specify the source blob_storage directory where Plone (or Zope)
+stores its blobs.  When we do not set it specifically, we try to get
+the location from the plone.recipe.zope2instance recipe (or a
+zeoserver recipe) when it is used::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... # For some reason this is now needed:
+    ... index = http://pypi.python.org/simple
+    ... # Avoid suddenly updating zc.buildout or other packages:
+    ... newest = false
+    ... parts = instance backup
+    ... versions = versions
+    ...
+    ... [versions]
+    ... # A slightly older version that does not rely on the Zope2 egg
+    ... plone.recipe.zope2instance = 3.9
+    ... mailinglogger = 3.3
+    ... 
+    ... [instance]
+    ... recipe = plone.recipe.zope2instance
+    ... user = admin:admin
+    ... blob-storage = ${buildout:directory}/var/somewhere
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... """)
+
+We need a mock mkzopeinstance script in the bin directory for the
+zope2instance recipe to work:
+
+    >>> write('bin/mkzopeinstance', """
+    ... import sys
+    ... import os
+    ... path = sys.argv[2]
+    ... os.mkdir(path)
+    ... os.mkdir(os.path.join(path, 'etc'))
+    ... """)
+
+We run the buildout:
+
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Getting distribution for 'plone.recipe.zope2instance==3.9'...
+    Got plone.recipe.zope2instance 3.9.
+    Getting distribution for 'mailinglogger==3.3'...
+    Got mailinglogger 3.3.0.
+    Uninstalling backup.
+    Installing instance.
+    Generated script '/sample-buildout/bin/instance'.
+    Installing backup.
+    backup: Created /sample-buildout/var/blobstoragebackups
+    backup: Created /sample-buildout/var/blobstoragesnapshots
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  instance
+    -  mkzopeinstance
+    -  repozo
+    -  restore
+    -  snapshotbackup
+    -  snapshotrestore
+
+We can override the blob source location if needed:
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Uninstalling instance.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  instance
+    -  mkzopeinstance
+    -  repozo
+    -  restore
+    -  snapshotbackup
+    -  snapshotrestore
+    >>> mkdir('var/blobstorage')
+    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
+
+
+Test the snapshotbackup first, as that should be easiest.
+
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    <BLANKLINE>
+    >>> ls('var/blobstoragesnapshots')
+    d  blobstorage.0
+    >>> ls('var/blobstoragesnapshots/blobstorage.0')
+    d  blobstorage
+
+Let's try that some more.
+
+    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    <BLANKLINE>
+    >>> ls('var/blobstoragesnapshots')
+    d  blobstorage.0
+    d  blobstorage.1
+    >>> ls('var/blobstoragesnapshots/blobstorage.0/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.1/blobstorage')
+    -  blob1.txt
+    >>> cat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob1.txt')
+    Sample blob 1.
+    >>> cat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob2.txt')
+    Sample blob 2.
+    >>> cat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
+    Sample blob 1.
+
+Now remove an item:
+
+    >>> remove('var', 'blobstorage', 'blob2.txt')
+    >>> print system('bin/snapshotbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.1 to blobstorage.2.
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    <BLANKLINE>
+    >>> ls('var/blobstoragesnapshots')
+    d  blobstorage.0
+    d  blobstorage.1
+    d  blobstorage.2
+    >>> ls('var/blobstoragesnapshots/blobstorage.0/blobstorage')
+    -  blob1.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.1/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.2/blobstorage')
+    -  blob1.txt
+
+Let's see how a bin/backup goes:
+
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
+    <BLANKLINE>
+    >>> ls('var/blobstoragebackups')
+    d  blobstorage.0
+    >>> ls('var/blobstoragebackups/blobstorage.0')
+    d  blobstorage
+    >>> ls('var/blobstoragebackups/blobstorage.0/blobstorage')
+    -  blob1.txt
+
+We try again with an extra 'blob':
+
+    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
+    <BLANKLINE>
+    >>> ls('var/blobstoragebackups')
+    d  blobstorage.0
+    d  blobstorage.1
+    >>> ls('var/blobstoragebackups/blobstorage.0/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+    >>> ls('var/blobstoragebackups/blobstorage.1/blobstorage')
+    -  blob1.txt
+
+Let's check the inodes of two files, to see if they are the same.  Not
+sure if this works on all operating systems.
+
+    >>> import os
+    >>> stat_0 = os.stat('var/blobstoragebackups/blobstorage.0/blobstorage/blob1.txt')
+    >>> stat_1 = os.stat('var/blobstoragebackups/blobstorage.1/blobstorage/blob1.txt')
+    >>> stat_0.st_ino == stat_1.st_ino
+    True
+
+We could to things differently for the snapshot blob backups, as they
+should be full copies, but using hard links they also really are full
+copies, so also in this case the inodes can be the same::
+
+    >>> stat_0 = os.stat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob1.txt')
+    >>> stat_1 = os.stat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
+    >>> stat_0.st_ino == stat_1.st_ino
+    True
+
+Now try a restore::
+
+    >>> print system('bin/restore', input='no\n')
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Not restoring.
+    <BLANKLINE>
+    >>> print system('bin/restore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+
+The snapshotrestore works too::
+
+    >>> print system('bin/snapshotrestore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+
+We can tell buildout that we only want to backup blobs or specifically
+do not want to backup the blobs.
+
+When we explicitly set backup_blobs to true, we must have a
+blob_storage option, otherwise buildout quits::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... backup_blobs = true
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    While:
+      Installing backup.
+    Error: backup_blobs is true, but no blob_storage could be found.
+    <BLANKLINE>
+
+Combining blob_backup=false and only_blobs=true will not work::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... backup_blobs = false
+    ... only_blobs = true
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    While:
+      Installing backup.
+    Error: Cannot have backup_blobs false and only_blobs true.
+    <BLANKLINE>
+
+Specifying backup_blobs and only_blobs might be useful in case you
+want to separate this into several scripts::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = filebackup blobbackup
+    ...
+    ... [filebackup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... backup_blobs = false
+    ... 
+    ... [blobbackup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... only_blobs = true
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing filebackup.
+    backup: Created /sample-buildout/var/filebackups
+    backup: Created /sample-buildout/var/filebackup-snapshots
+    Generated script '/sample-buildout/bin/filebackup'.
+    Generated script '/sample-buildout/bin/filebackup-snapshot'.
+    Generated script '/sample-buildout/bin/filebackup-restore'.
+    Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
+    Installing blobbackup.
+    backup: Created /sample-buildout/var/blobbackup-blobstorages
+    backup: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
+    Generated script '/sample-buildout/bin/blobbackup'.
+    Generated script '/sample-buildout/bin/blobbackup-snapshot'.
+    Generated script '/sample-buildout/bin/blobbackup-restore'.
+    Generated script '/sample-buildout/bin/blobbackup-snapshotrestore'.
+    <BLANKLINE>
+
+Now we test it.  First the backup.  The filebackup now only backs up
+the filestorage::
+
+    >>> print system('bin/filebackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups --gzip
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackups
+    <BLANKLINE>
+    >>> print system('bin/filebackup-snapshot')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots -F --gzip
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackup-snapshots
+    <BLANKLINE>
+
+And blobbackup only backs up the blobstorage::
+
+    >>> print system('bin/blobbackup')
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstorages
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstorages/blobstorage.0
+    <BLANKLINE>
+    >>> print system('bin/blobbackup-snapshot')
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstoragesnapshots
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0
+    <BLANKLINE>
+
+Now test the restore::
+
+    >>> print system('bin/filebackup-restore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/filebackups to /sample-buildout/var/filestorage/Data.fs
+    <BLANKLINE>
+    >>> print system('bin/filebackup-snapshotrestore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/filebackup-snapshots to /sample-buildout/var/filestorage/Data.fs
+    <BLANKLINE>
+    >>> print system('bin/blobbackup-restore', input='yes\n')
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstorages to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> print system('bin/blobbackup-snapshotrestore', input='yes\n')
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+
+
+No rsync
+--------
+
+If you cannot use rsync and hard links (which may not work on Windows)
+you can set ``use_rsync = false``.  Then we will do a simple copy.
+
+First it is about time we clean up with extreme prejudice and make
+some fresh content:
+
+    >>> remove('var')  # cleanup from previous runs
+    >>> mkdir('var')
+    >>> mkdir('var/blobstorage')
+    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... only_blobs = true
+    ... use_rsync = false
+    ... """)
+
+One thing we test here is if the buildout does not create too many
+directories that will not get used because have set only_blobs=true::
+
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling blobbackup.
+    Uninstalling filebackup.
+    Installing backup.
+    backup: Created /sample-buildout/var/blobstoragebackups
+    backup: Created /sample-buildout/var/blobstoragesnapshots
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+
+Check the output of bin/backup and explicitly test that rsync in
+nowhere to be found::
+
+    >>> output = system('bin/backup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    <BLANKLINE>
+
+Try again to see that renaming/rotating keeps working::
+
+    >>> output = system('bin/backup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    <BLANKLINE>
+
+Now a restore::
+
+    >>> output = system('bin/restore', input='yes\n')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
+    INFO: Removing /sample-buildout/var/blobstorage
+    INFO: Copying /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
+    <BLANKLINE>
+
+Snapshots should work too::
+
+    >>> output = system('bin/snapshotbackup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    <BLANKLINE>
+
+Try again to see that renaming/rotating keeps working::
+
+    >>> output = system('bin/snapshotbackup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    <BLANKLINE>
+
+And the snapshotrestore::
+
+    >>> output = system('bin/snapshotrestore', input='yes\n')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    <BLANKLINE>
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: Removing /sample-buildout/var/blobstorage
+    INFO: Copying /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
+    <BLANKLINE>
+

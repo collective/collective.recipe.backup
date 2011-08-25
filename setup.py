@@ -14,11 +14,6 @@ version = '1.8dev'
 long_description = (
     read('README.txt')
     + '\n' +
-    'Detailed Documentation\n'
-    '**********************\n'
-    + '\n' +
-    read('src', 'collective', 'recipe', 'backup', 'README.txt')
-    + '\n' +
     'Contributors\n'
     '************\n'
     + '\n' +
