@@ -302,9 +302,11 @@ use_rsync = %(use_rsync)s
         # will remove all returned files upon reinstall.
         return generated
 
-    def update(self):
-        """Updater"""
-        pass
+    # When updating, do the same as when installing.  This is the
+    # easiest, really.  And it is needed in case someone manually
+    # removes e.g. var/backups or when the blob-storage location as
+    # indicated in a plone.recipe.zope2instance part has changed.
+    update = install
 
 
 def check_for_true(options, keys):
