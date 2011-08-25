@@ -111,6 +111,10 @@ class Recipe(object):
         options['snapshotrestore_name'] = snapshotrestore_name
         check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
                                  'backup_blobs', 'use_rsync'])
+
+        # For site_py_dest in scripts generated with buildout 1.5+:
+        options['parts-directory'] = os.path.join(
+            buildout['buildout']['parts-directory'], self.name)
         self.options = options
 
     def install(self):
@@ -210,66 +214,88 @@ use_rsync = %(use_rsync)s
             raise zc.buildout.UserError(
                 "backup_blobs is true, but no blob_storage could be found.")
 
+        # Get general options for all scripts.
+        scripts = []
         initialization = initialization_template % opts
-        requirements, ws = self.egg.working_set(['collective.recipe.backup',
-                                                 'zc.buildout',
-                                                 'zc.recipe.egg'])
-        scripts = zc.buildout.easy_install.scripts(
-            [(self.options['backup_name'],
-              'collective.recipe.backup.main',
-              'backup_main')],
-            #requirements,
-            ws, self.options['executable'], self.options['bin-directory'],
-            # Note: no commas at the end of lines in the arguments; it
-            # must not be a tuple, it is just string concatenation.
-            arguments=('bin_dir, datafs, backup_location, '
-                       'keep, full, verbose, gzip, additional, '
-                       'blob_backup_location, blob_storage_source, '
-                       'backup_blobs, only_blobs, use_rsync'),
-            initialization=initialization)
+        requirements, ws = self.egg.working_set(
+            ['collective.recipe.backup', 'zc.buildout', 'zc.recipe.egg'])
+        executable = self.options['executable']
+        dest = self.options['bin-directory']
+
+        # Create backup script
+        reqs = [(self.options['backup_name'],
+                 'collective.recipe.backup.main',
+                 'backup_main')]
+        # Note: no commas at the end of lines in the arguments; it
+        # must not be a tuple, it is just string concatenation.
+        script_arguments = (
+            'bin_dir, datafs, backup_location, keep, full, verbose, gzip, '
+            'additional, blob_backup_location, blob_storage_source, '
+            'backup_blobs, only_blobs, use_rsync')
         scripts += zc.buildout.easy_install.scripts(
-            [(self.options['snapshot_name'],
-              'collective.recipe.backup.main',
-              'snapshot_main')],
-            #requirements,
-            ws, self.options['executable'], self.options['bin-directory'],
-            # Note: no commas at the end of lines in the arguments; it
-            # must not be a tuple, it is just string concatenation.
-            arguments=('bin_dir, datafs, snapshot_location, keep, '
-                       'verbose, gzip, additional, blob_snapshot_location, '
-                       'blob_storage_source, backup_blobs, only_blobs, '
-                       'use_rsync'),
+            reqs, ws, executable, dest,
+            arguments=script_arguments,
             initialization=initialization)
+
+        # Create backup snapshot script
+        reqs = [(self.options['snapshot_name'],
+                 'collective.recipe.backup.main',
+                 'snapshot_main')]
+        # Note: no commas at the end of lines in the arguments; it
+        # must not be a tuple, it is just string concatenation.
+        script_arguments = (
+            'bin_dir, datafs, snapshot_location, keep, verbose, gzip, '
+            'additional, blob_snapshot_location, blob_storage_source, '
+            'backup_blobs, only_blobs, use_rsync')
         scripts += zc.buildout.easy_install.scripts(
-            [(self.options['restore_name'],
-              'collective.recipe.backup.main',
-              'restore_main')],
-            #requirements,
-            ws, self.options['executable'], self.options['bin-directory'],
-            # Note: no commas at the end of lines in the arguments; it
-            # must not be a tuple, it is just string concatenation.
-            arguments=('bin_dir, datafs, backup_location, verbose, '
-                       'additional, blob_backup_location, '
-                       'blob_storage_source, backup_blobs, only_blobs, '
-                       'use_rsync'),
+            reqs, ws, executable, dest,
+            arguments=script_arguments,
             initialization=initialization)
+
+        # Create restore script
+        reqs = [(self.options['restore_name'],
+                 'collective.recipe.backup.main',
+                 'restore_main')]
+        # Note: no commas at the end of lines in the arguments; it
+        # must not be a tuple, it is just string concatenation.
+        script_arguments = (
+            'bin_dir, datafs, backup_location, verbose, additional, '
+            'blob_backup_location, blob_storage_source, backup_blobs, '
+            'only_blobs, use_rsync')
+        scripts += zc.buildout.easy_install.scripts(
+            reqs, ws, executable, dest,
+            arguments=script_arguments,
+            initialization=initialization)
+
+        # Create snapshot restore script
         if self.options['enable_snapshotrestore'] == 'true':
+            reqs = [(self.options['snapshotrestore_name'],
+                     'collective.recipe.backup.main',
+                     'restore_main')]
+            # Note: no commas at the end of lines in the arguments; it
+            # must not be a tuple, it is just string concatenation.
+            script_arguments = (
+                'bin_dir, datafs, snapshot_location, verbose, additional, '
+                'blob_snapshot_location, blob_storage_source, backup_blobs, '
+                'only_blobs, use_rsync')
             scripts += zc.buildout.easy_install.scripts(
-                [(self.options['snapshotrestore_name'],
-                  'collective.recipe.backup.main',
-                  'restore_main')],
-                #requirements,
-                ws, self.options['executable'], self.options['bin-directory'],
-                # Note: no commas at the end of lines in the arguments; it
-                # must not be a tuple, it is just string concatenation.
-                arguments=('bin_dir, datafs, snapshot_location, verbose, '
-                           'additional, blob_snapshot_location, '
-                           'blob_storage_source, backup_blobs, only_blobs,'
-                           'use_rsync'),
+                reqs, ws, executable, dest,
+                arguments=script_arguments,
                 initialization=initialization)
+
+        generated = []
+        if not os.path.exists(opts['parts-directory']):
+            # Introduced for site_py_dest in scripts generated with
+            # buildout 1.5+, but this directory seems to be created
+            # automatically in that version anyway; well, does not
+            # hurt.
+            # XXX Well, maybe only really do this when using
+            # zc.buildout 1.5+
+            os.mkdir(opts['parts-directory'])
+            generated.append(opts['parts-directory'])
         # Return files that were created by the recipe. The buildout
         # will remove all returned files upon reinstall.
-        return scripts
+        return scripts + generated
 
     def update(self):
         """Updater"""
