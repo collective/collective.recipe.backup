@@ -1029,3 +1029,58 @@ And the snapshotrestore::
     INFO: Copying /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
     <BLANKLINE>
 
+Note that you should not mix backup locations; it is confusing for the
+recipe (or at least its authors) when backups end up in the same
+directory::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... location = ${buildout:directory}/var/loc1
+    ... blobbackuplocation = ${buildout:directory}/var/loc1
+    ... snapshotlocation = ${buildout:directory}/var/loc2
+    ... blobsnapshotlocation = ${buildout:directory}/var/loc2
+    ... """)
+    >>> print system('bin/buildout')
+    While:
+      Installing.
+      Getting section backup.
+      Initializing part backup.
+    Error: These must be four distinct locations:
+    blobbackuplocation = /sample-buildout/var/loc1
+    blobsnapshotlocation = /sample-buildout/var/loc2
+    location = /sample-buildout/var/loc1
+    snapshotlocation = /sample-buildout/var/loc2
+    <BLANKLINE>
+
+Some of these locations might be an empty string in some cases, which
+is probably grudgingly allowed, at least by this particular check.
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... location =
+    ... blobbackuplocation =
+    ... snapshotlocation =
+    ... blobsnapshotlocation =
+    ... """)
+    >>> print system('bin/buildout')
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>

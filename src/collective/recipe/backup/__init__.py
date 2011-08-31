@@ -61,6 +61,18 @@ class Recipe(object):
         options.setdefault('snapshotlocation', snapshot_dir)
         options.setdefault('blobbackuplocation', blob_backup_dir)
         options.setdefault('blobsnapshotlocation', blob_snapshot_dir)
+        # These must be four distinct locations.
+        locations = {}
+        for opt in ('location', 'snapshotlocation',
+                    'blobbackuplocation', 'blobsnapshotlocation'):
+            value = options.get(opt)
+            if value:
+                locations[opt] = value
+        if len(locations.keys()) != len(set(locations.values())):
+            raise zc.buildout.UserError(
+                "These must be four distinct locations:\n",
+                '\n'.join([('%s = %s' % (k, v)) for (k, v) in
+                             sorted(locations.items())]))
         options.setdefault('keep', '2')
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')

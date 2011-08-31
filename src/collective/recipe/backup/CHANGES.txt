@@ -1,6 +1,12 @@
 2.1 (unreleased)
 ================
 
+- Raise an error when the four backup location options
+  (blobbackuplocation, blobsnapshotlocation, location and
+  snapshotlocation) are not four distinct locations (or empty
+  strings).
+  [maurits]
+
 - Fixed possible TypeError: 'Option values must be strings'.
   Found by Alex Clark, thanks.
   [maurits]
