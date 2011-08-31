@@ -219,13 +219,18 @@ Supported options
 =================
 
 The recipe supports the following options, none of which are needed by
-default. The most common one to change is ``location``, as that allows you to
-place your backups in some system-wide directory like
-``/var/zopebackups/instancename/``.
+default. The most common ones to change are ``location`` and
+``blobbackuplocation``, as those allow you to place your backups in
+some system-wide directory like ``/var/zopebackups/instancename/`` and
+``/var/zopebackups/instancename-blobs/``.
 
 location
     Location where backups are stored. Defaults to ``var/backups`` inside the
     buildout directory.
+
+blobbackuplocation 
+    Directory where the blob storage will be backed up to.  Defaults
+    to ``var/blobstoragebackups`` inside the buildout directory.
 
 keep
     Number of full backups to keep. Defaults to ``2``, which means that the
@@ -292,10 +297,6 @@ backup_blobs
     to be set.  If no blob_storage location has been set and we cannot
     find one by looking in the other buildout parts, we default to
     False, otherwise to True.
-
-blobbackuplocation
-    Directory where the blob storage will be backed up to.  Defaults
-    to ``var/blobstoragebackups`` inside the buildout directory.
 
 blobsnapshotlocation
     Directory where the blob storage snapshots will be created.
