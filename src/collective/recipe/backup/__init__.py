@@ -100,6 +100,9 @@ class Recipe(object):
                     blob_storage = part.get('blob-storage')
                     if blob_storage:
                         break
+            if not blob_storage:
+                # 'None' would give a TypeError when setting the option.
+                blob_storage = ''
         # Make sure the options are the same, for good measure.
         options['blob-storage'] = options['blob_storage'] = blob_storage
 

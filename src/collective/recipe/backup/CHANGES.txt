@@ -1,7 +1,9 @@
 2.1 (unreleased)
 ================
 
-- Nothing changed yet.
+- Fixed possible TypeError: 'Option values must be strings'.
+  Found by Alex Clark, thanks.
+  [maurits]
 
 
 2.0 (2011-08-26)
