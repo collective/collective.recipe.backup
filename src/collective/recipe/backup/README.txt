@@ -472,11 +472,11 @@ test if the 'keep' parameter is working correctly.
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
-    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
-    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
-    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     <BLANKLINE>
     >>> ls('var/backups')  # After
     -  0.fs
@@ -489,11 +489,11 @@ Same for the snapshot backups:
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/snapshotbackups_catalog
-    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/snapshotbackups_another
-    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
-    INFO: Removed 1 old backup(s), the latest 2 full backups have been kept.
+    INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     <BLANKLINE>
 
 Test disabling the snapshotrestore script.  We generate a new buildout

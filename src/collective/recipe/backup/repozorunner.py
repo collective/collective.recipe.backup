@@ -346,8 +346,9 @@ def cleanup(backup_location, keep=0):
                 os.remove(filepath)
                 logger.debug("Deleted %s.", filepath)
                 deleted += 1
-        logger.info("Removed %d old backup(s), the latest %s full backups "
-                    "have been kept.", deleted, str(num_backups))
+        logger.info("Removed %d file(s) belonging to old backups, the latest "
+                    "%s full backups have been kept.", deleted,
+                    str(num_backups))
         if deleted == 0:
             # This may be a programming/testing error.
             logger.error("We should have deleted something, but didn't...")
