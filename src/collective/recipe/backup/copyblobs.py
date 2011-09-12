@@ -6,6 +6,7 @@ It is based on this article by Mike Rubel:
 http://www.mikerubel.org/computers/rsync_snapshots/
 """
 
+from operator import itemgetter
 import os
 import logging
 import shutil
@@ -148,7 +149,7 @@ def rotate_directories(container, name):
                   os.path.join(container, new_name))
 
 
-def backup_blobs(source, destination, full=False, use_rsync=True):
+def backup_blobs(source, destination, full=False, use_rsync=True, keep=0):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -329,6 +330,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True):
         dest = os.path.join(dest, base_name)
         logger.info("Copying %s to %s", source, dest)
         shutil.copytree(source, dest)
+    # Now possibly remove old backups.
+    cleanup(destination, keep)
 
 
 def restore_blobs(source, destination, use_rsync=True):
@@ -370,3 +373,65 @@ def restore_blobs(source, destination, use_rsync=True):
             shutil.rmtree(destination)
         logger.info("Copying %s to %s", last_source, destination)
         shutil.copytree(last_source, destination)
+
+
+def cleanup(backup_location, keep=0):
+    """Clean up old blob backups.
+    """
+    keep = int(keep)  # Making sure.
+    if not keep:
+        logger.debug(
+            "Value of 'keep' is %r, we don't want to remove anything.", keep)
+        return
+    logger.debug("Trying to clean up old backups.")
+    filenames = os.listdir(backup_location)
+    logger.debug("Looked up filenames in the target dir: %s found. %r.",
+                 len(filenames), filenames)
+    num_backups = int(keep)
+    logger.debug("Max number of backups: %s.", num_backups)
+    backup_dirs = []
+    prefix = ''
+    for filename in filenames:
+        # We only want directories of the form prefix.X, where X is an
+        # integer.  There should not be anything else, but we like to
+        # be safe.
+        full_path = os.path.join(backup_location, filename)
+        if not os.path.isdir(full_path):
+            continue
+        if filename in (os.curdir, os.pardir):
+            # These should not be listed by os.listdir, but again: we
+            # like to be safe.
+            continue
+        parts = filename.split('.')
+        if len(parts) != 2:
+            continue
+        try:
+            num = int(parts[1])
+        except:
+            # No number
+            continue
+        if prefix:
+            if parts[0] != prefix:
+                logger.warn("Different backup prefixes found in %s (%s, %s). "
+                            "Are you mixing two backups in one directory? For "
+                            "safety we will not cleanup old backups here.",
+                            backup_location, prefix, parts[0])
+        else:
+            prefix = parts[0]
+        backup_dirs.append((num, full_path))
+    # Sort it:
+    backup_dirs = sorted(backup_dirs, key=itemgetter(0))
+    logger.debug("Found %d blob backups: %r.", len(backup_dirs),
+                 [d[1] for d in backup_dirs])
+    if len(backup_dirs) > num_backups and num_backups != 0:
+        logger.debug("There are older backups that we can remove.")
+        to_remove = backup_dirs[num_backups:]
+        logger.debug("Will remove: %r", to_remove)
+        for num, directory in to_remove:
+            shutil.rmtree(directory)
+            logger.debug("Deleted %s.", directory)
+        logger.info("Removed %d blob backup(s), the latest "
+                    "%s full backups have been kept.", len(to_remove),
+                    str(num_backups))
+    else:
+        logger.debug("Not removing backups.")

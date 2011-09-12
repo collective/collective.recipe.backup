@@ -1,7 +1,8 @@
 2.2 (unreleased)
 ================
 
-- Nothing changed yet.
+- Remove old blob backups when doing a snapshot backup.
+  [maurits]
 
 
 2.1 (2011-09-01)
@@ -38,6 +39,7 @@
   datafs= var/filestorage/main.fs
   additional = catalog
   [hplocher]
+
 
 1.6 (2010-09-21)
 ================

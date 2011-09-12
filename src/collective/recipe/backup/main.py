@@ -28,8 +28,16 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
         sys.exit(1)
     logger.info("Please wait while backing up blobs from %s to %s",
                 blob_storage_source, blob_backup_location)
+    if not full:
+        # Removing old blob backups only makes sense for full backups,
+        # as there is no direct translation from a backup of a Data.fs
+        # plus its incremental backups to a list of blob backups.
+        #
+        # TODO: maybe specifically allow blob_keep=5d/2w/1m (5 days, 2
+        # weeks, 1 month)
+        keep = 0
     copyblobs.backup_blobs(blob_storage_source, blob_backup_location, full,
-                           use_rsync)
+                           use_rsync, keep=keep)
 
 
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
@@ -51,7 +59,7 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
     logger.info("Please wait while making snapshot of blobs from %s to %s",
                 blob_storage_source, blob_snapshot_location)
     copyblobs.backup_blobs(blob_storage_source, blob_snapshot_location,
-                           full=True, use_rsync=use_rsync)
+                           full=True, use_rsync=use_rsync, keep=keep)
 
 
 def restore_main(bin_dir, datafs, backup_location, verbose, additional,

@@ -958,7 +958,7 @@ directories that will not get used because have set only_blobs=true::
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
 
-Check the output of bin/backup and explicitly test that rsync in
+Check the output of bin/backup and explicitly test that rsync is
 nowhere to be found::
 
     >>> output = system('bin/backup')
@@ -976,6 +976,18 @@ Try again to see that renaming/rotating keeps working::
     False
     >>> print output
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    <BLANKLINE>
+
+And again to see that for incremental backups no old blob backups are removed::
+
+    >>> output = system('bin/backup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
     <BLANKLINE>
@@ -1013,6 +1025,19 @@ Try again to see that renaming/rotating keeps working::
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    <BLANKLINE>
+
+And again to see that removing old backups works::
+
+    >>> output = system('bin/snapshotbackup')
+    >>> 'rsync' in output
+    False
+    >>> print output
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
+    INFO: Renaming blobstorage.1 to blobstorage.2.
+    INFO: Renaming blobstorage.0 to blobstorage.1.
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    INFO: Removed 1 blob backup(s), the latest 2 full backups have been kept.
     <BLANKLINE>
 
 And the snapshotrestore::
