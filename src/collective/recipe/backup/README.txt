@@ -542,7 +542,7 @@ zeoserver recipe) when it is used::
     ... """
     ... [buildout]
     ... # For some reason this is now needed:
-    ... index = http://pypi.python.org/simple
+    ... index = http://b.pypi.python.org/simple
     ... # Avoid suddenly updating zc.buildout or other packages:
     ... newest = false
     ... parts = instance backup
@@ -573,9 +573,12 @@ zope2instance recipe to work:
     ... os.mkdir(os.path.join(path, 'etc'))
     ... """)
 
-We run the buildout:
+We run the buildout (and set a timeout as we need a few new packages
+and apparently a few servers are currently down so a timeout helps
+speed things up a bit):
 
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system('bin/buildout -t 5') # doctest:+ELLIPSIS
+    Setting socket time out to 5 seconds
     Getting distribution for 'plone.recipe.zope2instance==3.9'...
     Got plone.recipe.zope2instance 3.9.
     Getting distribution for 'mailinglogger==3.3'...
@@ -1108,4 +1111,53 @@ is probably grudgingly allowed, at least by this particular check.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+
+
+zc.buildout 1.5
+---------------
+
+Script generation in zc.buildout 1.5 could give problems.  For the
+moment, zc.buildout 1.4.x is used above.  We will try 1.5 below.
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... index = http://b.pypi.python.org/simple
+    ... # allow updating to newer versions:
+    ... newest = true
+    ... parts = backup
+    ... versions = versions
+    ...
+    ... [versions]
+    ... zc.buildout = 1.5.2
+    ... zc.recipe.egg = 1.3.2
+    ... 
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... """)
+    >>> print system('bin/buildout -t 5')
+    Setting socket time out to 5 seconds
+    ...
+    Upgraded:
+      zc.buildout version 1.5.2,
+      distribute version 0.6.21;
+    restarting.
+    Generated script '/sample-buildout/bin/buildout'.
+    Setting socket time out to 5 seconds
+    ...
+    Installing backup.
+    backup: Created /sample-buildout/var/backups
+    backup: Created /sample-buildout/var/snapshotbackups
+    Generated script '/sample-buildout/bin/backup'.
+    ...
+    <BLANKLINE>
+
+Now, the most important thing about this test is that a bin/backup
+call does not give a python exception due to the script being wrongly
+configured::
+
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
