@@ -203,6 +203,7 @@ class Recipe(object):
         initialization_template = """
 import logging
 loglevel = logging.%(loglevel)s
+import sys
 # Allow the user to make the script more quiet (say in a cronjob):
 if sys.argv[-1] in ('-q', '--quiet'):
     loglevel = logging.WARN
