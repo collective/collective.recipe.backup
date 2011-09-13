@@ -14,6 +14,16 @@ if hasattr(zc.buildout.easy_install, 'sitepackage_safe_scripts'):
 else:
     # zc.buildout 1.4 or earlier
     USE_SAFE_SCRIPTS = False
+# Using safe scripts sounds nice, but with that and a proper system
+# python I somehow get this error when calling bin/repozo within one
+# of our scripts, without an actual way to get that traceback:
+#
+# 'import site' failed; use -v for traceback
+#
+# So we will not use it after all.  It does not seem very needed
+# either, as we are not importing any modules from outside the python
+# core..
+USE_SAFE_SCRIPTS = False
 
 
 class Recipe(object):

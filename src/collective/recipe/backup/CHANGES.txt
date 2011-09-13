@@ -3,7 +3,9 @@
 
 - Refactored script generation to make a split between initialization
   code and script arguments.  This restores compatibility with
-  zc.buildout 1.5 for system pythons.
+  zc.buildout 1.5 for system pythons.  Actually we no longer create so
+  called 'site package safe scripts' but just normal scripts that work
+  for all zc.buildout versions.
   [maurits]
 
 - Added option ``keep_blob_days``, which by default specifies that
