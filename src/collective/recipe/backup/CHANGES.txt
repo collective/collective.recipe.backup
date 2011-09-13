@@ -1,4 +1,4 @@
-2.2 (unreleased)
+2.2 (2011-09-14)
 ================
 
 - Refactored script generation to make a split between initialization
