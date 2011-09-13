@@ -12,7 +12,8 @@ logger = logging.getLogger('backup')
 
 def backup_main(bin_dir, datafs, backup_location, keep, full,
                 verbose, gzip, additional, blob_backup_location,
-                blob_storage_source, backup_blobs, only_blobs, use_rsync):
+                blob_storage_source, backup_blobs, only_blobs, use_rsync,
+                keep_blob_days=0):
     """Main method, gets called by generated bin/backup."""
     if not only_blobs:
         repozorunner.backup_main(
@@ -28,21 +29,13 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
         sys.exit(1)
     logger.info("Please wait while backing up blobs from %s to %s",
                 blob_storage_source, blob_backup_location)
-    if not full:
-        # Removing old blob backups only makes sense for full backups,
-        # as there is no direct translation from a backup of a Data.fs
-        # plus its incremental backups to a list of blob backups.
-        #
-        # TODO: maybe specifically allow blob_keep=5d/2w/1m (5 days, 2
-        # weeks, 1 month)
-        keep = 0
     copyblobs.backup_blobs(blob_storage_source, blob_backup_location, full,
-                           use_rsync, keep=keep)
+                           use_rsync, keep=keep, keep_blob_days=keep_blob_days)
 
 
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                   additional, blob_snapshot_location, blob_storage_source,
-                  backup_blobs, only_blobs, use_rsync):
+                  backup_blobs, only_blobs, use_rsync, keep_blob_days=0):
     """Main method, gets called by generated bin/snapshotbackup."""
     if not only_blobs:
         repozorunner.snapshot_main(
@@ -59,7 +52,8 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
     logger.info("Please wait while making snapshot of blobs from %s to %s",
                 blob_storage_source, blob_snapshot_location)
     copyblobs.backup_blobs(blob_storage_source, blob_snapshot_location,
-                           full=True, use_rsync=use_rsync, keep=keep)
+                           full=True, use_rsync=use_rsync, keep=keep,
+                           keep_blob_days=keep_blob_days)
 
 
 def restore_main(bin_dir, datafs, backup_location, verbose, additional,

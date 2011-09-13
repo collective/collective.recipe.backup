@@ -1,6 +1,11 @@
 2.2 (unreleased)
 ================
 
+- Added option ``keep_blob_days``, which by default specifies that
+  only for partial backups we keep 14 days of backups.  See the
+  documentation.
+  [maurits]
+
 - Remove old blob backups when doing a snapshot backup.
   [maurits]
 

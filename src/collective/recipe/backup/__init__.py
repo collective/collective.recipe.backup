@@ -74,6 +74,7 @@ class Recipe(object):
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
                              sorted(locations.items())]))
         options.setdefault('keep', '2')
+        options.setdefault('keep_blob_days', '14')  # two weeks
         options.setdefault('datafs', datafs)
         options.setdefault('full', 'false')
         options.setdefault('debug', 'false')
@@ -210,6 +211,7 @@ logging.basicConfig(level=loglevel,
 bin_dir = %(bin-directory)r
 datafs = %(datafs)r
 keep = %(keep)s
+keep_blob_days = %(keep_blob_days)s
 backup_location = %(backup_location)r
 snapshot_location = %(snapshot_location)r
 blob_backup_location = %(blob_backup_location)r
@@ -270,7 +272,7 @@ use_rsync = %(use_rsync)s
         script_arguments = (
             'bin_dir, datafs, backup_location, keep, full, verbose, gzip, '
             'additional, blob_backup_location, blob_storage_source, '
-            'backup_blobs, only_blobs, use_rsync')
+            'backup_blobs, only_blobs, use_rsync, keep_blob_days')
         creation_args['reqs'] = reqs
         creation_args['script_arguments'] = script_arguments
         generated += create_script(**creation_args)
@@ -284,7 +286,7 @@ use_rsync = %(use_rsync)s
         script_arguments = (
             'bin_dir, datafs, snapshot_location, keep, verbose, gzip, '
             'additional, blob_snapshot_location, blob_storage_source, '
-            'backup_blobs, only_blobs, use_rsync')
+            'backup_blobs, only_blobs, use_rsync, keep_blob_days')
         creation_args['reqs'] = reqs
         creation_args['script_arguments'] = script_arguments
         generated += create_script(**creation_args)

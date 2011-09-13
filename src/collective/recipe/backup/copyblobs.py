@@ -7,9 +7,11 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 """
 
 from operator import itemgetter
-import os
 import logging
+import os
 import shutil
+import sys
+import time
 logger = logging.getLogger('blobs')
 
 from collective.recipe.backup import utils
@@ -149,7 +151,8 @@ def rotate_directories(container, name):
                   os.path.join(container, new_name))
 
 
-def backup_blobs(source, destination, full=False, use_rsync=True, keep=0):
+def backup_blobs(source, destination, full=False, use_rsync=True, keep=0,
+                 keep_blob_days=0):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -170,6 +173,14 @@ def backup_blobs(source, destination, full=False, use_rsync=True, keep=0):
     var/blobbackups/blobstorage.0/blobstorage.  We could copy the
     contents of var/blobstorage directly to blobstorage.0, but then
     the disk space safing hard links do not work.
+
+    keep_blob_days only makes sense in combination with full=False.
+    We then use this to keep the backups created in the last
+    'keep_blob_days' days.  For full backups we use 'keep' to simply
+    keep the last X backups.  But for partial backups 'keep' should
+    mean we keep the last X full Data.fs backups plus the partial
+    backups created by repozo; and there is no similar concept in our
+    blobstorage backups.
 
     Again, let's test this using the tools from zc.buildout:
 
@@ -304,7 +315,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True, keep=0):
             if not os.path.isdir(prev):
                 # Should have been caught already.
                 raise Exception("%s must be a directory" % prev)
-            # Hardlink against the previous directory.  Done by hand it would be:
+            # Hardlink against the previous directory.  Done by hand it
+            # would be:
             # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
             #     backups/blobstorage.0
             prev_link = os.path.join(os.pardir, base_name + '.1')
@@ -331,7 +343,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True, keep=0):
         logger.info("Copying %s to %s", source, dest)
         shutil.copytree(source, dest)
     # Now possibly remove old backups.
-    cleanup(destination, keep)
+    cleanup(destination, full, keep, keep_blob_days)
 
 
 def restore_blobs(source, destination, use_rsync=True):
@@ -375,20 +387,167 @@ def restore_blobs(source, destination, use_rsync=True):
         shutil.copytree(last_source, destination)
 
 
-def cleanup(backup_location, keep=0):
+def cleanup(backup_location, full=False, keep=0, keep_blob_days=0):
     """Clean up old blob backups.
+
+    For the test, we create a backup dir using buildout's test support methods:
+
+      >>> backup_dir = 'back'
+      >>> mkdir(backup_dir)
+
+    And we'll make a function that creates a blob backup directory for
+    us and that also sets the file modification dates to a meaningful
+    time.
+
+      >>> import time
+      >>> import os
+      >>> def add_backup(name, days=0):
+      ...     global next_mod_time
+      ...     mkdir(backup_dir, name)
+      ...     write(backup_dir, name, 'dummyfile', 'dummycontents')
+      ...     # Change modification time to 'days' days old.
+      ...     mod_time = time.time() - (86400 * days)
+      ...     os.utime(join(backup_dir, name), (mod_time, mod_time))
+
+    Calling 'cleanup' without a keep arguments will just return without doing
+    anything.
+
+      >>> cleanup(backup_dir)
+
+    Cleaning an empty directory won't do a thing.
+
+      >>> cleanup(backup_dir, keep=1)
+      >>> cleanup(backup_dir, keep_blob_days=1)
+
+    Adding one backup file and cleaning the directory won't remove it either:
+
+      >>> add_backup('blob.1', days=1)
+      >>> cleanup(backup_dir, keep=1)
+      >>> ls(backup_dir)
+      d  blob.1
+
+    When we add a second backup directory and we keep only one then
+    this means the first one gets removed.
+
+      >>> add_backup('blob.0', days=0)
+      >>> cleanup(backup_dir, keep=1)
+      >>> ls(backup_dir)
+      d  blob.0
+
+    Note that we do keep an eye on the name of the blob directories,
+    as unless someone has been messing manually with the names and
+    modification dates we only expect blob.0, blob.1, blob.2, etc, as
+    names, with blob.0 being the most recent.
+
+    Any files are ignored and any directories that do not match
+    prefix.X get ignored:
+
+      >>> add_backup('myblob')
+      >>> add_backup('blob.some.3')
+      >>> write(backup_dir, 'blob.4', 'just a file')
+      >>> write(backup_dir, 'blob5.txt', 'just a file')
+      >>> cleanup(backup_dir, keep=1)
+      >>> ls(backup_dir)
+      d  blob.0
+      -  blob.4
+      d  blob.some.3
+      -  blob5.txt
+      d  myblob
+
+    We do not mind what the prefix is, as long as there is only one prefix:
+
+      >>> add_backup('myblob.4')
+      >>> cleanup(backup_dir, keep=1)
+      Traceback (most recent call last):
+      ...
+      SystemExit: 1
+      >>> cleanup(backup_dir, keep_blob_days=1)
+      Traceback (most recent call last):
+      ...
+      SystemExit: 1
+      >>> ls(backup_dir)
+      d  blob.0
+      -  blob.4
+      d  blob.some.3
+      -  blob5.txt
+      d  myblob
+      d  myblob.4
+
+    We create a helper function that gives us a fresh directory with
+    some blob backup directories, where backups are made twice a day:
+
+      >>> def fresh_backups(num):
+      ...     remove(backup_dir)
+      ...     mkdir(backup_dir)
+      ...     for b in range(num):
+      ...         name = 'blob.%d' % b
+      ...         add_backup(name, days=b / 2.0)
+
+    We keep the last 4 backups:
+
+      >>> fresh_backups(10)
+      >>> cleanup(backup_dir, keep=4)
+      >>> ls(backup_dir)
+      d  blob.0
+      d  blob.1
+      d  blob.2
+      d  blob.3
+      >>> fresh_backups(10)
+
+    We keep the last 4 days of backups:
+
+      >>> cleanup(backup_dir, keep_blob_days=4)
+      >>> ls(backup_dir)
+      d  blob.0
+      d  blob.1
+      d  blob.2
+      d  blob.3
+      d  blob.4
+      d  blob.5
+      d  blob.6
+      d  blob.7
+
+    With full=False (the default) we ignore the keep option:
+
+      >>> cleanup(backup_dir, full=False, keep=2, keep_blob_days=2)
+      >>> ls(backup_dir)
+      d  blob.0
+      d  blob.1
+      d  blob.2
+      d  blob.3
+
+    With full=True we ignore the keep_blob_days option:
+
+      >>> cleanup(backup_dir, full=True, keep=2, keep_blob_days=2)
+      >>> ls(backup_dir)
+      d  blob.0
+      d  blob.1
+
+    Cleanup after the test.
+
+      >>> remove(backup_dir)
+
     """
-    keep = int(keep)  # Making sure.
-    if not keep:
-        logger.debug(
-            "Value of 'keep' is %r, we don't want to remove anything.", keep)
+    # Making sure we use integers.
+    keep = int(keep)
+    keep_blob_days = int(keep_blob_days)
+    if full:
+        # For full backups we do not need to count days.
+        keep_blob_days = 0
+    if (not keep) and (not keep_blob_days):
+        logger.debug("We do not want to remove anything.")
         return
+    if keep_blob_days and not full:
+        # For partial backups we ignore the 'keep' in favour of
+        # 'keep_blob_days' if that is set, but we do set 'keep' to
+        # keep at least one backup (the most recent one) in case our
+        # logic somehow fails, like when modification dates have been
+        # tampered with.
+        keep = 1
     logger.debug("Trying to clean up old backups.")
     filenames = os.listdir(backup_location)
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
                  len(filenames), filenames)
-    num_backups = int(keep)
-    logger.debug("Max number of backups: %s.", num_backups)
     backup_dirs = []
     prefix = ''
     for filename in filenames:
@@ -412,26 +571,51 @@ def cleanup(backup_location, keep=0):
             continue
         if prefix:
             if parts[0] != prefix:
-                logger.warn("Different backup prefixes found in %s (%s, %s). "
-                            "Are you mixing two backups in one directory? For "
-                            "safety we will not cleanup old backups here.",
-                            backup_location, prefix, parts[0])
+                logger.error(
+                    "Different backup prefixes found in %s (%s, %s). Are you "
+                    "mixing two backups in one directory? For safety we will "
+                    "not cleanup old backups here." % (
+                    backup_location, prefix, parts[0]))
+                sys.exit(1)
         else:
             prefix = parts[0]
-        backup_dirs.append((num, full_path))
-    # Sort it:
+        mod_time = os.path.getmtime(full_path)
+        backup_dirs.append((num, mod_time, full_path))
+    # We always sort by backup number:
     backup_dirs = sorted(backup_dirs, key=itemgetter(0))
     logger.debug("Found %d blob backups: %r.", len(backup_dirs),
                  [d[1] for d in backup_dirs])
-    if len(backup_dirs) > num_backups and num_backups != 0:
+    if full:
+        logger.debug("This is a full backup.")
+        logger.debug("Max number of backups: %d.", keep)
+        logger.debug("Number of blob days to keep: %d (ignored).",
+                    keep_blob_days)
+    else:
+        logger.debug("This is a partial backup.")
+        logger.debug("Minimum number of backups to keep: %d.", keep)
+        logger.debug("Number of blob days to keep: %d.", keep_blob_days)
+    if len(backup_dirs) > keep and keep != 0:
         logger.debug("There are older backups that we can remove.")
-        to_remove = backup_dirs[num_backups:]
-        logger.debug("Will remove: %r", to_remove)
-        for num, directory in to_remove:
+        possibly_remove = backup_dirs[keep:]
+        logger.debug("Will possibly remove: %r", possibly_remove)
+        deleted = 0
+        now = time.time()
+        for num, mod_time, directory in possibly_remove:
+            if keep_blob_days:
+                mod_days = (now - mod_time) / 86400  # 24 * 60 * 60
+                if mod_days < keep_blob_days:
+                    # I'm too young to die!
+                    continue
             shutil.rmtree(directory)
+            deleted += 1
             logger.debug("Deleted %s.", directory)
-        logger.info("Removed %d blob backup(s), the latest "
-                    "%s full backups have been kept.", len(to_remove),
-                    str(num_backups))
+        if deleted:
+            if full:
+                logger.info("Removed %d blob backup(s), the latest "
+                            "%d backup(s) have been kept.", deleted, keep)
+            else:
+                logger.info("Removed %d blob backup(s), the latest "
+                            "%d day(s) of backups have been kept.", deleted,
+                            keep_blob_days)
     else:
         logger.debug("Not removing backups.")

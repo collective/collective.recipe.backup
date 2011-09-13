@@ -1037,7 +1037,7 @@ And again to see that removing old backups works::
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
-    INFO: Removed 1 blob backup(s), the latest 2 full backups have been kept.
+    INFO: Removed 1 blob backup(s), the latest 2 backup(s) have been kept.
     <BLANKLINE>
 
 And the snapshotrestore::

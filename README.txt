@@ -237,6 +237,17 @@ keep
     current and the previous full backup are kept. Older backups are removed,
     including their incremental backups. Set it to ``0`` to keep all backups.
 
+keep_blob_days
+    Number of *days* of blob backups to keep.  Defaults to ``14``, so
+    two weeks.  This is **only** used for partial (full=False)
+    backups, so this is what gets used normally when you do a
+    ``bin/backup``.  This option has been added in 2.2.  For full
+    backups (snapshots) we just use the ``keep`` option.  Recommended
+    is to keep these values in sync with how often you do a zeopack on
+    the Data.fs, according to the formula ``keep *
+    days_between_zeopacks = keep_blob_days``.  The default matches one
+    zeopack per seven days (``2*7=14``).
+
 datafs
     In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``
     location, this option can overwrite it.
