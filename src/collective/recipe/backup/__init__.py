@@ -209,23 +209,25 @@ if sys.argv[-1] in ('-q', '--quiet'):
     loglevel = logging.WARN
 logging.basicConfig(level=loglevel,
     format='%%(levelname)s: %%(message)s')
-bin_dir = %(bin-directory)r
-datafs = %(datafs)r
-keep = %(keep)s
-keep_blob_days = %(keep_blob_days)s
-backup_location = %(backup_location)r
-snapshot_location = %(snapshot_location)r
-blob_backup_location = %(blob_backup_location)r
-blob_snapshot_location = %(blob_snapshot_location)r
-blob_storage_source = %(blob_storage_source)r
-full = %(full)s
-verbose = %(debug)s
-gzip = %(gzip)s
-additional = %(additional)r
-only_blobs = %(only_blobs)s
-backup_blobs = %(backup_blobs)s
-use_rsync = %(use_rsync)s
 """
+        arguments_template = """
+        bin_dir=%(bin-directory)r,
+        datafs=%(datafs)r,
+        keep=%(keep)s,
+        keep_blob_days=%(keep_blob_days)s,
+        backup_location=%(backup_location)r,
+        snapshot_location=%(snapshot_location)r,
+        blob_backup_location=%(blob_backup_location)r,
+        blob_snapshot_location=%(blob_snapshot_location)r,
+        blob_storage_source=%(blob_storage_source)r,
+        full=%(full)s,
+        verbose=%(debug)s,
+        gzip=%(gzip)s,
+        additional=%(additional)r,
+        only_blobs=%(only_blobs)s,
+        backup_blobs=%(backup_blobs)s,
+        use_rsync=%(use_rsync)s,
+        """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
         opts['loglevel'] = loglevel
@@ -253,6 +255,10 @@ use_rsync = %(use_rsync)s
             os.mkdir(opts['parts-directory'])
             generated.append(opts['parts-directory'])
 
+        # Handle a few alternative spellings:
+        opts['bin_dir'] = opts['bin-directory']
+        opts['verbose'] = opts['debug']
+
         # Get general options for all scripts.
         initialization = initialization_template % opts
         orig_distributions, working_set = self.egg.working_set(
@@ -260,65 +266,39 @@ use_rsync = %(use_rsync)s
         executable = self.options['executable']
         dest = self.options['bin-directory']
         site_py_dest = self.options['parts-directory']
+        script_arguments = arguments_template % opts
         creation_args = dict(
             dest=dest, working_set=working_set, executable=executable,
-            site_py_dest=site_py_dest, initialization=initialization)
+            site_py_dest=site_py_dest, initialization=initialization,
+            script_arguments=script_arguments)
 
         # Create backup script
         reqs = [(self.options['backup_name'],
                  'collective.recipe.backup.main',
                  'backup_main')]
-        # Note: no commas at the end of lines in the arguments; it
-        # must not be a tuple, it is just string concatenation.
-        script_arguments = (
-            'bin_dir, datafs, backup_location, keep, full, verbose, gzip, '
-            'additional, blob_backup_location, blob_storage_source, '
-            'backup_blobs, only_blobs, use_rsync, keep_blob_days')
         creation_args['reqs'] = reqs
-        creation_args['script_arguments'] = script_arguments
         generated += create_script(**creation_args)
 
         # Create backup snapshot script
         reqs = [(self.options['snapshot_name'],
                  'collective.recipe.backup.main',
                  'snapshot_main')]
-        # Note: no commas at the end of lines in the arguments; it
-        # must not be a tuple, it is just string concatenation.
-        script_arguments = (
-            'bin_dir, datafs, snapshot_location, keep, verbose, gzip, '
-            'additional, blob_snapshot_location, blob_storage_source, '
-            'backup_blobs, only_blobs, use_rsync, keep_blob_days')
         creation_args['reqs'] = reqs
-        creation_args['script_arguments'] = script_arguments
         generated += create_script(**creation_args)
 
         # Create restore script
         reqs = [(self.options['restore_name'],
                  'collective.recipe.backup.main',
                  'restore_main')]
-        # Note: no commas at the end of lines in the arguments; it
-        # must not be a tuple, it is just string concatenation.
-        script_arguments = (
-            'bin_dir, datafs, backup_location, verbose, additional, '
-            'blob_backup_location, blob_storage_source, backup_blobs, '
-            'only_blobs, use_rsync')
         creation_args['reqs'] = reqs
-        creation_args['script_arguments'] = script_arguments
         generated += create_script(**creation_args)
 
         # Create snapshot restore script
         if self.options['enable_snapshotrestore'] == 'true':
             reqs = [(self.options['snapshotrestore_name'],
                      'collective.recipe.backup.main',
-                     'restore_main')]
-            # Note: no commas at the end of lines in the arguments; it
-            # must not be a tuple, it is just string concatenation.
-            script_arguments = (
-                'bin_dir, datafs, snapshot_location, verbose, additional, '
-                'blob_snapshot_location, blob_storage_source, backup_blobs, '
-                'only_blobs, use_rsync')
+                     'snapshot_restore_main')]
             creation_args['reqs'] = reqs
-            creation_args['script_arguments'] = script_arguments
             generated += create_script(**creation_args)
 
         # Return files that were created by the recipe. The buildout

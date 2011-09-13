@@ -1,6 +1,11 @@
 2.2 (unreleased)
 ================
 
+- Refactored script generation to make a split between initialization
+  code and script arguments.  This restores compatibility with
+  zc.buildout 1.5 for system pythons.
+  [maurits]
+
 - Added option ``keep_blob_days``, which by default specifies that
   only for partial backups we keep 14 days of backups.  See the
   documentation.

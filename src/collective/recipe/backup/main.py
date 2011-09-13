@@ -13,7 +13,7 @@ logger = logging.getLogger('backup')
 def backup_main(bin_dir, datafs, backup_location, keep, full,
                 verbose, gzip, additional, blob_backup_location,
                 blob_storage_source, backup_blobs, only_blobs, use_rsync,
-                keep_blob_days=0):
+                keep_blob_days=0, **kwargs):
     """Main method, gets called by generated bin/backup."""
     if not only_blobs:
         repozorunner.backup_main(
@@ -35,7 +35,8 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
 
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                   additional, blob_snapshot_location, blob_storage_source,
-                  backup_blobs, only_blobs, use_rsync, keep_blob_days=0):
+                  backup_blobs, only_blobs, use_rsync, keep_blob_days=0,
+                  **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     if not only_blobs:
         repozorunner.snapshot_main(
@@ -58,7 +59,7 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
 
 def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                  blob_backup_location, blob_storage_source, backup_blobs,
-                 only_blobs, use_rsync):
+                 only_blobs, use_rsync, **kwargs):
     """Main method, gets called by generated bin/restore."""
     question = '\n'
     if not only_blobs:
@@ -85,3 +86,15 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                 blob_storage_source)
     copyblobs.restore_blobs(blob_backup_location, blob_storage_source,
                             use_rsync)
+
+
+def snapshot_restore_main(*args, **kwargs):
+    """Main method, gets called by generated bin/snapshotrestore.
+
+    Difference with restore_main is that we get need to use the
+    snapshot_location and blob_snapshot_location.
+    """
+    # Override the locations:
+    kwargs['backup_location'] = kwargs['snapshot_location']
+    kwargs['blob_backup_location'] = kwargs['blob_snapshot_location']
+    return restore_main(*args, **kwargs)
