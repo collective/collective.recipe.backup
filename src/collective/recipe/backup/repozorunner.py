@@ -198,8 +198,8 @@ def cleanup(backup_location, keep=0):
 
     For the test, we create a backup dir using buildout's test support methods:
 
-      >>> mkdir('back')
-      >>> backup_dir = join('back')
+      >>> backup_dir = 'back'
+      >>> mkdir(backup_dir)
 
     And we'll make a function that creates a backup file for us and that also
     sets the file modification dates to a meaningful time.
@@ -209,9 +209,9 @@ def cleanup(backup_location, keep=0):
       >>> next_mod_time = time.time() - 1000
       >>> def add_backup(name):
       ...     global next_mod_time
-      ...     write('back', name, 'dummycontents')
+      ...     write(backup_dir, name, 'dummycontents')
       ...     # Change modification time, every new file is 10 seconds older.
-      ...     os.utime(join('back', name), (next_mod_time, next_mod_time))
+      ...     os.utime(join(backup_dir, name), (next_mod_time, next_mod_time))
       ...     next_mod_time += 10
 
     Calling 'cleanup' without a keep arguments will just return without doing
@@ -227,14 +227,14 @@ def cleanup(backup_location, keep=0):
 
       >>> add_backup('1.fs')
       >>> cleanup(backup_dir, keep=1)
-      >>> ls('back')
+      >>> ls(backup_dir)
       - 1.fs
 
     Adding a second backup file means the first one gets removed.
 
       >>> add_backup('2.fs')
       >>> cleanup(backup_dir, keep=1)
-      >>> ls('back')
+      >>> ls(backup_dir)
       - 2.fs
 
     If there are more than one file to remove, the results are OK, too:
@@ -243,7 +243,7 @@ def cleanup(backup_location, keep=0):
       >>> add_backup('4.fs')
       >>> add_backup('5.fs')
       >>> cleanup(backup_dir, keep=1)
-      >>> ls('back')
+      >>> ls(backup_dir)
       - 5.fs
 
     Every other file older than the last full backup that is kept is deleted,
@@ -255,7 +255,7 @@ def cleanup(backup_location, keep=0):
       >>> add_backup('6.fs')
       >>> add_backup('6-something.deltafs')
       >>> cleanup(backup_dir, keep=1)
-      >>> ls('back')
+      >>> ls(backup_dir)
       - 6-something.deltafs
       - 6.fs
 
@@ -271,7 +271,7 @@ def cleanup(backup_location, keep=0):
       >>> add_backup('9-something.deltafs')
       >>> add_backup('9.dat')
       >>> cleanup(backup_dir, keep=2)
-      >>> ls('back')
+      >>> ls(backup_dir)
       -  8-something.deltafs
       -  8.dat
       -  8.fs
@@ -282,7 +282,7 @@ def cleanup(backup_location, keep=0):
     Keep = 0 doesn't delete anything.
 
       >>> cleanup(backup_dir, keep=0)
-      >>> ls('back')
+      >>> ls(backup_dir)
       -  8-something.deltafs
       -  8.dat
       -  8.fs
@@ -295,11 +295,13 @@ def cleanup(backup_location, keep=0):
 
       >>> add_backup('10.fsz')
       >>> cleanup(backup_dir, keep=2)
-      >>> ls('back')
+      >>> ls(backup_dir)
       -  10.fsz
       -  9-something.deltafs
       -  9.dat
       -  9.fs
+
+      >>> remove(backup_dir)
 
     """
     keep = int(keep)  # Making sure.
