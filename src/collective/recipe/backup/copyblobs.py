@@ -7,6 +7,7 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 """
 
 from operator import itemgetter
+from datetime import datetime
 import logging
 import os
 import shutil
@@ -149,6 +150,57 @@ def rotate_directories(container, name):
         logger.info("Renaming %s to %s.", directory, new_name)
         os.rename(os.path.join(container, directory),
                   os.path.join(container, new_name))
+
+
+def get_blob_backup_dirs(backup_location):
+    """Get blob backup dirs from this location.
+    """
+    filenames = os.listdir(backup_location)
+    logger.debug("Looked up filenames in the target dir: %s found. %r.",
+                 len(filenames), filenames)
+    backup_dirs = []
+    prefix = ''
+    for filename in filenames:
+        # We only want directories of the form prefix.X, where X is an
+        # integer.  There should not be anything else, but we like to
+        # be safe.
+        full_path = os.path.join(backup_location, filename)
+        if not os.path.isdir(full_path):
+            continue
+        if filename in (os.curdir, os.pardir):
+            # These should not be listed by os.listdir, but again: we
+            # like to be safe.
+            continue
+        parts = filename.split('.')
+        if len(parts) != 2:
+            continue
+        try:
+            num = int(parts[1])
+        except:
+            # No number
+            continue
+        if prefix:
+            if parts[0] != prefix:
+                logger.error(
+                    "Different backup prefixes found in %s (%s, %s). Are you "
+                    "mixing two backups in one directory? For safety we will "
+                    "not cleanup old backups here." % (
+                    backup_location, prefix, parts[0]))
+                sys.exit(1)
+        else:
+            prefix = parts[0]
+        mod_time = os.path.getmtime(full_path)
+        backup_dirs.append((num, mod_time, full_path))
+    # We always sort by backup number:
+    backup_dirs = sorted(backup_dirs, key=itemgetter(0))
+    # Check if this is the same as reverse sorting by modification time:
+    mod_times = sorted(backup_dirs, key=itemgetter(1), reverse=True)
+    if backup_dirs != mod_times:
+        logger.warn("Sorting blob backups by number gives other result than "
+                    "reverse sorting by last modification time.")
+    logger.debug("Found %d blob backups: %r.", len(backup_dirs),
+                 [d[1] for d in backup_dirs])
+    return backup_dirs
 
 
 def backup_blobs(source, destination, full=False, use_rsync=True, keep=0,
@@ -361,19 +413,48 @@ def restore_blobs(source, destination, use_rsync=True, date=None):
     be careful with that otherwise you may end up with something like
     var/blobstorage/blobstorage
     """
-    if date is not None:
-        logger.info("Date argument to restore blobs ignored: %r", date)
     if destination.endswith(os.sep):
         # strip that separator
         destination = destination[:-len(os.sep)]
     base_name = os.path.basename(destination)
     dest_dir = os.path.dirname(destination)
-    last_source = os.path.join(source, base_name + '.0', base_name)
+
+    # Determine the source (blob backup) that should be restored.
+    backup_source = None
+    if date is not None:
+        # From repozo: specify UTC (not local) time in this format:
+        # yyyy-mm-dd[-hh[-mm[-ss]]]
+        # Note that this matches the 2011-10-05-12-12-45.fsz that is created.
+        try:
+            date_args = [int(num) for num in date.split('-')]
+        except:
+            logger.info("Could not parse date argument to restore blobs: %r",
+                        date)
+            logger.info("Restoring most recent backup instead.")
+        else:
+            target_datetime = datetime(*date_args)
+            backup_dirs = get_blob_backup_dirs(source)
+            # We want to find the first backup after the requested
+            # modification time, so we reverse the order.
+            backup_dirs.reverse()  # Note: this reverses in place.
+            for num, mod_time, directory in backup_dirs:
+                backup_time = datetime.utcfromtimestamp(mod_time)
+                if backup_time >= target_datetime:
+                    backup_source = os.path.join(directory, base_name)
+                    break
+            if not backup_source:
+                logger.warn("Could not find backup more recent than %r. Using "
+                            "most recent instead.", date)
+
+    if not backup_source:
+        # The most recent is the default:
+        backup_source = os.path.join(source, base_name + '.0', base_name)
+
     # You should end up with something like this:
     #rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
     if use_rsync:
         cmd = 'rsync -a --delete %(source)s %(dest)s' % dict(
-            source=last_source,
+            source=backup_source,
             dest=dest_dir)
         logger.info(cmd)
         output = utils.system(cmd)
@@ -385,8 +466,8 @@ def restore_blobs(source, destination, use_rsync=True, date=None):
         if os.path.exists(destination):
             logger.info("Removing %s", destination)
             shutil.rmtree(destination)
-        logger.info("Copying %s to %s", last_source, destination)
-        shutil.copytree(last_source, destination)
+        logger.info("Copying %s to %s", backup_source, destination)
+        shutil.copytree(backup_source, destination)
 
 
 def cleanup(backup_location, full=False, keep=0, keep_blob_days=0):
@@ -547,46 +628,7 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0):
         # tampered with.
         keep = 1
     logger.debug("Trying to clean up old backups.")
-    filenames = os.listdir(backup_location)
-    logger.debug("Looked up filenames in the target dir: %s found. %r.",
-                 len(filenames), filenames)
-    backup_dirs = []
-    prefix = ''
-    for filename in filenames:
-        # We only want directories of the form prefix.X, where X is an
-        # integer.  There should not be anything else, but we like to
-        # be safe.
-        full_path = os.path.join(backup_location, filename)
-        if not os.path.isdir(full_path):
-            continue
-        if filename in (os.curdir, os.pardir):
-            # These should not be listed by os.listdir, but again: we
-            # like to be safe.
-            continue
-        parts = filename.split('.')
-        if len(parts) != 2:
-            continue
-        try:
-            num = int(parts[1])
-        except:
-            # No number
-            continue
-        if prefix:
-            if parts[0] != prefix:
-                logger.error(
-                    "Different backup prefixes found in %s (%s, %s). Are you "
-                    "mixing two backups in one directory? For safety we will "
-                    "not cleanup old backups here." % (
-                    backup_location, prefix, parts[0]))
-                sys.exit(1)
-        else:
-            prefix = parts[0]
-        mod_time = os.path.getmtime(full_path)
-        backup_dirs.append((num, mod_time, full_path))
-    # We always sort by backup number:
-    backup_dirs = sorted(backup_dirs, key=itemgetter(0))
-    logger.debug("Found %d blob backups: %r.", len(backup_dirs),
-                 [d[1] for d in backup_dirs])
+    backup_dirs = get_blob_backup_dirs(backup_location)
     if full:
         logger.debug("This is a full backup.")
         logger.debug("Max number of backups: %d.", keep)

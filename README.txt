@@ -172,11 +172,8 @@ argument. According to repozo: specify UTC (not local) time.  The format is
 
     bin/restore 1972-12-25
 
-Note that restoring to a specific date does not currently work for
-blobstorage, but it should not really matter there, as for new or
-changed blobfiles a new file is created, so you would just have a few
-extra unused files.  So here simply the most recent blobstorage backup
-will be restored.
+Since version 2.3 this also works for restoring blobs.  We simply
+restore the directory from the first backup after the specified date.
 
 Since version 2.0, the restore scripts ask for confirmation before
 starting the restore, as this is a potentially dangerous command.

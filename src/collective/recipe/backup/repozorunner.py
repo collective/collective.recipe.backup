@@ -101,7 +101,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                                                   verbose, as_list=True)))
     logger.info("Please wait while restoring database file: %s to %s",
                 backup_location, datafs)
-    os.system(quote_command([repozo] +
+    result = os.system(quote_command([repozo] +
                             restore_arguments(datafs, backup_location,
                                               date, verbose, as_list=True)))
     logger.debug("Repozo command executed.")

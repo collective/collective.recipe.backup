@@ -1,6 +1,13 @@
 Example usage
 =============
 
+Some needed imports:
+
+    >>> from datetime import datetime
+    >>> import os
+    >>> import sys
+    >>> import time
+
 Just to isolate some test differences, we run an empty buildout once::
 
     >>> ignore = system(buildout)
@@ -47,7 +54,6 @@ Calling ``bin/backup`` results in a normal repozo backup. We put in place a
 mock repozo script that prints the options it is passed (and make it
 executable). It is horridly unix-specific at the moment.
 
-    >>> import sys
     >>> write('bin', 'repozo',
     ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
     >>> #write('bin', 'repozo', "#!/bin/sh\necho $*")
@@ -95,10 +101,8 @@ argument. According to repozo: specify UTC (not local) time.  The format is
     INFO: Date restriction: restoring state at 1972-12-25.
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
 
-Note that restoring to a specific date does not currently work for
-blobstorage, but it should not really matter there, as for new or
-changed blobfiles a new file is created, so you would just have a few
-extra unused files.
+Note that restoring a blobstorage to a specific date only works since
+release 2.3.  We will test that a bit further on.
 
 
 Snapshots
@@ -448,8 +452,6 @@ And a restore restores all three backups::
 We fake three old backups in all the (snapshot)backup directories to
 test if the 'keep' parameter is working correctly.
 
-    >>> import os
-    >>> import time
     >>> next_mod_time = time.time() - 1000
     >>> def add_backup(dir, name):  # same as in the tests in repozorunner.py
     ...     global next_mod_time
@@ -651,8 +653,10 @@ Test the snapshotbackup first, as that should be easiest.
     >>> ls('var/blobstoragesnapshots/blobstorage.0')
     d  blobstorage
 
-Let's try that some more.
+Let's try that some more, with a second in between so we can more
+easily test restoring to a specific time later.
 
+    >>> time.sleep(1)
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
@@ -678,6 +682,7 @@ Let's try that some more.
 
 Now remove an item:
 
+    >>> time.sleep(1)
     >>> remove('var', 'blobstorage', 'blob2.txt')
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
@@ -716,6 +721,7 @@ Let's see how a bin/backup goes:
 
 We try again with an extra 'blob':
 
+    >>> time.sleep(1)
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
@@ -736,7 +742,6 @@ We try again with an extra 'blob':
 Let's check the inodes of two files, to see if they are the same.  Not
 sure if this works on all operating systems.
 
-    >>> import os
     >>> stat_0 = os.stat('var/blobstoragebackups/blobstorage.0/blobstorage/blob1.txt')
     >>> stat_1 = os.stat('var/blobstoragebackups/blobstorage.1/blobstorage/blob1.txt')
     >>> stat_0.st_ino == stat_1.st_ino
@@ -770,6 +775,33 @@ Now try a restore::
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> ls('var/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+
+Since release 2.3 we can also restore blobs to a specific date/time.
+
+    >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups/blobstorage.0')
+    >>> mod_time_1 = os.path.getmtime('var/blobstoragebackups/blobstorage.1')
+    >>> mod_time_0 > mod_time_1
+    True
+    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1).timetuple()[:6]])
+    >>> print system('bin/restore %s' % time_string, input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D ...
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Date restriction: restoring state at ...
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.1/blobstorage /sample-buildout/var
+    <BLANKLINE>
+
+The second blob file is now no longer in the blob storage.
+
+    >>> ls('var/blobstorage')
+    -  blob1.txt
 
 The snapshotrestore works too::
 
@@ -783,6 +815,52 @@ The snapshotrestore works too::
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+
+Check that this fits what is in the most recent snapshot::
+
+    >>> ls('var/blobstorage')
+    -  blob1.txt
+    >>> ls('var/blobstoragesnapshots')
+    d  blobstorage.0
+    d  blobstorage.1
+    d  blobstorage.2
+    >>> ls('var/blobstoragesnapshots/blobstorage.0/blobstorage')
+    -  blob1.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.1/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+    >>> ls('var/blobstoragesnapshots/blobstorage.2/blobstorage')
+    -  blob1.txt
+
+Since release 2.3 we can also restore blob snapshots to a specific date/time.
+
+    >>> mod_time_0 = os.path.getmtime('var/blobstoragesnapshots/blobstorage.0')
+    >>> mod_time_1 = os.path.getmtime('var/blobstoragesnapshots/blobstorage.1')
+    >>> mod_time_2 = os.path.getmtime('var/blobstoragesnapshots/blobstorage.2')
+    >>> mod_time_0 > mod_time_1
+    True
+    >>> mod_time_1 > mod_time_2
+    True
+    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1).timetuple()[:6]])
+    >>> print system('bin/snapshotrestore %s' % time_string, input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -D ...
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Date restriction: restoring state at ...
+    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.1/blobstorage /sample-buildout/var
+    <BLANKLINE>
+
+The second blob file was only in blobstorage snapshot number 1 when we
+started and now it is also in the main blobstorage again.
+
+    >>> ls('var/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+
 
 We can tell buildout that we only want to backup blobs or specifically
 do not want to backup the blobs.
