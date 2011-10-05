@@ -56,7 +56,6 @@ executable). It is horridly unix-specific at the moment.
 
     >>> write('bin', 'repozo',
     ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
-    >>> #write('bin', 'repozo', "#!/bin/sh\necho $*")
     >>> dontcare = system('chmod u+x bin/repozo')
 
 By default, backups are done in ``var/backups``::
@@ -860,6 +859,30 @@ started and now it is also in the main blobstorage again.
     >>> ls('var/blobstorage')
     -  blob1.txt
     -  blob2.txt
+
+When repozo cannot find a Data.fs backup with files from before the
+given date string it will quit with an error.  We should not restore
+the blobs then either.  We test that with a special bin/repozo
+script that simply quits::
+
+    >>> write('bin', 'repozo', "#!%s\nimport sys\nsys.exit(1)" % sys.executable)
+    >>> dontcare = system('chmod u+x bin/repozo')
+    >>> print system('bin/snapshotrestore 1972-12-25', input='yes\n')
+    <BLANKLINE>
+    This will replace the filestorage (Data.fs).
+    This will replace the blobstorage.
+    Are you sure? (yes/No)?
+    INFO: Date restriction: restoring state at 1972-12-25.
+    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
+    ERROR: Repozo command failed. See message above.
+    ERROR: Halting execution due to error; not restoring blobs.
+    <BLANKLINE>
+
+Restore the original bin/repozo::
+
+    >>> write('bin', 'repozo',
+    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    >>> dontcare = system('chmod u+x bin/repozo')
 
 
 We can tell buildout that we only want to backup blobs or specifically

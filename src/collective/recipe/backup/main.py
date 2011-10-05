@@ -16,9 +16,13 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
                 keep_blob_days=0, **kwargs):
     """Main method, gets called by generated bin/backup."""
     if not only_blobs:
-        repozorunner.backup_main(
+        result = repozorunner.backup_main(
             bin_dir, datafs, backup_location, keep, full, verbose, gzip,
             additional)
+        if result and backup_blobs:
+            logger.error("Halting execution due to error; not backing up "
+                         "blobs.")
+
     if not backup_blobs:
         return
     if not blob_backup_location:
@@ -39,9 +43,12 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                   **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     if not only_blobs:
-        repozorunner.snapshot_main(
+        result = repozorunner.snapshot_main(
             bin_dir, datafs, snapshot_location, keep, verbose, gzip,
             additional)
+        if result and backup_blobs:
+            logger.error("Halting execution due to error; not backing up "
+                         "blobs.")
     if not backup_blobs:
         return
     if not blob_snapshot_location:
@@ -79,8 +86,13 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
         sys.exit(0)
 
     if not only_blobs:
-        repozorunner.restore_main(
+        result = repozorunner.restore_main(
             bin_dir, datafs, backup_location, verbose, additional, date)
+        if result and backup_blobs:
+            logger.error("Halting execution due to error; not restoring "
+                         "blobs.")
+            sys.exit(1)
+
     if not backup_blobs:
         return
     if not blob_backup_location:

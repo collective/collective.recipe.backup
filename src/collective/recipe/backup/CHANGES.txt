@@ -1,6 +1,12 @@
 2.3 (unreleased)
 ================
 
+- Quit the rest of the backup or restore when a repozo call gives an
+  error.  Main use case: when restoring to a specific date repozo will
+  quit with an error when no files can be found, so we should also not
+  try to restore blobs then.
+  [maurits]
+
 - Allow restoring the blobs to the specified date as well.
   [maurits]
 

@@ -40,21 +40,27 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
         location = backup_location + '_' + a
         logger.info("Please wait while backing up database file: %s to %s",
                     fs, location)
-        os.system(quote_command([repozo] +
+        result = os.system(quote_command([repozo] +
                                 backup_arguments(fs, location, full,
                                                  verbose, gzip,
                                                  as_list=True)))
         logger.debug("Repozo command executed.")
+        if result:
+            logger.error("Repozo command failed. See message above.")
+            return result
         cleanup(location, keep)
 
     logger.info("Please wait while backing up database file: %s to %s",
                 datafs, backup_location)
-    os.system(quote_command([repozo] +
+    result = os.system(quote_command([repozo] +
                             backup_arguments(datafs,
                                              backup_location, full,
                                              verbose, gzip,
                                              as_list=True)))
     logger.debug("Repozo command executed.")
+    if result:
+        logger.error("Repozo command failed. See message above.")
+        return result
     cleanup(backup_location, keep)
 
 
@@ -68,20 +74,26 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
         location = snapshot_location + '_' + a
         logger.info("Please wait while making snapshot backup: %s to %s",
                     fs, location)
-        os.system(quote_command([repozo] +
+        result = os.system(quote_command([repozo] +
                                 backup_arguments(fs, location,
                                                  full=True, verbose=verbose,
                                                  gzip=gzip, as_list=True)))
+        if result:
+            logger.error("Repozo command failed. See message above.")
+            return result
         logger.debug("Repozo command executed.")
         cleanup(location, keep)
 
     logger.info("Please wait while making snapshot backup: %s to %s",
                 datafs, snapshot_location)
-    os.system(quote_command([repozo] +
+    result = os.system(quote_command([repozo] +
                             backup_arguments(datafs, snapshot_location,
                                              full=True, verbose=verbose,
                                              gzip=gzip, as_list=True)))
     logger.debug("Repozo command executed.")
+    if result:
+        logger.error("Repozo command failed. See message above.")
+        return result
     cleanup(snapshot_location, keep)
 
 
@@ -96,15 +108,21 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
         location = backup_location + '_' + a
         logger.info("Please wait while restoring database file: %s to %s",
                     location, fs)
-        os.system(quote_command([repozo] +
+        result = os.system(quote_command([repozo] +
                                 restore_arguments(fs, location, date,
                                                   verbose, as_list=True)))
+        if result:
+            logger.error("Repozo command failed. See message above.")
+            return result
     logger.info("Please wait while restoring database file: %s to %s",
                 backup_location, datafs)
     result = os.system(quote_command([repozo] +
                             restore_arguments(datafs, backup_location,
                                               date, verbose, as_list=True)))
     logger.debug("Repozo command executed.")
+    if result:
+        logger.error("Repozo command failed. See message above.")
+    return result
 
 
 def backup_arguments(datafs=None,
