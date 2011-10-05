@@ -85,16 +85,11 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
     cleanup(snapshot_location, keep)
 
 
-def restore_main(bin_dir, datafs, backup_location, verbose, additional):
+def restore_main(bin_dir, datafs, backup_location, verbose, additional,
+                 date=None):
     """Main method, gets called by generated bin/restore."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.debug("If things break: did you stop zope?")
-    date = None
-    if len(sys.argv) > 1:
-        date = sys.argv[1]
-        logger.debug("Argument passed to bin/restore, we assume it is "
-                     "a date that we have to pass to repozo: %s.", date)
-        logger.info("Date restriction: restoring state at %s." % date)
     for a in additional:
         filestorage_dir = os.path.split(datafs)[0]
         fs = os.path.join(filestorage_dir, '%s.fs' % a)

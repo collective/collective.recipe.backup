@@ -1,7 +1,10 @@
 2.3 (unreleased)
 ================
 
-- Nothing changed yet.
+- Moved the restore date option (first command line argument) from
+  repozorunner to the main restore, so we can pass that to copyblobs
+  as well (where it currently is ignored though).
+  [maurits]
 
 
 2.2 (2011-09-14)

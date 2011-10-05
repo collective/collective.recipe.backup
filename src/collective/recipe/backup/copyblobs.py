@@ -346,7 +346,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True, keep=0,
     cleanup(destination, full, keep, keep_blob_days)
 
 
-def restore_blobs(source, destination, use_rsync=True):
+def restore_blobs(source, destination, use_rsync=True, date=None):
     """Restore blobs from source to destination.
 
     With 'use_rsync' at the default True, we use rsync to copy,
@@ -361,6 +361,8 @@ def restore_blobs(source, destination, use_rsync=True):
     be careful with that otherwise you may end up with something like
     var/blobstorage/blobstorage
     """
+    if date is not None:
+        logger.info("Date argument to restore blobs ignored: %r", date)
     if destination.endswith(os.sep):
         # strip that separator
         destination = destination[:-len(os.sep)]

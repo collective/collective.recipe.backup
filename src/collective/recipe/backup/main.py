@@ -61,6 +61,13 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                  blob_backup_location, blob_storage_source, backup_blobs,
                  only_blobs, use_rsync, **kwargs):
     """Main method, gets called by generated bin/restore."""
+    date = None
+    if len(sys.argv) > 1:
+        date = sys.argv[1]
+        logger.debug("Argument passed to bin/restore, we assume it is "
+                     "a date that we have to pass to repozo: %s.", date)
+        logger.info("Date restriction: restoring state at %s." % date)
+
     question = '\n'
     if not only_blobs:
         question += "This will replace the filestorage (Data.fs).\n"
@@ -73,7 +80,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
 
     if not only_blobs:
         repozorunner.restore_main(
-            bin_dir, datafs, backup_location, verbose, additional)
+            bin_dir, datafs, backup_location, verbose, additional, date)
     if not backup_blobs:
         return
     if not blob_backup_location:
@@ -85,7 +92,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
     logger.info("Restoring blobs from %s to %s", blob_backup_location,
                 blob_storage_source)
     copyblobs.restore_blobs(blob_backup_location, blob_storage_source,
-                            use_rsync)
+                            use_rsync=use_rsync, date=date)
 
 
 def snapshot_restore_main(*args, **kwargs):
