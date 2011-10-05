@@ -1,4 +1,4 @@
-2.3 (unreleased)
+2.3 (2011-10-05)
 ================
 
 - Quit the rest of the backup or restore when a repozo call gives an
