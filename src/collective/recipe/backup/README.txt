@@ -1241,8 +1241,7 @@ moment, zc.buildout 1.4.x is used above.  We will try 1.5 below.
     Setting socket time out to 5 seconds
     ...
     Upgraded:
-      zc.buildout version 1.5.2,
-      distribute version 0.6.21;
+    ...
     restarting.
     Generated script '/sample-buildout/bin/buildout'.
     Setting socket time out to 5 seconds
