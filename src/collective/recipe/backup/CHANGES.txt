@@ -1,4 +1,4 @@
-2.4 (unreleased)
+2.4 (2011-12-20)
 ================
 
 - Fixed silly indentation error that prevented old blob backups from
