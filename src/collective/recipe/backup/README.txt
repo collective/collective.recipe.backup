@@ -616,6 +616,7 @@ We can override the blob source location if needed:
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... keep = 3
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.

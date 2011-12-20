@@ -1,7 +1,9 @@
 2.4 (unreleased)
 ================
 
-- Nothing changed yet.
+- Fixed silly indentation error that prevented old blob backups from
+  being deleted when older than ``keep_blob_days`` days.
+  [maurits]
 
 
 2.3 (2011-10-05)

@@ -385,7 +385,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True, keep=0,
         if output:
             # If we have output, this means there was an error.
             logger.error(output)
-        return
+            return
     else:
         if not os.path.exists(dest):
             # The parent directory must exist for shutil.copytree
