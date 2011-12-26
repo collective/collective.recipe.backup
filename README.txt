@@ -259,7 +259,7 @@ debug
     with ``--verbose`` if this option is enabled.
 
 snapshotlocation
-    Location where snapshot defaults are stored. Defaults to
+    Location where snapshot backups of the filestorage are stored. Defaults to
     ``var/snapshotbackups`` inside the buildout directory.
 
 gzip
