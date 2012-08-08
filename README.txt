@@ -40,10 +40,10 @@ cake is important!
 Development
 ===========
 
-- Code repository: http://svn.plone.org/svn/collective/buildout/collective.recipe.backup
+- Code repository: https://github.com/collective/collective.recipe.backup
 
-- Small fixes are fine on trunk, for larger change or if you are
-  unsure, please create a branch.
+- Small fixes are fine on master, for larger changes or if you are
+  unsure, please create a branch or a pull request.
 
 - The code comes with a ``buildout.cfg``.  Please bootstrap the
   buildout and run the created ``bin/test`` to see if the tests still
