@@ -69,3 +69,13 @@ def ask(question, default=True, exact=False):
         # We really want an answer.
         print 'Please explicitly answer y/n'
         continue
+
+
+def execute_or_fail(command):
+    if not command:
+        return
+    result = system(command)
+    logger.debug("command executed: %r", command)
+    if result:
+        logger.error("command %r failed. See message above.")
+        sys.exit(1)

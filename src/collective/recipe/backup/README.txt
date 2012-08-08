@@ -298,6 +298,8 @@ We'll use all options, except the blob options for now::
     ... snapshotlocation = snap/my
     ... gzip = false
     ... enable_snapshotrestore = true
+    ... pre_command = echo 'Can I have a backup?'
+    ... post_command = echo 'Thanks a lot for the backup.'
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -313,10 +315,13 @@ We'll use all options, except the blob options for now::
 Backups are now stored in the ``/myproject`` folder inside buildout and the
 Data.fs location is handled correctly despite not being an absolute path::
 
-    >>> output = system('bin/backup')
+    >>> cat('bin/backup')
+    >>> output = system('bin/backup -v')
     >>> print output
+    Can I have a backup?
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject...
+    Thanks a lot for the backup.
 
 The '...' could filter out too many things, so we explicitly look for
 errors here::
@@ -327,8 +332,10 @@ The same is true for the snapshot backup.
 
     >>> output = system('bin/snapshotbackup')
     >>> print output
+    Can I have a backup?
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
     INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/snap/my
+    Thanks a lot for the backup.
     >>> if 'ERROR' in output: print output
 
 Untested in this file, as it would create directories in your root or your
