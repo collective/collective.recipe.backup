@@ -22,7 +22,7 @@ long_description = (
     'Change history\n'
     '**************\n'
     + '\n' +
-    read('src', 'collective', 'recipe', 'backup', 'CHANGES.txt')
+    read('CHANGES.rst')
     )
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {
