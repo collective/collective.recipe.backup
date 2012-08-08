@@ -1,4 +1,4 @@
-2.5 (unreleased)
+2.5 (2012-08-08)
 ================
 
 - Moved code to github:
