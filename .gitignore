@@ -1,0 +1,8 @@
+*.pyc
+*.pyo
+.installed.cfg
+bin
+collective.recipe.backup.egg-info
+coverage
+develop-eggs
+parts
