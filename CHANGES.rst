@@ -1,4 +1,4 @@
-2.6 (unreleased)
+2.6 (2012-08-29)
 ================
 
 - Added pre_command and post_command options.  See the documentation.
