@@ -7,6 +7,9 @@
 2.5 (2012-08-08)
 ================
 
+- Added pre_command and post_command options.  See the documentation.
+  [maurits]
+
 - Moved code to github:
   https://github.com/collective/collective.recipe.backup
   [maurits]

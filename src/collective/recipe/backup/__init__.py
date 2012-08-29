@@ -83,6 +83,8 @@ class Recipe(object):
                 "These must be four distinct locations:\n",
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
                              sorted(locations.items())]))
+        options.setdefault('pre_command', '')
+        options.setdefault('post_command', '')
         options.setdefault('keep', '2')
         options.setdefault('keep_blob_days', '14')  # two weeks
         options.setdefault('datafs', datafs)
@@ -237,6 +239,8 @@ logging.basicConfig(level=loglevel,
         only_blobs=%(only_blobs)s,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
+        pre_command=%(pre_command)r,
+        post_command=%(post_command)r,
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()

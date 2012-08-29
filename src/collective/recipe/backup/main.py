@@ -13,8 +13,9 @@ logger = logging.getLogger('backup')
 def backup_main(bin_dir, datafs, backup_location, keep, full,
                 verbose, gzip, additional, blob_backup_location,
                 blob_storage_source, backup_blobs, only_blobs, use_rsync,
-                keep_blob_days=0, **kwargs):
+                keep_blob_days=0, pre_command='', post_command='', **kwargs):
     """Main method, gets called by generated bin/backup."""
+    utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.backup_main(
             bin_dir, datafs, backup_location, keep, full, verbose, gzip,
@@ -24,6 +25,7 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
                          "blobs.")
 
     if not backup_blobs:
+        utils.execute_or_fail(post_command)
         return
     if not blob_backup_location:
         logger.error("No blob backup location specified")
@@ -35,13 +37,15 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
                 blob_storage_source, blob_backup_location)
     copyblobs.backup_blobs(blob_storage_source, blob_backup_location, full,
                            use_rsync, keep=keep, keep_blob_days=keep_blob_days)
+    utils.execute_or_fail(post_command)
 
 
 def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
                   additional, blob_snapshot_location, blob_storage_source,
                   backup_blobs, only_blobs, use_rsync, keep_blob_days=0,
-                  **kwargs):
+                  pre_command='', post_command='', **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
+    utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.snapshot_main(
             bin_dir, datafs, snapshot_location, keep, verbose, gzip,
@@ -50,6 +54,7 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
             logger.error("Halting execution due to error; not backing up "
                          "blobs.")
     if not backup_blobs:
+        utils.execute_or_fail(post_command)
         return
     if not blob_snapshot_location:
         logger.error("No blob snaphot location specified")
@@ -62,11 +67,13 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
     copyblobs.backup_blobs(blob_storage_source, blob_snapshot_location,
                            full=True, use_rsync=use_rsync, keep=keep,
                            keep_blob_days=keep_blob_days)
+    utils.execute_or_fail(post_command)
 
 
 def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                  blob_backup_location, blob_storage_source, backup_blobs,
-                 only_blobs, use_rsync, **kwargs):
+                 only_blobs, use_rsync, pre_command='', post_command='',
+                 **kwargs):
     """Main method, gets called by generated bin/restore."""
     date = None
     if len(sys.argv) > 1:
@@ -85,6 +92,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
         logger.info("Not restoring.")
         sys.exit(0)
 
+    utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.restore_main(
             bin_dir, datafs, backup_location, verbose, additional, date)
@@ -94,6 +102,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
             sys.exit(1)
 
     if not backup_blobs:
+        utils.execute_or_fail(post_command)
         return
     if not blob_backup_location:
         logger.error("No blob backup location specified")
@@ -105,6 +114,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
                 blob_storage_source)
     copyblobs.restore_blobs(blob_backup_location, blob_storage_source,
                             use_rsync=use_rsync, date=date)
+    utils.execute_or_fail(post_command)
 
 
 def snapshot_restore_main(*args, **kwargs):
