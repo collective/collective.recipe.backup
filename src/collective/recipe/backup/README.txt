@@ -299,7 +299,9 @@ We'll use all options, except the blob options for now::
     ... gzip = false
     ... enable_snapshotrestore = true
     ... pre_command = echo 'Can I have a backup?'
-    ... post_command = echo 'Thanks a lot for the backup.'
+    ... post_command =
+    ...     echo 'Thanks a lot for the backup.'
+    ...     echo 'We are done.'
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -324,6 +326,7 @@ stderr.  Anyway::
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
+    We are done.
     INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
 
 We explicitly look for errors here::
@@ -337,6 +340,7 @@ The same is true for the snapshot backup.
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
+    We are done.
     INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/snap/my
     >>> if 'ERROR' in output: print output
 
@@ -361,10 +365,12 @@ INFO level logging is not there::
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
+    We are done.
     >>> print system('bin/backup --quiet')
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
+    We are done.
 
 In our case the ``--backup ...`` lines above are just the mock repozo script
 that still prints something. So it proves that the command is executed, but it
