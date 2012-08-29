@@ -315,8 +315,7 @@ We'll use all options, except the blob options for now::
 Backups are now stored in the ``/myproject`` folder inside buildout and the
 Data.fs location is handled correctly despite not being an absolute path::
 
-    >>> cat('bin/backup')
-    >>> output = system('bin/backup -v')
+    >>> output = system('bin/backup')
     >>> print output
     Can I have a backup?
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose

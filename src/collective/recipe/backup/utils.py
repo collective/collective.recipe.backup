@@ -27,7 +27,8 @@ def system(command, input=''):
     result = o.read() + e.read()
     o.close()
     e.close()
-    return result
+    # Return the result plus a return value (0: all is fine)
+    return result, p.wait()
 
 
 def ask(question, default=True, exact=False):
@@ -74,8 +75,10 @@ def ask(question, default=True, exact=False):
 def execute_or_fail(command):
     if not command:
         return
-    result = system(command)
+    output, failed = system(command)
     logger.debug("command executed: %r", command)
-    if result:
-        logger.error("command %r failed. See message above.")
+    if output:
+        print output
+    if failed:
+        logger.error("command %r failed. See message above.", command)
         sys.exit(1)
