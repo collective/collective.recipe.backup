@@ -325,6 +325,22 @@ use_rsync
     false, we fall back to a simple copy (``shutil.copytree`` from
     python in fact).
 
+pre_command
+    Command to execute before starting the backup.  One use case would
+    be to mount a remote file system using NFS or sshfs and put the
+    backup there.  Any output will be printed.  If you do not like
+    that, you can always redirect output somewhere else (``mycommand >
+    /dev/null`` on Unix).  Refer to your local Unix guru for more
+    information.  If the command fails, the backup script quits with
+    an error.  You can specify multiple commands.
+
+post_command
+    Command to execute after the backup has finished.  One use case
+    would be to unmount the remote file system that you mounted
+    earlier using the ``pre_command``.  See that pre_command above for
+    more info.
+
+
 An example buildout snippet using most options, except the blob
 options would look like this::
 
@@ -338,6 +354,10 @@ options would look like this::
     snapshotlocation = snap/my
     gzip = false
     enable_snapshotrestore = true
+    pre_command = echo 'Can I have a backup?'
+    post_command =
+        echo 'Thanks a lot for the backup.'
+        echo 'We are done.'
 
 Paths in directories or files can use relative (``../``) paths, and
 ``~`` (home dir) and ``$BACKUP``-style environment variables are
