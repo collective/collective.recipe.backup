@@ -1,6 +1,9 @@
 2.5 (unreleased)
 ================
 
+- Added pre_command and post_command options.  See the documentation.
+  [maurits]
+
 - Moved code to github:
   https://github.com/collective/collective.recipe.backup
   [maurits]
