@@ -10,15 +10,15 @@ from collective.recipe.backup import utils
 logger = logging.getLogger('backup')
 
 
-def backup_main(bin_dir, datafs, backup_location, keep, full,
-                verbose, gzip, additional, blob_backup_location,
-                blob_storage_source, backup_blobs, only_blobs, use_rsync,
+def backup_main(bin_dir, storages, backup_location, keep, full,
+                verbose, gzip, blob_backup_location,
+                backup_blobs, only_blobs, use_rsync,
                 keep_blob_days=0, **kwargs):
     """Main method, gets called by generated bin/backup."""
+    
     if not only_blobs:
         result = repozorunner.backup_main(
-            bin_dir, datafs, backup_location, keep, full, verbose, gzip,
-            additional)
+            bin_dir, storages, backup_location, keep, full, verbose, gzip)
         if result and backup_blobs:
             logger.error("Halting execution due to error; not backing up "
                          "blobs.")
@@ -28,24 +28,30 @@ def backup_main(bin_dir, datafs, backup_location, keep, full,
     if not blob_backup_location:
         logger.error("No blob backup location specified")
         sys.exit(1)
-    if not blob_storage_source:
-        logger.error("No blob storage source specified")
-        sys.exit(1)
-    logger.info("Please wait while backing up blobs from %s to %s",
-                blob_storage_source, blob_backup_location)
-    copyblobs.backup_blobs(blob_storage_source, blob_backup_location, full,
-                           use_rsync, keep=keep, keep_blob_days=keep_blob_days)
+    for storage, _ in sorted(storages.iteritems(), key=lambda (k,v): v['sort']):
+        blobdir = storages[storage].get('blobdir')
+        if not blobdir:
+            logger.warning("No blob dir defined for %s storage" % \
+                                                (storage or 'main'))
+            continue
+        if storage == '1':
+            location = blob_backup_location
+        else:
+            location = blob_backup_location + '_' + storage
+        logger.info("Please wait while backing up blobs from %s to %s",
+                    blobdir, location)
+        copyblobs.backup_blobs(blobdir, location, full,                            
+                               use_rsync, keep=keep, keep_blob_days=keep_blob_days,)
 
 
-def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
-                  additional, blob_snapshot_location, blob_storage_source,
+def snapshot_main(bin_dir, storages, snapshot_location, keep, verbose, gzip,
+                  blob_snapshot_location,
                   backup_blobs, only_blobs, use_rsync, keep_blob_days=0,
                   **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     if not only_blobs:
         result = repozorunner.snapshot_main(
-            bin_dir, datafs, snapshot_location, keep, verbose, gzip,
-            additional)
+            bin_dir, storages, snapshot_location, keep, verbose, gzip)
         if result and backup_blobs:
             logger.error("Halting execution due to error; not backing up "
                          "blobs.")
@@ -54,18 +60,25 @@ def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
     if not blob_snapshot_location:
         logger.error("No blob snaphot location specified")
         sys.exit(1)
-    if not blob_storage_source:
-        logger.error("No blob storage source specified")
-        sys.exit(1)
-    logger.info("Please wait while making snapshot of blobs from %s to %s",
-                blob_storage_source, blob_snapshot_location)
-    copyblobs.backup_blobs(blob_storage_source, blob_snapshot_location,
+    for storage, _ in sorted(storages.iteritems(), key=lambda (k,v): v['sort']):
+        blobdir = storages[storage].get('blobdir')
+        if not blobdir:
+            logger.warning("No blob dir defined for %s storage" % \
+                                                (storage or 'main'))
+            continue
+        if storage == '1':
+            location = blob_snapshot_location
+        else:
+            location = blob_snapshot_location + '_' + storage
+        logger.info("Please wait while making snapshot of blobs from %s to %s",
+                    blobdir, location)
+        copyblobs.backup_blobs(blobdir, location,
                            full=True, use_rsync=use_rsync, keep=keep,
                            keep_blob_days=keep_blob_days)
 
 
-def restore_main(bin_dir, datafs, backup_location, verbose, additional,
-                 blob_backup_location, blob_storage_source, backup_blobs,
+def restore_main(bin_dir, storages, backup_location, verbose,
+                 blob_backup_location, backup_blobs,
                  only_blobs, use_rsync, **kwargs):
     """Main method, gets called by generated bin/restore."""
     date = None
@@ -87,7 +100,7 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
 
     if not only_blobs:
         result = repozorunner.restore_main(
-            bin_dir, datafs, backup_location, verbose, additional, date)
+            bin_dir, storages, backup_location, verbose, date)
         if result and backup_blobs:
             logger.error("Halting execution due to error; not restoring "
                          "blobs.")
@@ -98,6 +111,8 @@ def restore_main(bin_dir, datafs, backup_location, verbose, additional,
     if not blob_backup_location:
         logger.error("No blob backup location specified")
         sys.exit(1)
+    # TODO: RESTORE MAIN DATA.FS ONLY
+    blob_storage_source = storages['1'].get('blobdir')
     if not blob_storage_source:
         logger.error("No blob storage source specified")
         sys.exit(1)

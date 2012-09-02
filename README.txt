@@ -397,6 +397,15 @@ same time with repozo. So they are not completely in sync. The "other"
 databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors.
 
+If you want more control with source path, you can explicitly define (with or
+without the bobstorage path)::
+
+    [backup]
+    recipe = collective.recipe.backup
+    additional_filestorages =
+        foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
+        bar ${buildout:directory}/var/filestorage/bar/bar.fs
+
 Note that ``collective.recipe.filestorage`` creates additional
 filestorages in a slightly different location and we cannot handle
 that yet.  Work is on the way to improve this.

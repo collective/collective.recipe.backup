@@ -2,6 +2,7 @@
 """Recipe backup"""
 import logging
 import os
+import re
 
 import zc.recipe.egg
 import zc.buildout
@@ -190,22 +191,41 @@ class Recipe(object):
         additional = self.options['additional_filestorages']
         if additional:
             additional = additional.split('\n')
-            additional = [a.strip() for a in additional
-                          if a.strip()]
+            additional = [
+                re.match(r'^\s*([^\s]+)\s*([^\s]*)\s*([^\s]*)\s*$', 
+                a).groups() for a in additional if a]
         else:
             additional = []
-
-        for a in additional:
-            backup = backup_location + '_' + a
-            snapshot = snapshot_location + '_' + a
+            
+        for (storage, _, _) in additional:        
+            backup = backup_location + '_' + storage
+            snapshot = snapshot_location + '_' + storage
             if not os.path.isdir(backup):
                 os.makedirs(backup)
                 logger.info('Created %s', backup)
             if not os.path.isdir(snapshot):
                 os.makedirs(snapshot)
                 logger.info('Created %s', snapshot)
+            if blob_backup_location:
+                location = blob_backup_location + '_' + storage
+                if not os.path.isdir(location):
+                    os.makedirs(location)
+                    logger.info('Created %s', location)
 
         datafs = construct_path(buildout_dir, self.options['datafs'])
+        
+        storages = {}
+        counter = 0
+        for (storage, fs, blobdir) in additional:
+            if not fs:
+                filestorage_dir = os.path.split(datafs)[0]
+                fs = os.path.join(filestorage_dir, '%s.fs' % storage)
+            if storages.get(storage):
+                logger.warning('storage %s duplicated' % storage)
+            storages[storage] = dict(fs=fs, blobdir=blobdir, sort=counter)
+            counter = counter + 1
+        storages['1'] = dict(fs=datafs, blobdir=self.options['blob_storage'], sort=counter)
+        
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
         else:
@@ -213,40 +233,47 @@ class Recipe(object):
         initialization_template = """
 import logging
 loglevel = logging.%(loglevel)s
-import sys
+from optparse import OptionParser
+parser = OptionParser()
+# parser.add_option("-S", "--storage", dest="storage",
+#                  action="store", type="string",
+#                  help="storage name")
+parser.add_option("-q", "--quiet",
+                  action="store_false", dest="verbose", default=True,
+                  help="don't print status messages to stdout")
+(options, args) = parser.parse_args()
+# storage = options.storage    
 # Allow the user to make the script more quiet (say in a cronjob):
-if sys.argv[-1] in ('-q', '--quiet'):
+if not options.verbose:
     loglevel = logging.WARN
 logging.basicConfig(level=loglevel,
     format='%%(levelname)s: %%(message)s')
 """
         arguments_template = """
         bin_dir=%(bin-directory)r,
-        datafs=%(datafs)r,
+        storages=%(storages)r,
         keep=%(keep)s,
         keep_blob_days=%(keep_blob_days)s,
         backup_location=%(backup_location)r,
         snapshot_location=%(snapshot_location)r,
         blob_backup_location=%(blob_backup_location)r,
         blob_snapshot_location=%(blob_snapshot_location)r,
-        blob_storage_source=%(blob_storage_source)r,
         full=%(full)s,
         verbose=%(debug)s,
         gzip=%(gzip)s,
-        additional=%(additional)r,
         only_blobs=%(only_blobs)s,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
+        # storage=storage,
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
         opts['loglevel'] = loglevel
-        opts['datafs'] = datafs
+        opts['storages'] = storages
         opts['backup_location'] = backup_location
         opts['snapshot_location'] = snapshot_location
         opts['blob_backup_location'] = blob_backup_location
         opts['blob_snapshot_location'] = blob_snapshot_location
-        opts['blob_storage_source'] = opts['blob_storage']
         opts['additional'] = additional
 
         if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
