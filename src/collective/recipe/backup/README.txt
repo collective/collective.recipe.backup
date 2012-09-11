@@ -622,7 +622,7 @@ speed things up a bit):
     -  snapshotbackup
     -  snapshotrestore
 
-We can override the blob source location if needed:
+We can override the blob source location and add additional_storages if needed:
 
     >>> write('buildout.cfg',
     ... """
@@ -634,6 +634,9 @@ We can override the blob source location if needed:
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... keep = 3
+    ... additional_storages =
+    ...    foo ${buildout:directory}/var/filestorage/foo.fs ${buildout:directory}/var/blobstorage-foo
+    ...    bar ${buildout:directory}/var/filestorage/bar.fs ${buildout:directory}/var/blobstorage-bar
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -655,7 +658,10 @@ We can override the blob source location if needed:
     -  snapshotrestore
     >>> mkdir('var/blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
-
+    >>> mkdir('var/blobstorage-foo')
+    >>> write('var', 'blobstorage-foo', 'blob-foo1.txt', "Sample blob foo 1.")
+    >>> mkdir('var/blobstorage-bar')
+    >>> write('var', 'blobstorage-bar', 'blob-bar1.txt', "Sample blob bar 1.")
 
 Test the snapshotbackup first, as that should be easiest.
 

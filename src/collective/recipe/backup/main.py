@@ -111,16 +111,25 @@ def restore_main(bin_dir, storages, backup_location, verbose,
     if not blob_backup_location:
         logger.error("No blob backup location specified")
         sys.exit(1)
-    # TODO: RESTORE MAIN DATA.FS ONLY
-    blob_storage_source = storages['1'].get('blobdir')
-    if not blob_storage_source:
-        logger.error("No blob storage source specified")
-        sys.exit(1)
-    logger.info("Restoring blobs from %s to %s", blob_backup_location,
-                blob_storage_source)
-    copyblobs.restore_blobs(blob_backup_location, blob_storage_source,
-                            use_rsync=use_rsync, date=date)
 
+    for storage, _ in sorted(storages.iteritems(), key=lambda (k,v): v['sort']):
+        blobdir = storages[storage].get('blobdir')
+        if not blobdir:
+            logger.warning("No blob dir defined for %s storage" % \
+                                                (storage or 'main'))
+            continue
+        if storage == '1':
+            location = blob_backup_location
+        else:
+            location = blob_backup_location + '_' + storage
+        blob_storage_source = storages[storage].get('blobdir')
+        if not blob_storage_source:
+            logger.error("No blob storage source specified")
+            sys.exit(1)
+        logger.info("Restoring blobs from %s to %s", location,
+                    blob_storage_source)
+        copyblobs.restore_blobs(location, blob_storage_source,
+                                use_rsync=use_rsync, date=date)
 
 def snapshot_restore_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotrestore.

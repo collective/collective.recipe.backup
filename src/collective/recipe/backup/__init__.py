@@ -211,6 +211,11 @@ class Recipe(object):
                 if not os.path.isdir(location):
                     os.makedirs(location)
                     logger.info('Created %s', location)
+            if blob_snapshot_location:
+                location = blob_snapshot_location + '_' + storage
+                if not os.path.isdir(location):
+                    os.makedirs(location)
+                    logger.info('Created %s', location)
 
         datafs = construct_path(buildout_dir, self.options['datafs'])
         
