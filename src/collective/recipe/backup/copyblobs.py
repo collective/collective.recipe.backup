@@ -66,8 +66,8 @@ def get_valid_directories(container, name):
     []
     >>> for d in ['a', 'a.0', 'a.1', 'a.bar.2', 'a.bar']:
     ...     mkdir('dirtest', d)
-    >>> get_valid_directories('dirtest', 'a')
-    ['a.1', 'a.0']
+    >>> sorted(get_valid_directories('dirtest', 'a'))
+    ['a.0', 'a.1']
     >>> get_valid_directories('dirtest', 'bar')
     []
 
