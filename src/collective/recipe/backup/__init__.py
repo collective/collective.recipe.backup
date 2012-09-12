@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import pprint
 
 import zc.recipe.egg
 import zc.buildout
@@ -84,6 +85,8 @@ class Recipe(object):
                 "These must be four distinct locations:\n",
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
                              sorted(locations.items())]))
+        options.setdefault('pre_command', '')
+        options.setdefault('post_command', '')
         options.setdefault('keep', '2')
         options.setdefault('keep_blob_days', '14')  # two weeks
         options.setdefault('datafs', datafs)
@@ -163,73 +166,79 @@ class Recipe(object):
             buildout_dir, self.options['location'])
         snapshot_location = construct_path(
             buildout_dir, self.options['snapshotlocation'])
-        if self.options['only_blobs'] == 'False':
-            if not os.path.isdir(backup_location):
-                os.makedirs(backup_location)
-                logger.info('Created %s', backup_location)
-            if not os.path.isdir(snapshot_location):
-                os.makedirs(snapshot_location)
-                logger.info('Created %s', snapshot_location)
 
         # Blob backup.
-        if self.options['backup_blobs'] == 'True' and \
-               self.options['blob_storage']:
+        if self.options['backup_blobs'] == 'True':
             blob_backup_location = construct_path(
                 buildout_dir, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(
                 buildout_dir, self.options['blobsnapshotlocation'])
-            if not os.path.isdir(blob_backup_location):
-                os.makedirs(blob_backup_location)
-                logger.info('Created %s', blob_backup_location)
-            if not os.path.isdir(blob_snapshot_location):
-                os.makedirs(blob_snapshot_location)
-                logger.info('Created %s', blob_snapshot_location)
         else:
             blob_backup_location = ''
-            blob_snapshot_location = ''
+            blob_snapshot_location = ''                
 
         additional = self.options['additional_filestorages']
-        if additional:
-            additional = additional.split('\n')
-            additional = [
-                re.match(r'^\s*([^\s]+)\s*([^\s]*)\s*([^\s]*)\s*$', 
-                a).groups() for a in additional if a]
-        else:
-            additional = []
-            
-        for (storage, _, _) in additional:        
-            backup = backup_location + '_' + storage
-            snapshot = snapshot_location + '_' + storage
-            if not os.path.isdir(backup):
-                os.makedirs(backup)
-                logger.info('Created %s', backup)
-            if not os.path.isdir(snapshot):
-                os.makedirs(snapshot)
-                logger.info('Created %s', snapshot)
-            if blob_backup_location:
-                location = blob_backup_location + '_' + storage
-                if not os.path.isdir(location):
-                    os.makedirs(location)
-                    logger.info('Created %s', location)
-            if blob_snapshot_location:
-                location = blob_snapshot_location + '_' + storage
-                if not os.path.isdir(location):
-                    os.makedirs(location)
-                    logger.info('Created %s', location)
-
+        storages = []        
         datafs = construct_path(buildout_dir, self.options['datafs'])
+        filestorage_dir = os.path.split(datafs)[0]        
+        if additional:
+            ADDITIONAL_REGEX = r'^\s*(?P<storage>[^\s]+)\s*(?P<datafs>[^\s]*)\s*(?P<blobdir>[^\s]*)\s*$'
+            for a in additional.split('\n'):
+                if not a:
+                    continue
+                storage = re.match(ADDITIONAL_REGEX, a).groupdict()
+                if storage['storage'] in [s['storage'] for s in storages]:
+                    logger.warning('storage %s duplicated' % storage['storage'])
+                if not storage['datafs']:
+                    storage['datafs'] = os.path.join(filestorage_dir, '%s.fs' % storage['storage'])
+                storage['backup_location'] = backup_location + '_' + storage['storage']
+                storage['snapshot_location'] = snapshot_location + '_' + storage['storage']
+                if storage['blobdir']:
+                    storage['blob_backup_location'] = blob_backup_location and (blob_backup_location + '_' + storage['storage'])
+                    storage['blob_snapshot_location'] = blob_snapshot_location and (blob_snapshot_location + '_' + storage['storage'])
+                storages.append(storage)
         
-        storages = {}
-        counter = 0
-        for (storage, fs, blobdir) in additional:
-            if not fs:
-                filestorage_dir = os.path.split(datafs)[0]
-                fs = os.path.join(filestorage_dir, '%s.fs' % storage)
-            if storages.get(storage):
-                logger.warning('storage %s duplicated' % storage)
-            storages[storage] = dict(fs=fs, blobdir=blobdir, sort=counter)
-            counter = counter + 1
-        storages['1'] = dict(fs=datafs, blobdir=self.options['blob_storage'], sort=counter)
+        storage = dict(
+            storage="1",
+            datafs=datafs, 
+            blobdir=self.options['blob_storage'],
+            backup_location=backup_location,
+            snapshot_location=snapshot_location,
+            )
+
+        if storage['blobdir']:
+            storage['blob_backup_location'] = blob_backup_location
+            storage['blob_snapshot_location'] = blob_snapshot_location
+        storages.append(storage)
+        
+        if self.options['only_blobs'] in ('false', 'False'):
+            for s in storages:
+                backup_location = s['backup_location']
+                snapshot_location = s['snapshot_location']
+                if not os.path.isdir(backup_location):
+                    os.makedirs(backup_location)
+                    logger.info('Created %s', backup_location)
+                if not os.path.isdir(snapshot_location):
+                    os.makedirs(snapshot_location)
+                    logger.info('Created %s', snapshot_location)
+
+        # Blob backup.
+        if self.options['backup_blobs'] in ('true', 'True'):
+            blob_storage_found = False            
+            for s in storages:
+                if s['blobdir']:
+                    blob_storage_found = True
+                    blob_backup_location = s['blob_backup_location']
+                    blob_snapshot_location = s['blob_snapshot_location']
+                    if blob_backup_location and not os.path.isdir(blob_backup_location):
+                        os.makedirs(blob_backup_location)
+                        logger.info('Created %s', blob_backup_location)
+                    if blob_snapshot_location and not os.path.isdir(blob_snapshot_location):
+                        os.makedirs(blob_snapshot_location)
+                        logger.info('Created %s', blob_snapshot_location)
+            if not blob_storage_found:
+                raise zc.buildout.UserError(
+                    "backup_blobs is true, but no blob_storage could be found.")                        
         
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
@@ -256,37 +265,26 @@ logging.basicConfig(level=loglevel,
 """
         arguments_template = """
         bin_dir=%(bin-directory)r,
-        storages=%(storages)r,
+        storages=%(storages)s,
         keep=%(keep)s,
         keep_blob_days=%(keep_blob_days)s,
-        backup_location=%(backup_location)r,
-        snapshot_location=%(snapshot_location)r,
-        blob_backup_location=%(blob_backup_location)r,
-        blob_snapshot_location=%(blob_snapshot_location)r,
         full=%(full)s,
         verbose=%(debug)s,
         gzip=%(gzip)s,
         only_blobs=%(only_blobs)s,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
-        # storage=storage,
+        pre_command=%(pre_command)r,
+        post_command=%(post_command)r,
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
         opts['loglevel'] = loglevel
-        opts['storages'] = storages
-        opts['backup_location'] = backup_location
-        opts['snapshot_location'] = snapshot_location
-        opts['blob_backup_location'] = blob_backup_location
-        opts['blob_snapshot_location'] = blob_snapshot_location
-        opts['additional'] = additional
+        opts['storages'] = pprint.pformat(storages)
 
         if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
             raise zc.buildout.UserError(
                 "Cannot have backup_blobs false and only_blobs true.")
-        if opts['backup_blobs'] == 'True' and not opts['blob_storage']:
-            raise zc.buildout.UserError(
-                "backup_blobs is true, but no blob_storage could be found.")
 
         # Keep list of generated files/directories/scripts
         generated = []

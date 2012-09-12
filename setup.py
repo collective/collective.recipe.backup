@@ -9,10 +9,10 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(*rnames)).read()
 
-version = '2.5dev'
+version = '2.7.dev0'
 
 long_description = (
-    read('README.txt')
+    read('README.rst')
     + '\n' +
     'Contributors\n'
     '************\n'
@@ -22,7 +22,7 @@ long_description = (
     'Change history\n'
     '**************\n'
     + '\n' +
-    read('src', 'collective', 'recipe', 'backup', 'CHANGES.txt')
+    read('CHANGES.rst')
     )
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {
@@ -48,7 +48,7 @@ setup(name='collective.recipe.backup',
       keywords='buildout backup repozo zope',
       author='Reinout van Rees, Maurits van Rees',
       author_email='reinout@vanrees.org',
-      url='http://svn.plone.org/svn/collective/buildout/collective.recipe.backup',
+      url='https://github.com/collective/collective.recipe.backup',
       license='GPL',
       package_dir={'': 'src'},
       packages=find_packages('src'),

@@ -381,10 +381,10 @@ def backup_blobs(source, destination, full=False, use_rsync=True, keep=0,
             cmd = 'rsync -a %(source)s %(dest)s' % dict(
                 source=source, dest=dest)
         logger.info(cmd)
-        output = utils.system(cmd)
+        output, failed = utils.system(cmd)
         if output:
-            # If we have output, this means there was an error.
-            logger.error(output)
+            print output
+        if failed:
             return
     else:
         if not os.path.exists(dest):
@@ -457,11 +457,11 @@ def restore_blobs(source, destination, use_rsync=True, date=None):
             source=backup_source,
             dest=dest_dir)
         logger.info(cmd)
-        output = utils.system(cmd)
+        output, failed = utils.system(cmd)
         if output:
-            # If we have output, this means there was an error.
-            logger.error(output)
-        return
+            print output
+        if failed:
+            return
     else:
         if os.path.exists(destination):
             logger.info("Removing %s", destination)
@@ -633,7 +633,7 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0):
         logger.debug("This is a full backup.")
         logger.debug("Max number of backups: %d.", keep)
         logger.debug("Number of blob days to keep: %d (ignored).",
-                    keep_blob_days)
+                     keep_blob_days)
     else:
         logger.debug("This is a partial backup.")
         logger.debug("Minimum number of backups to keep: %d.", keep)
