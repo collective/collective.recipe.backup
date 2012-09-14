@@ -30,99 +30,64 @@ def quote_command(command):
     return command
 
 
-def backup_main(bin_dir, datafs, backup_location, keep, full,
-                verbose, gzip, additional):
+def backup_main(bin_dir, storages, keep, full, verbose, gzip):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
-    for a in additional:
-        filestorage_dir = os.path.split(datafs)[0]
-        fs = os.path.join(filestorage_dir, '%s.fs' % a)
-        location = backup_location + '_' + a
+
+    for storage in storages:
+        backup_location = storage['backup_location']
+        fs = storage['datafs']
         logger.info("Please wait while backing up database file: %s to %s",
-                    fs, location)
+                    fs, backup_location)
         result = os.system(quote_command([repozo] +
-                                backup_arguments(fs, location, full,
-                                                 verbose, gzip,
-                                                 as_list=True)))
+                           backup_arguments(fs, backup_location, full,
+                                            verbose, gzip,
+                                            as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
-        cleanup(location, keep)
-
-    logger.info("Please wait while backing up database file: %s to %s",
-                datafs, backup_location)
-    result = os.system(quote_command([repozo] +
-                            backup_arguments(datafs,
-                                             backup_location, full,
-                                             verbose, gzip,
-                                             as_list=True)))
-    logger.debug("Repozo command executed.")
-    if result:
-        logger.error("Repozo command failed. See message above.")
-        return result
-    cleanup(backup_location, keep)
+        cleanup(backup_location, keep)
 
 
-def snapshot_main(bin_dir, datafs, snapshot_location, keep, verbose, gzip,
-                  additional):
+def snapshot_main(bin_dir, storages, keep, verbose, gzip):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
-    for a in additional:
-        filestorage_dir = os.path.split(datafs)[0]
-        fs = os.path.join(filestorage_dir, '%s.fs' % a)
-        location = snapshot_location + '_' + a
+    for storage in storages:
+        snapshot_location = storage['snapshot_location']
+        fs = storage['datafs']
         logger.info("Please wait while making snapshot backup: %s to %s",
-                    fs, location)
+                    fs, snapshot_location)
         result = os.system(quote_command([repozo] +
-                                backup_arguments(fs, location,
-                                                 full=True, verbose=verbose,
-                                                 gzip=gzip, as_list=True)))
+                           backup_arguments(fs, snapshot_location,
+                                            full=True, verbose=verbose,
+                                            gzip=gzip, as_list=True)))
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
         logger.debug("Repozo command executed.")
-        cleanup(location, keep)
-
-    logger.info("Please wait while making snapshot backup: %s to %s",
-                datafs, snapshot_location)
-    result = os.system(quote_command([repozo] +
-                            backup_arguments(datafs, snapshot_location,
-                                             full=True, verbose=verbose,
-                                             gzip=gzip, as_list=True)))
-    logger.debug("Repozo command executed.")
-    if result:
-        logger.error("Repozo command failed. See message above.")
-        return result
-    cleanup(snapshot_location, keep)
+        cleanup(snapshot_location, keep)
 
 
-def restore_main(bin_dir, datafs, backup_location, verbose, additional,
-                 date=None):
+def restore_main(bin_dir, storages, verbose,
+                 date=None, restore_snapshot=False):
     """Main method, gets called by generated bin/restore."""
     repozo = os.path.join(bin_dir, 'repozo')
     logger.debug("If things break: did you stop zope?")
-    for a in additional:
-        filestorage_dir = os.path.split(datafs)[0]
-        fs = os.path.join(filestorage_dir, '%s.fs' % a)
-        location = backup_location + '_' + a
+    for storage in storages:
+        if restore_snapshot:
+            backup_location = storage['snapshot_location']
+        else:
+            backup_location = storage['backup_location']
+        fs = storage['datafs']
         logger.info("Please wait while restoring database file: %s to %s",
-                    location, fs)
+                    backup_location, fs)
         result = os.system(quote_command([repozo] +
-                                restore_arguments(fs, location, date,
-                                                  verbose, as_list=True)))
+                           restore_arguments(fs, backup_location, date,
+                                             verbose, as_list=True)))
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
-    logger.info("Please wait while restoring database file: %s to %s",
-                backup_location, datafs)
-    result = os.system(quote_command([repozo] +
-                            restore_arguments(datafs, backup_location,
-                                              date, verbose, as_list=True)))
-    logger.debug("Repozo command executed.")
-    if result:
-        logger.error("Repozo command failed. See message above.")
-    return result
 
 
 def backup_arguments(datafs=None,
@@ -325,7 +290,7 @@ def cleanup(backup_location, keep=0):
     logger.debug("Trying to clean up old backups.")
     filenames = os.listdir(backup_location)
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
-              len(filenames), filenames)
+                 len(filenames), filenames)
     num_backups = int(keep)
     logger.debug("Max number of backups: %s.", num_backups)
     files_modtimes = []
@@ -337,19 +302,19 @@ def cleanup(backup_location, keep=0):
     fullbackups = [f for f in files_modtimes
                    if f[0].endswith('.fs') or f[0].endswith('.fsz')]
     logger.debug("Filtered out full backups (*.fs/*.fsz): %r.",
-              [f[0] for f in fullbackups])
+                 [f[0] for f in fullbackups])
     fullbackups = sorted(fullbackups, key=itemgetter(1))
     logger.debug("%d fullbackups: %r", len(fullbackups), fullbackups)
     if len(fullbackups) > num_backups and num_backups != 0:
         logger.debug("There are older backups that we can remove.")
         fullbackups.reverse()
         logger.debug("Full backups, sorted by date, newest first: %r.",
-                  [f[0] for f in fullbackups])
+                     [f[0] for f in fullbackups])
         oldest_backup_to_keep = fullbackups[(num_backups - 1)]
         logger.debug("Oldest backup to keep: %s", oldest_backup_to_keep[0])
         last_date_to_keep = oldest_backup_to_keep[1]
         logger.debug("The oldest backup we get to keep is from %s.",
-                  last_date_to_keep)
+                     last_date_to_keep)
         deleted = 0
         # Note: this also deletes now outdated .deltafs and .dat
         # files, so we may easily delete more items than there are
@@ -371,7 +336,7 @@ def cleanup(backup_location, keep=0):
         logger.debug("Not removing backups.")
         if len(fullbackups) <= num_backups:
             logger.debug("Reason: #backups (%s) <= than max (%s).",
-                      len(fullbackups), num_backups)
+                         len(fullbackups), num_backups)
         if num_backups == 0:
             logger.debug("Reason: max # of backups is 0, so that is a "
-                      "sign to us to not remove backups.")
+                         "sign to us to not remove backups.")

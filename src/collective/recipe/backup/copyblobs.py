@@ -66,7 +66,7 @@ def get_valid_directories(container, name):
     []
     >>> for d in ['a', 'a.0', 'a.1', 'a.bar.2', 'a.bar']:
     ...     mkdir('dirtest', d)
-    >>> get_valid_directories('dirtest', 'a')
+    >>> sorted(get_valid_directories('dirtest', 'a'))
     ['a.0', 'a.1']
     >>> get_valid_directories('dirtest', 'bar')
     []
@@ -633,7 +633,7 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0):
         logger.debug("This is a full backup.")
         logger.debug("Max number of backups: %d.", keep)
         logger.debug("Number of blob days to keep: %d (ignored).",
-                    keep_blob_days)
+                     keep_blob_days)
     else:
         logger.debug("This is a partial backup.")
         logger.debug("Minimum number of backups to keep: %d.", keep)

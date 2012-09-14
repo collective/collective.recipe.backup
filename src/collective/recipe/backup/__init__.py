@@ -2,6 +2,8 @@
 """Recipe backup"""
 import logging
 import os
+import re
+import pprint
 
 import zc.recipe.egg
 import zc.buildout
@@ -164,50 +166,82 @@ class Recipe(object):
             buildout_dir, self.options['location'])
         snapshot_location = construct_path(
             buildout_dir, self.options['snapshotlocation'])
-        if self.options['only_blobs'] == 'False':
-            if not os.path.isdir(backup_location):
-                os.makedirs(backup_location)
-                logger.info('Created %s', backup_location)
-            if not os.path.isdir(snapshot_location):
-                os.makedirs(snapshot_location)
-                logger.info('Created %s', snapshot_location)
 
         # Blob backup.
-        if self.options['backup_blobs'] == 'True' and \
-               self.options['blob_storage']:
+        if self.options['backup_blobs'] == 'True':
             blob_backup_location = construct_path(
                 buildout_dir, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(
                 buildout_dir, self.options['blobsnapshotlocation'])
-            if not os.path.isdir(blob_backup_location):
-                os.makedirs(blob_backup_location)
-                logger.info('Created %s', blob_backup_location)
-            if not os.path.isdir(blob_snapshot_location):
-                os.makedirs(blob_snapshot_location)
-                logger.info('Created %s', blob_snapshot_location)
         else:
             blob_backup_location = ''
-            blob_snapshot_location = ''
+            blob_snapshot_location = ''                
 
         additional = self.options['additional_filestorages']
-        if additional:
-            additional = additional.split('\n')
-            additional = [a.strip() for a in additional
-                          if a.strip()]
-        else:
-            additional = []
-
-        for a in additional:
-            backup = backup_location + '_' + a
-            snapshot = snapshot_location + '_' + a
-            if not os.path.isdir(backup):
-                os.makedirs(backup)
-                logger.info('Created %s', backup)
-            if not os.path.isdir(snapshot):
-                os.makedirs(snapshot)
-                logger.info('Created %s', snapshot)
-
+        storages = []        
         datafs = construct_path(buildout_dir, self.options['datafs'])
+        filestorage_dir = os.path.split(datafs)[0]        
+        if additional:
+            ADDITIONAL_REGEX = r'^\s*(?P<storage>[^\s]+)\s*(?P<datafs>[^\s]*)\s*(?P<blobdir>[^\s]*)\s*$'
+            for a in additional.split('\n'):
+                if not a:
+                    continue
+                storage = re.match(ADDITIONAL_REGEX, a).groupdict()
+                if storage['storage'] in [s['storage'] for s in storages]:
+                    logger.warning('storage %s duplicated' % storage['storage'])
+                if not storage['datafs']:
+                    storage['datafs'] = os.path.join(filestorage_dir, '%s.fs' % storage['storage'])
+                storage['backup_location'] = backup_location + '_' + storage['storage']
+                storage['snapshot_location'] = snapshot_location + '_' + storage['storage']
+                if storage['blobdir']:
+                    storage['blob_backup_location'] = blob_backup_location and (blob_backup_location + '_' + storage['storage'])
+                    storage['blob_snapshot_location'] = blob_snapshot_location and (blob_snapshot_location + '_' + storage['storage'])
+                storages.append(storage)
+
+        # '1' is the default root storagename for Zope. The property ``storage``
+        # on this recipe currently is used only for logging.
+        storage = dict(
+            storage="1",
+            datafs=datafs, 
+            blobdir=self.options['blob_storage'],
+            backup_location=backup_location,
+            snapshot_location=snapshot_location,
+            )
+
+        if storage['blobdir']:
+            storage['blob_backup_location'] = blob_backup_location
+            storage['blob_snapshot_location'] = blob_snapshot_location
+        storages.append(storage)
+        
+        if self.options['only_blobs'] in ('false', 'False'):
+            for s in storages:
+                backup_location = s['backup_location']
+                snapshot_location = s['snapshot_location']
+                if not os.path.isdir(backup_location):
+                    os.makedirs(backup_location)
+                    logger.info('Created %s', backup_location)
+                if not os.path.isdir(snapshot_location):
+                    os.makedirs(snapshot_location)
+                    logger.info('Created %s', snapshot_location)
+
+        # Blob backup.
+        if self.options['backup_blobs'] in ('true', 'True'):
+            blob_storage_found = False            
+            for s in storages:
+                if s['blobdir']:
+                    blob_storage_found = True
+                    blob_backup_location = s['blob_backup_location']
+                    blob_snapshot_location = s['blob_snapshot_location']
+                    if blob_backup_location and not os.path.isdir(blob_backup_location):
+                        os.makedirs(blob_backup_location)
+                        logger.info('Created %s', blob_backup_location)
+                    if blob_snapshot_location and not os.path.isdir(blob_snapshot_location):
+                        os.makedirs(blob_snapshot_location)
+                        logger.info('Created %s', blob_snapshot_location)
+            if not blob_storage_found:
+                raise zc.buildout.UserError(
+                    "backup_blobs is true, but no blob_storage could be found.")                        
+        
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
         else:
@@ -215,27 +249,30 @@ class Recipe(object):
         initialization_template = """
 import logging
 loglevel = logging.%(loglevel)s
-import sys
+from optparse import OptionParser
+parser = OptionParser()
+# parser.add_option("-S", "--storage", dest="storage",
+#                  action="store", type="string",
+#                  help="storage name")
+parser.add_option("-q", "--quiet",
+                  action="store_false", dest="verbose", default=True,
+                  help="don't print status messages to stdout")
+(options, args) = parser.parse_args()
+# storage = options.storage    
 # Allow the user to make the script more quiet (say in a cronjob):
-if sys.argv[-1] in ('-q', '--quiet'):
+if not options.verbose:
     loglevel = logging.WARN
 logging.basicConfig(level=loglevel,
     format='%%(levelname)s: %%(message)s')
 """
         arguments_template = """
         bin_dir=%(bin-directory)r,
-        datafs=%(datafs)r,
+        storages=%(storages)s,
         keep=%(keep)s,
         keep_blob_days=%(keep_blob_days)s,
-        backup_location=%(backup_location)r,
-        snapshot_location=%(snapshot_location)r,
-        blob_backup_location=%(blob_backup_location)r,
-        blob_snapshot_location=%(blob_snapshot_location)r,
-        blob_storage_source=%(blob_storage_source)r,
         full=%(full)s,
         verbose=%(debug)s,
         gzip=%(gzip)s,
-        additional=%(additional)r,
         only_blobs=%(only_blobs)s,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
@@ -245,20 +282,11 @@ logging.basicConfig(level=loglevel,
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
         opts['loglevel'] = loglevel
-        opts['datafs'] = datafs
-        opts['backup_location'] = backup_location
-        opts['snapshot_location'] = snapshot_location
-        opts['blob_backup_location'] = blob_backup_location
-        opts['blob_snapshot_location'] = blob_snapshot_location
-        opts['blob_storage_source'] = opts['blob_storage']
-        opts['additional'] = additional
+        opts['storages'] = pprint.pformat(storages)
 
         if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
             raise zc.buildout.UserError(
                 "Cannot have backup_blobs false and only_blobs true.")
-        if opts['backup_blobs'] == 'True' and not opts['blob_storage']:
-            raise zc.buildout.UserError(
-                "backup_blobs is true, but no blob_storage could be found.")
 
         # Keep list of generated files/directories/scripts
         generated = []

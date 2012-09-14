@@ -1,0 +1,10 @@
+language: python
+python:
+  - 2.4
+  - 2.7
+before_install:
+install:
+  - python bootstrap.py
+  - bin/buildout -c travis.cfg -q
+script:
+  - bin/test
