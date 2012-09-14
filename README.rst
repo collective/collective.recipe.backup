@@ -110,16 +110,6 @@ but specifically:
 
 - It does *not* create a backup of your entire buildout directory.
 
-- Currently, blobstorages that are in use by additional filestorages
-  are *not* backed up.  You should be able to set this up though with
-  an extra buildout part that creates a second set of backup scripts
-  and locations; something like this::
-
-    [specialblobbackup]
-    recipe = collective.recipe.backup
-    blob_storage = ${buildout:directory}/var/someblobstorage
-    only_blobs = true
-
 
 Is your backup backed up?
 =========================
@@ -417,8 +407,8 @@ same time with repozo. So they are not completely in sync. The "other"
 databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors.
 
-If you want more control with source path, you can explicitly define (with or
-without the bobstorage path)::
+If you want more control within filestorage source path, you can explicitly
+define (with or without the blobstorage path). In example::
 
     [backup]
     recipe = collective.recipe.backup
@@ -426,10 +416,21 @@ without the bobstorage path)::
         foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
         bar ${buildout:directory}/var/filestorage/bar/bar.fs
 
-Note that ``collective.recipe.filestorage`` creates additional
-filestorages in a slightly different location and we cannot handle
-that yet.  Work is on the way to improve this.
+On ``additional_fielstorages`` option will be defined different filestorage following
+the syntax::
 
+    additional_filestorages =
+        storagename1 [datafs1_path [blobdir1]]
+        storagename2 [datafs2_path [blobdir2]]
+
+The missing of  ``datafs_path`` defines that will be used the default value
+(``var\filestorage\storagename1.fs``), the missing of
+blobdir defines that there is non need to backup blob for that storage.
+
+Note that ``collective.recipe.filestorage`` creates additional
+filestorages in a slightly different location, but can be explictly defined the
+paths  of filestorage and blobstorage for all the ``parts`` defined on the recipe.
+Work is on the way to improve this.
 
 Blob storage
 ============

@@ -1,7 +1,8 @@
 2.7 (unreleased)
 ================
 
-- Nothing changed yet.
+-  additional_filestorages improved: blob support and custom location.
+   [mamico]
 
 
 2.6 (2012-08-29)
