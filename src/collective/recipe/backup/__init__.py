@@ -197,7 +197,9 @@ class Recipe(object):
                     storage['blob_backup_location'] = blob_backup_location and (blob_backup_location + '_' + storage['storage'])
                     storage['blob_snapshot_location'] = blob_snapshot_location and (blob_snapshot_location + '_' + storage['storage'])
                 storages.append(storage)
-        
+
+        # '1' is the default root storagename for Zope. The property ``storage``
+        # on this recipe currently is used only for logging.
         storage = dict(
             storage="1",
             datafs=datafs, 
