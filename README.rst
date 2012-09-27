@@ -416,21 +416,24 @@ define (with or without the blobstorage path). In example::
         foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
         bar ${buildout:directory}/var/filestorage/bar/bar.fs
 
-On ``additional_filestorages`` option will be defined different filestorage following
-the syntax::
+In the ``additional_filestorages`` option you can define different filestorage using
+this syntax::
 
     additional_filestorages =
         storagename1 [datafs1_path [blobdir1]]
         storagename2 [datafs2_path [blobdir2]]
 
-The missing of  ``datafs_path`` defines that will be used the default value
-(``var\filestorage\storagename1.fs``), the missing of
-blobdir defines that there is non need to backup blob for that storage.
+If the ``datafs_path`` is missing, then the default value will be used
+(``var\filestorage\storagename1.fs``).  If you do not specify a
+``blobdir``, then this means no blobs will be backed up for that
+storage.  Note that if you specify ``blobdir`` you must specify
+``datafs_path`` as well.
 
 Note that ``collective.recipe.filestorage`` creates additional
-filestorages in a slightly different location, but can be explictly defined the
-paths  of filestorage and blobstorage for all the ``parts`` defined on the recipe.
+filestorages in a slightly different location, but you can explictly define the
+paths of filestorage and blobstorage for all the ``parts`` defined in the recipe.
 Work is on the way to improve this.
+
 
 Blob storage
 ============
