@@ -1,4 +1,4 @@
-2.7 (unreleased)
+2.7 (2012-09-27)
 ================
 
 -  additional_filestorages improved: blob support and custom location.
