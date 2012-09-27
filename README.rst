@@ -416,7 +416,7 @@ define (with or without the blobstorage path). In example::
         foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
         bar ${buildout:directory}/var/filestorage/bar/bar.fs
 
-On ``additional_fielstorages`` option will be defined different filestorage following
+On ``additional_filestorages`` option will be defined different filestorage following
 the syntax::
 
     additional_filestorages =
