@@ -27,11 +27,11 @@ def backup_main(bin_dir, storages, keep, full,
         return
     for storage in storages:
         blobdir = storage['blobdir']
-        blob_backup_location = storage['blob_backup_location']
         if not blobdir:
             logger.info("No blob dir defined for %s storage" % \
                                                 (storage['storage']))
             continue
+        blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,                            

@@ -1,7 +1,9 @@
 2.8 (unreleased)
 ================
 
-- Nothing changed yet.
+- Fixed possible KeyError: 'blob_backup_location'.
+  https://github.com/collective/collective.recipe.backup/issues/3
+  [maurits]
 
 
 2.7 (2012-09-27)
