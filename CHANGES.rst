@@ -1,4 +1,4 @@
-2.8 (unreleased)
+2.8 (2012-11-13)
 ================
 
 - Fixed possible KeyError: 'blob_backup_location'.
