@@ -54,11 +54,11 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
         return
     for storage in storages:
         blobdir = storage['blobdir']
-        blob_snapshot_location = storage['blob_snapshot_location']
         if not blobdir:
             logger.info("No blob dir defined for %s storage" % \
                                                 (storage['storage']))
             continue
+        blob_snapshot_location = storage['blob_snapshot_location']
         logger.info("Please wait while making snapshot of blobs from %s to %s",
                     blobdir, blob_snapshot_location)
         copyblobs.backup_blobs(blobdir, blob_snapshot_location,
