@@ -34,7 +34,7 @@ def backup_main(bin_dir, storages, keep, full,
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
-        copyblobs.backup_blobs(blobdir, blob_backup_location, full,                            
+        copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep, keep_blob_days=keep_blob_days,)
     utils.execute_or_fail(post_command)
 
@@ -46,7 +46,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         # Set Full=True for forced full backups.
-        # It was easier to do this here, than mess with 
+        # It was easier to do this here, than mess with
         # "script_arguments = arguments_template % opts"
         # in backup.Recipe.install
         full = True
@@ -68,7 +68,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
-        copyblobs.backup_blobs(blobdir, blob_backup_location, full,                            
+        copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep, keep_blob_days=keep_blob_days,)
     utils.execute_or_fail(post_command)
 
@@ -155,6 +155,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         copyblobs.restore_blobs(blob_backup_location, blobdir,
                                 use_rsync=use_rsync, date=date)
     utils.execute_or_fail(post_command)
+
 
 def snapshot_restore_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotrestore.

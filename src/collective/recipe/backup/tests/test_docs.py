@@ -27,7 +27,7 @@ checker = renormalizing.RENormalizing([
     # (re.compile('my-[rR]eg[eE]ps'), 'my-regexps')
     (re.compile(r'DEBUG:.*'), ''),  # Remove DEBUG lines.
     zc.buildout.testing.normalize_path,
-    ])
+])
 
 
 def setUp(test):
@@ -42,35 +42,35 @@ def setUp(test):
 
 def test_suite():
     suite = unittest.TestSuite((
-            doctest.DocFileSuite(
-                '../README.txt',
-                setUp=setUp,
-                tearDown=zc.buildout.testing.buildoutTearDown,
-                optionflags=optionflags,
-                checker=checker,
-                ),
-            doctest.DocTestSuite(
-                repozorunner,
-                setUp=setUp,
-                tearDown=zc.buildout.testing.buildoutTearDown,
-                optionflags=optionflags,
-                checker=checker,
-                ),
-            doctest.DocTestSuite(
-                collective.recipe.backup,
-                setUp=setUp,
-                tearDown=zc.buildout.testing.buildoutTearDown,
-                optionflags=optionflags,
-                checker=checker,
-                ),
-            doctest.DocTestSuite(
-                copyblobs,
-                setUp=setUp,
-                tearDown=zc.buildout.testing.buildoutTearDown,
-                optionflags=optionflags,
-                checker=checker,
-                ),
-            ))
+        doctest.DocFileSuite(
+            '../README.txt',
+            setUp=setUp,
+            tearDown=zc.buildout.testing.buildoutTearDown,
+            optionflags=optionflags,
+            checker=checker,
+        ),
+        doctest.DocTestSuite(
+            repozorunner,
+            setUp=setUp,
+            tearDown=zc.buildout.testing.buildoutTearDown,
+            optionflags=optionflags,
+            checker=checker,
+        ),
+        doctest.DocTestSuite(
+            collective.recipe.backup,
+            setUp=setUp,
+            tearDown=zc.buildout.testing.buildoutTearDown,
+            optionflags=optionflags,
+            checker=checker,
+        ),
+        doctest.DocTestSuite(
+            copyblobs,
+            setUp=setUp,
+            tearDown=zc.buildout.testing.buildoutTearDown,
+            optionflags=optionflags,
+            checker=checker,
+        ),
+    ))
     return suite
 
 

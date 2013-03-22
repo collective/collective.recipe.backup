@@ -60,7 +60,7 @@ def fullbackup_main(bin_dir, storages, keep, full, verbose, gzip):
         logger.info("Please wait while backing up database file: %s to %s",
                     fs, backup_location)
         # Again, forcing full=True for this method here,
-        # in case it's called from somewhere other than 
+        # in case it's called from somewhere other than
         # main.fullbackup_main()
         full = True
         result = os.system(quote_command([repozo] +

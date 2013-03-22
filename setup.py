@@ -23,16 +23,16 @@ long_description = (
     '**************\n'
     + '\n' +
     read('CHANGES.rst')
-    )
+)
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {
     'zc.buildout': ["default = %s" % entry_point],
     #'console_scripts':[
     #        'backup = collective.recipe.backup.repozorunner:main'
     #        ]
-    }
+}
 
-tests_require=['zope.testing', 'zc.buildout', 'zc.recipe.egg']
+tests_require = ['zope.testing', 'zc.buildout', 'zc.recipe.egg']
 
 setup(name='collective.recipe.backup',
       version=version,
@@ -62,6 +62,6 @@ setup(name='collective.recipe.backup',
                         ],
       tests_require=tests_require,
       extras_require=dict(tests=tests_require),
-      test_suite = 'collective.recipe.backup.tests.test_docs.test_suite',
+      test_suite='collective.recipe.backup.tests.test_docs.test_suite',
       entry_points=entry_points,
       )
