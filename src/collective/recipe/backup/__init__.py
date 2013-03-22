@@ -44,6 +44,7 @@ class Recipe(object):
         buildout_dir = os.path.join(bin_dir, os.path.pardir)
         if self.name == 'backup':
             backup_name = 'backup'
+            fullbackup_name = 'fullbackup'
             snapshot_name = 'snapshotbackup'
             restore_name = 'restore'
             snapshotrestore_name = 'snapshotrestore'
@@ -51,6 +52,7 @@ class Recipe(object):
             blob_snapshot_name = 'blobstoragesnapshot'
         else:
             backup_name = self.name
+            fullbackup_name = self.name + '-full'
             snapshot_name = self.name + '-snapshot'
             restore_name = self.name + '-restore'
             snapshotrestore_name = self.name + '-snapshotrestore'
@@ -148,6 +150,7 @@ class Recipe(object):
         options['executable'] = buildout[python]['executable']
         options['bin-directory'] = buildout['buildout']['bin-directory']
         options['backup_name'] = backup_name
+        options['fullbackup_name'] = fullbackup_name
         options['snapshot_name'] = snapshot_name
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
@@ -313,11 +316,18 @@ logging.basicConfig(level=loglevel,
             dest=dest, working_set=working_set, executable=executable,
             site_py_dest=site_py_dest, initialization=initialization,
             script_arguments=script_arguments)
-
+        
         # Create backup script
         reqs = [(self.options['backup_name'],
                  'collective.recipe.backup.main',
                  'backup_main')]
+        creation_args['reqs'] = reqs
+        generated += create_script(**creation_args)
+
+        # Create full backup script
+        reqs = [(self.options['fullbackup_name'],
+                 'collective.recipe.backup.main',
+                 'fullbackup_main')]
         creation_args['reqs'] = reqs
         generated += create_script(**creation_args)
 

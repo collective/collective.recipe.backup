@@ -33,6 +33,7 @@ creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
     backup: Created /sample-buildout/var/backups
     backup: Created /sample-buildout/var/snapshotbackups
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -43,6 +44,7 @@ creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
     >>> ls('bin')
     -  backup
     -  buildout
+    -  fullbackup
     -  restore
     -  snapshotbackup
     -  snapshotrestore
@@ -143,6 +145,7 @@ something else,  the script names will also be different as will the created
     backup: Created /sample-buildout/var/plonebackups
     backup: Created /sample-buildout/var/plonebackup-snapshots
     Generated script '/sample-buildout/bin/plonebackup'.
+    Generated script '/sample-buildout/bin/plonebackup-full'.
     Generated script '/sample-buildout/bin/plonebackup-snapshot'.
     Generated script '/sample-buildout/bin/plonebackup-restore'.
     Generated script '/sample-buildout/bin/plonebackup-snapshotrestore'.
@@ -153,6 +156,7 @@ name is ``[backup]`` is now prefixed with the part name:
     >>> ls('bin')
     -  buildout
     -  plonebackup
+    -  plonebackup-full
     -  plonebackup-restore
     -  plonebackup-snapshot
     -  plonebackup-snapshotrestore
@@ -309,6 +313,7 @@ We'll use all options, except the blob options for now::
     backup: Created /sample-buildout/myproject
     backup: Created /sample-buildout/snap/my
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -422,6 +427,7 @@ directories named that way::
     backup: Created /sample-buildout/var/backups_foo/bar
     backup: Created /sample-buildout/var/snapshotbackups_foo/bar
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -556,12 +562,14 @@ generated script).
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     <BLANKLINE>
     >>> ls('bin')
     -  backup
     -  buildout
+    -  fullbackup
     -  repozo
     -  restore
     -  snapshotbackup
@@ -630,6 +638,7 @@ speed things up a bit):
     backup: Created /sample-buildout/var/blobstoragebackups
     backup: Created /sample-buildout/var/blobstoragesnapshots
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -637,6 +646,7 @@ speed things up a bit):
     >>> ls('bin')
     -  backup
     -  buildout
+    -  fullbackup
     -  instance
     -  mkzopeinstance
     -  repozo
@@ -662,6 +672,7 @@ We can override the additional_filestorages location:
     Uninstalling instance.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -693,6 +704,7 @@ We can override the additional_filestorages blob source location:
     backup: Created /sample-buildout/var/blobstoragebackups_withblob
     backup: Created /sample-buildout/var/blobstoragesnapshots_withblob   
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -745,6 +757,7 @@ Full cycle tests:
     backup: Created /sample-buildout/var/blobstoragebackups_bar
     backup: Created /sample-buildout/var/blobstoragesnapshots_bar    
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -752,6 +765,7 @@ Full cycle tests:
     >>> ls('bin')
     -  backup
     -  buildout
+    -  fullbackup
     -  instance
     -  mkzopeinstance
     -  repozo
@@ -1091,7 +1105,7 @@ Since release 2.3 we can also restore blob snapshots to a specific date/time.
     >>> mod_time_1 > mod_time_2
     True
     >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1).timetuple()[:6]])
-    >>> print system('bin/snapshotrestore %s' % time_string, input='yes\n')
+    >>> print system('bin/snapshotrestore %s' % time_string, input='yes\r')
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -D ...
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -D ...
@@ -1212,6 +1226,7 @@ want to separate this into several scripts::
     backup: Created /sample-buildout/var/filebackups
     backup: Created /sample-buildout/var/filebackup-snapshots
     Generated script '/sample-buildout/bin/filebackup'.
+    Generated script '/sample-buildout/bin/filebackup-full'.
     Generated script '/sample-buildout/bin/filebackup-snapshot'.
     Generated script '/sample-buildout/bin/filebackup-restore'.
     Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
@@ -1219,6 +1234,7 @@ want to separate this into several scripts::
     backup: Created /sample-buildout/var/blobbackup-blobstorages
     backup: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
     Generated script '/sample-buildout/bin/blobbackup'.
+    Generated script '/sample-buildout/bin/blobbackup-full'.
     Generated script '/sample-buildout/bin/blobbackup-snapshot'.
     Generated script '/sample-buildout/bin/blobbackup-restore'.
     Generated script '/sample-buildout/bin/blobbackup-snapshotrestore'.
@@ -1315,6 +1331,7 @@ directories that will not get used because have set only_blobs=true::
     backup: Created /sample-buildout/var/blobstoragebackups
     backup: Created /sample-buildout/var/blobstoragesnapshots
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -1467,6 +1484,7 @@ is probably grudgingly allowed, at least by this particular check.
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.

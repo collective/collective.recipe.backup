@@ -15,3 +15,6 @@ The snapshotrestore script was added by Nejc Zupan (`niteoweb
 .. _Maurits: http://maurits.vanrees.org/
 
 .. _instancemanager: http://plone.org/products/instance-manager
+
+.. _Tom 'Spanky' Kapanka: https://github.com/spanktar
+

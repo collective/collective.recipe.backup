@@ -38,6 +38,41 @@ def backup_main(bin_dir, storages, keep, full,
                                use_rsync, keep=keep, keep_blob_days=keep_blob_days,)
     utils.execute_or_fail(post_command)
 
+
+def fullbackup_main(bin_dir, storages, keep, full,
+                verbose, gzip, backup_blobs, only_blobs, use_rsync,
+                keep_blob_days=0, pre_command='', post_command='', **kwargs):
+    """Main method, gets called by generated bin/fullbackup."""
+    utils.execute_or_fail(pre_command)
+    if not only_blobs:
+        # Set Full=True for forced full backups.
+        # It was easier to do this here, than mess with 
+        # "script_arguments = arguments_template % opts"
+        # in backup.Recipe.install
+        full = True
+        result = repozorunner.fullbackup_main(
+            bin_dir, storages, keep, full, verbose, gzip)
+        if result and backup_blobs:
+            logger.error("Halting execution due to error; not backing up "
+                         "blobs.")
+
+    if not backup_blobs:
+        utils.execute_or_fail(post_command)
+        return
+    for storage in storages:
+        blobdir = storage['blobdir']
+        if not blobdir:
+            logger.info("No blob dir defined for %s storage" % \
+                                                (storage['storage']))
+            continue
+        blob_backup_location = storage['blob_backup_location']
+        logger.info("Please wait while backing up blobs from %s to %s",
+                    blobdir, blob_backup_location)
+        copyblobs.backup_blobs(blobdir, blob_backup_location, full,                            
+                               use_rsync, keep=keep, keep_blob_days=keep_blob_days,)
+    utils.execute_or_fail(post_command)
+
+
 def snapshot_main(bin_dir, storages, keep, verbose, gzip,
                   backup_blobs, only_blobs, use_rsync, keep_blob_days=0,
                   pre_command='', post_command='', **kwargs):

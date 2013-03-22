@@ -30,6 +30,8 @@ cake is important!
 
 - ``bin/backup`` makes an incremental backup.
 
+- ``bin/fullbackup`` always makes a full backup.
+
 - ``bin/restore`` restores the latest backup.
 
 - ``bin/snapshotbackup`` makes a full backup, separate from the
@@ -47,7 +49,7 @@ Development
 
 - The code comes with a ``buildout.cfg``.  Please bootstrap the
   buildout and run the created ``bin/test`` to see if the tests still
-  pass.  Please to try add tests if you add code.
+  pass.  Please to try to add tests if you add code.
 
 - The long description of this package (as shown on PyPI), used to
   contain a big file with lots of test code that showed how to use the
@@ -74,8 +76,8 @@ You can set lots of extra options, but the recipe authors like to
 think they have created sane defaults, so this single line stating the
 recipe name should be enough in most cases.
 
-Running the buildout adds a ``backup``, ``snapshotbackup``,
-``restore`` and ``snapshotrestore`` script to the ``bin/`` directory
+Running the buildout adds the ``backup``, ``fullbackup``, ``snapshotbackup``,
+``restore`` and ``snapshotrestore`` scripts to the ``bin/`` directory
 of the buildout and, by default, it creates the ``var/backups`` and
 ``var/snapshotbackups`` directories in that same buildout.
 
@@ -129,6 +131,14 @@ Calling ``bin/backup`` results in a normal incremental repozo backup
 that creates a backup of the Data.fs in ``var/backups``.  When you
 have a blob storage it is by default backed up to
 ``var/blobstoragebackups``.
+
+Calling ``bin/fullbackup`` results in a normal FULL repozo backup
+that creates a backup of the Data.fs in ``var/backups``.  When you
+have a blob storage it is by default backed up to
+``var/blobstoragebackups``.  This script is provided so that you can
+set different cron jobs for full and incremental backups.  You may
+want to have incrementals done daily, with full backups done weekly.
+Now you can!
 
 You should normally do a ``bin/zeopack`` regularly, say once a week,
 to remove unused objects from your Zope Data.fs.  The next time
@@ -197,6 +207,7 @@ That buildout snippet will create these directories::
 and these scripts::
 
     bin/plonebackup
+    bin/plonebackup-full
     bin/plonebackup-snapshot
     bin/plonebackup-restore
     bin/plonebackup-snapshotrestore
@@ -241,7 +252,8 @@ datafs
 
 full
     By default, incremental backups are made. If this option is set to 'true',
-    bin/backup will always make a full backup.
+    bin/backup will always make a full backup.  This option is (obviously)
+    the default when using the 'fullbackup' script.
 
 debug
     In rare cases when you want to know exactly what's going on, set debug to

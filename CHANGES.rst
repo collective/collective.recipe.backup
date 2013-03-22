@@ -2,7 +2,11 @@
 =================
 
 - Nothing changed yet.
-
+- Added "fullbackup' script that defaults to full=true
+  This could have been handled by making a new part, but
+  it seemed like overkill to have to generate a complete
+  new set of backup scripts, just to get one for full.
+  [spanky]
 
 2.9 (2013-03-06)
 ================
