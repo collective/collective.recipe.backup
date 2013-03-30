@@ -67,6 +67,13 @@ By default, backups are done in ``var/backups``::
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
 
+Full backups are placed there too::
+
+    >>> print system('bin/fullbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -F --gzip
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    <BLANKLINE>
+
 
 Restore
 -------
