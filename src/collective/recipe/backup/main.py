@@ -28,8 +28,8 @@ def backup_main(bin_dir, storages, keep, full,
     for storage in storages:
         blobdir = storage['blobdir']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" % \
-                                                (storage['storage']))
+            logger.info("No blob dir defined for %s storage" %
+                        storage['storage'])
             continue
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
@@ -62,8 +62,8 @@ def fullbackup_main(bin_dir, storages, keep, full,
     for storage in storages:
         blobdir = storage['blobdir']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" % \
-                                                (storage['storage']))
+            logger.info("No blob dir defined for %s storage" %
+                        storage['storage'])
             continue
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
@@ -90,8 +90,8 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
     for storage in storages:
         blobdir = storage['blobdir']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" % \
-                                                (storage['storage']))
+            logger.info("No blob dir defined for %s storage" %
+                        storage['storage'])
             continue
         blob_snapshot_location = storage['blob_snapshot_location']
         logger.info("Please wait while making snapshot of blobs from %s to %s",
@@ -144,8 +144,8 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         else:
             blob_backup_location = storage['blob_backup_location']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" % \
-                                                (storage['storage']))
+            logger.info("No blob dir defined for %s storage" %
+                        storage['storage'])
             continue
         if not blobdir:
             logger.error("No blob storage source specified")
