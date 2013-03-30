@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(*rnames)).read()
 
-version = '2.10.dev0'
+version = '2.10.dev1'
 
 long_description = (
     read('README.rst')
@@ -23,28 +23,28 @@ long_description = (
     '**************\n'
     + '\n' +
     read('CHANGES.rst')
-    )
+)
 entry_point = 'collective.recipe.backup:Recipe'
 entry_points = {
     'zc.buildout': ["default = %s" % entry_point],
     #'console_scripts':[
     #        'backup = collective.recipe.backup.repozorunner:main'
     #        ]
-    }
+}
 
-tests_require=['zope.testing', 'zc.buildout', 'zc.recipe.egg']
+tests_require = ['zope.testing', 'zc.buildout', 'zc.recipe.egg']
 
 setup(name='collective.recipe.backup',
       version=version,
       description="bin/backup script: sensible defaults around bin/repozo",
       long_description=long_description,
       classifiers=[
-        'Framework :: Buildout',
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
-        ],
+          'Framework :: Buildout',
+          'Intended Audience :: Developers',
+          'Topic :: Software Development :: Build Tools',
+          'Topic :: Software Development :: Libraries :: Python Modules',
+          'License :: OSI Approved :: GNU General Public License (GPL)',
+          ],
       keywords='buildout backup repozo zope',
       author='Reinout van Rees, Maurits van Rees',
       author_email='reinout@vanrees.org',
@@ -62,6 +62,6 @@ setup(name='collective.recipe.backup',
                         ],
       tests_require=tests_require,
       extras_require=dict(tests=tests_require),
-      test_suite = 'collective.recipe.backup.tests.test_docs.test_suite',
+      test_suite='collective.recipe.backup.tests.test_docs.test_suite',
       entry_points=entry_points,
       )

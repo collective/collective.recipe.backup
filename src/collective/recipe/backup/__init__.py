@@ -44,6 +44,7 @@ class Recipe(object):
         buildout_dir = os.path.join(bin_dir, os.path.pardir)
         if self.name == 'backup':
             backup_name = 'backup'
+            fullbackup_name = 'fullbackup'
             snapshot_name = 'snapshotbackup'
             restore_name = 'restore'
             snapshotrestore_name = 'snapshotrestore'
@@ -51,6 +52,7 @@ class Recipe(object):
             blob_snapshot_name = 'blobstoragesnapshot'
         else:
             backup_name = self.name
+            fullbackup_name = self.name + '-full'
             snapshot_name = self.name + '-snapshot'
             restore_name = self.name + '-restore'
             snapshotrestore_name = self.name + '-snapshotrestore'
@@ -84,7 +86,7 @@ class Recipe(object):
             raise zc.buildout.UserError(
                 "These must be four distinct locations:\n",
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
-                             sorted(locations.items())]))
+                sorted(locations.items())]))
         options.setdefault('pre_command', '')
         options.setdefault('post_command', '')
         options.setdefault('keep', '2')
@@ -117,7 +119,7 @@ class Recipe(object):
                 'plone.recipe.zeoserver',
                 'plone.recipe.zope2instance',
                 'plone.recipe.zope2zeoserver',
-                )
+            )
             parts = buildout['buildout']['parts']
             part_names = parts.split()
             blob_storage = ''
@@ -148,6 +150,7 @@ class Recipe(object):
         options['executable'] = buildout[python]['executable']
         options['bin-directory'] = buildout['buildout']['bin-directory']
         options['backup_name'] = backup_name
+        options['fullbackup_name'] = fullbackup_name
         options['snapshot_name'] = snapshot_name
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
@@ -175,12 +178,12 @@ class Recipe(object):
                 buildout_dir, self.options['blobsnapshotlocation'])
         else:
             blob_backup_location = ''
-            blob_snapshot_location = ''                
+            blob_snapshot_location = ''
 
         additional = self.options['additional_filestorages']
-        storages = []        
+        storages = []
         datafs = construct_path(buildout_dir, self.options['datafs'])
-        filestorage_dir = os.path.split(datafs)[0]        
+        filestorage_dir = os.path.split(datafs)[0]
         if additional:
             ADDITIONAL_REGEX = r'^\s*(?P<storage>[^\s]+)\s*(?P<datafs>[^\s]*)\s*(?P<blobdir>[^\s]*)\s*$'
             for a in additional.split('\n'):
@@ -202,17 +205,17 @@ class Recipe(object):
         # on this recipe currently is used only for logging.
         storage = dict(
             storage="1",
-            datafs=datafs, 
+            datafs=datafs,
             blobdir=self.options['blob_storage'],
             backup_location=backup_location,
             snapshot_location=snapshot_location,
-            )
+        )
 
         if storage['blobdir']:
             storage['blob_backup_location'] = blob_backup_location
             storage['blob_snapshot_location'] = blob_snapshot_location
         storages.append(storage)
-        
+
         if self.options['only_blobs'] in ('false', 'False'):
             for s in storages:
                 backup_location = s['backup_location']
@@ -226,7 +229,7 @@ class Recipe(object):
 
         # Blob backup.
         if self.options['backup_blobs'] in ('true', 'True'):
-            blob_storage_found = False            
+            blob_storage_found = False
             for s in storages:
                 if s['blobdir']:
                     blob_storage_found = True
@@ -240,8 +243,8 @@ class Recipe(object):
                         logger.info('Created %s', blob_snapshot_location)
             if not blob_storage_found:
                 raise zc.buildout.UserError(
-                    "backup_blobs is true, but no blob_storage could be found.")                        
-        
+                    "backup_blobs is true, but no blob_storage could be found.")
+
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
         else:
@@ -258,7 +261,7 @@ parser.add_option("-q", "--quiet",
                   action="store_false", dest="verbose", default=True,
                   help="don't print status messages to stdout")
 (options, args) = parser.parse_args()
-# storage = options.storage    
+# storage = options.storage
 # Allow the user to make the script more quiet (say in a cronjob):
 if not options.verbose:
     loglevel = logging.WARN
@@ -318,6 +321,13 @@ logging.basicConfig(level=loglevel,
         reqs = [(self.options['backup_name'],
                  'collective.recipe.backup.main',
                  'backup_main')]
+        creation_args['reqs'] = reqs
+        generated += create_script(**creation_args)
+
+        # Create full backup script
+        reqs = [(self.options['fullbackup_name'],
+                 'collective.recipe.backup.main',
+                 'fullbackup_main')]
         creation_args['reqs'] = reqs
         generated += create_script(**creation_args)
 
