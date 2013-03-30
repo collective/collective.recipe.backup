@@ -50,6 +50,30 @@ def backup_main(bin_dir, storages, keep, full, verbose, gzip):
         cleanup(backup_location, keep)
 
 
+def fullbackup_main(bin_dir, storages, keep, full, verbose, gzip):
+    """Main method, gets called by generated bin/fullbackup."""
+    repozo = os.path.join(bin_dir, 'repozo')
+
+    for storage in storages:
+        backup_location = storage['backup_location']
+        fs = storage['datafs']
+        logger.info("Please wait while backing up database file: %s to %s",
+                    fs, backup_location)
+        # Again, forcing full=True for this method here,
+        # in case it's called from somewhere other than
+        # main.fullbackup_main()
+        full = True
+        result = os.system(quote_command([repozo] +
+                           backup_arguments(fs, backup_location, full,
+                                            verbose, gzip,
+                                            as_list=True)))
+        logger.debug("Repozo command executed.")
+        if result:
+            logger.error("Repozo command failed. See message above.")
+            return result
+        cleanup(backup_location, keep)
+
+
 def snapshot_main(bin_dir, storages, keep, verbose, gzip):
     """Main method, gets called by generated bin/snapshotbackup."""
     repozo = os.path.join(bin_dir, 'repozo')
