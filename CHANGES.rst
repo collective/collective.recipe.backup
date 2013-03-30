@@ -1,4 +1,4 @@
-2.10 (unreleased)
+2.10 (2013-03-30)
 =================
 
 - Added ``fullbackup`` script that defaults to ``full=true``.  This
