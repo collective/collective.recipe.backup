@@ -1,23 +1,25 @@
 2.10 (unreleased)
 =================
 
-- Nothing changed yet.
-- Added "fullbackup' script that defaults to full=true
-  This could have been handled by making a new part, but
-  it seemed like overkill to have to generate a complete
-  new set of backup scripts, just to get one for full.
+- Added ``fullbackup`` script that defaults to ``full=true``.  This
+  could have been handled by making a new part, but it seemed like
+  overkill to have to generate a complete new set of backup scripts,
+  just to get one for full.
   [spanky]
+
 
 2.9 (2013-03-06)
 ================
 
-- Nothing changed yet.
+- Fixed possible KeyError: ``blob_snapshot_location``.
+  [gforcada]
+
 
 
 2.8 (2012-11-13)
 ================
 
-- Fixed possible KeyError: 'blob_backup_location'.
+- Fixed possible KeyError: ``blob_backup_location``.
   https://github.com/collective/collective.recipe.backup/issues/3
   [maurits]
 
@@ -25,8 +27,8 @@
 2.7 (2012-09-27)
 ================
 
--  additional_filestorages improved: blob support and custom location.
-   [mamico]
+- additional_filestorages improved: blob support and custom location.
+  [mamico]
 
 
 2.6 (2012-08-29)
