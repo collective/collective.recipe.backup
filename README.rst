@@ -49,7 +49,7 @@ Development
 
 - The code comes with a ``buildout.cfg``.  Please bootstrap the
   buildout and run the created ``bin/test`` to see if the tests still
-  pass.  Please to try to add tests if you add code.
+  pass.  Please try to add tests if you add code.
 
 - The long description of this package (as shown on PyPI), used to
   contain a big file with lots of test code that showed how to use the
