@@ -1,7 +1,12 @@
 2.11 (unreleased)
 =================
 
-- Nothing changed yet.
+- Added a new command-line argument : ``--no-prompt`` disables user
+  input when restoring a backup or snapshot. Useful for shell scripts.
+  [bouchardsyl]
+
+- Fixed command-line behavior with many arguments and not only a date.
+  [bouchardsyl]
 
 
 2.10 (2013-03-30)
