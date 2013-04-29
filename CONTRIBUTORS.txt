@@ -21,3 +21,5 @@ The fullbackup script was added by `Tom 'Spanky' Kapanka`_.
 .. _instancemanager: http://plone.org/products/instance-manager
 
 .. _`Tom 'Spanky' Kapanka`: https://github.com/spanktar
+
+.. _`Sylvain Bouchard`: https://github.com/bouchardsyl
