@@ -83,7 +83,8 @@ You can restore the very latest backup with ``bin/restore``::
     >>> print system('bin/restore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     <BLANKLINE>
@@ -93,7 +94,8 @@ You can restore the very latest snapshotbackup with ``bin/snapshotrestore``::
     >>> print system('bin/snapshotrestore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
 
@@ -104,7 +106,8 @@ argument. According to repozo: specify UTC (not local) time.  The format is
     >>> print system('bin/restore 1972-12-25', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D 1972-12-25
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at 1972-12-25.
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
@@ -486,7 +489,11 @@ And a restore restores all three backups::
     --recover -o /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/catalog.fs
+        /sample-buildout/var/filestorage/another.fs
+        /sample-buildout/var/filestorage/foo/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_catalog to /sample-buildout/var/filestorage/catalog.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_another to /sample-buildout/var/filestorage/another.fs
@@ -998,8 +1005,14 @@ Now try a restore::
     >>> time.sleep(1)
     >>> print system('bin/restore', input='no\n')
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
-    This will replace the blobstorage.
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo.fs
+        /sample-buildout/var/filestorage/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage-bar
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Not restoring.
     <BLANKLINE>
@@ -1008,8 +1021,14 @@ Now try a restore::
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
-    This will replace the blobstorage.
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo.fs
+        /sample-buildout/var/filestorage/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage-bar
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo to /sample-buildout/var/filestorage/foo.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs    
@@ -1045,8 +1064,14 @@ Since release 2.3 we can also restore blobs to a specific date/time.
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar -D ...
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D ...
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
-    This will replace the blobstorage.
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo.fs
+        /sample-buildout/var/filestorage/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage-bar
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at ...
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo to /sample-buildout/var/filestorage/foo.fs
@@ -1072,8 +1097,14 @@ The snapshotrestore works too::
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar    
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
-    This will replace the blobstorage.
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo.fs
+        /sample-buildout/var/filestorage/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage-bar
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_foo to /sample-buildout/var/filestorage/foo.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_bar to /sample-buildout/var/filestorage/bar.fs    
@@ -1117,8 +1148,14 @@ Since release 2.3 we can also restore blob snapshots to a specific date/time.
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -D ...
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
-    This will replace the blobstorage.
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo.fs
+        /sample-buildout/var/filestorage/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage-bar
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at ...
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_foo to /sample-buildout/var/filestorage/foo.fs
@@ -1148,8 +1185,14 @@ script that simply quits::
     >>> dontcare = system('chmod u+x bin/repozo')
     >>> print system('bin/snapshotrestore 1972-12-25', input='yes\n')
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
-    This will replace the blobstorage.
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo.fs
+        /sample-buildout/var/filestorage/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage-bar
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at 1972-12-25.
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_foo to /sample-buildout/var/filestorage/foo.fs
@@ -1275,27 +1318,31 @@ Now test the restore::
     >>> print system('bin/filebackup-restore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/filebackups to /sample-buildout/var/filestorage/Data.fs
     <BLANKLINE>
     >>> print system('bin/filebackup-snapshotrestore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots
     <BLANKLINE>
-    This will replace the filestorage (Data.fs).
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/filebackup-snapshots to /sample-buildout/var/filestorage/Data.fs
     <BLANKLINE>
     >>> print system('bin/blobbackup-restore', input='yes\n')
     <BLANKLINE>
-    This will replace the blobstorage.
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstorages to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> print system('bin/blobbackup-snapshotrestore', input='yes\n')
     <BLANKLINE>
-    This will replace the blobstorage.
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
@@ -1385,7 +1432,8 @@ Now a restore::
     False
     >>> print output
     <BLANKLINE>
-    This will replace the blobstorage.
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
@@ -1433,7 +1481,8 @@ And the snapshotrestore::
     False
     >>> print output
     <BLANKLINE>
-    This will replace the blobstorage.
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage

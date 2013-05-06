@@ -123,12 +123,15 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         logger.info("Date restriction: restoring state at %s." % date)
         break
 
-
     question = '\n'
     if not only_blobs:
-        question += "This will replace the filestorage (Data.fs).\n"
+        question += "This will replace the filestorage:\n"
+        for storage in storages:
+            question += "    %s\n" % storage.get('datafs')
     if backup_blobs:
-        question += "This will replace the blobstorage.\n"
+        question += "This will replace the blobstorage:\n"
+        for storage in storages:
+            question += "    %s\n" % storage.get('blobdir')
     question += "Are you sure?"
     if not kwargs.get('no_prompt'):
         if not utils.ask(question, default=False, exact=True):

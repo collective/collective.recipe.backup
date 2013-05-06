@@ -1,6 +1,10 @@
 2.11 (unreleased)
 =================
 
+- Print the names of filestorages and blobstorages that will be
+  restored.  Issue #8.
+  [maurits]
+
 - Added a new command-line argument : ``--no-prompt`` disables user
   input when restoring a backup or snapshot. Useful for shell scripts.
   [bouchardsyl]
