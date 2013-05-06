@@ -560,7 +560,7 @@ Test disabling the snapshotrestore script.  We generate a new buildout
 with enable_snapshotrestore set to false. The script should not be
 generated now (and buildout will actually remove the previously
 generated script).
-    
+
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
@@ -614,7 +614,7 @@ zeoserver recipe) when it is used::
     ... # A slightly older version that does not rely on the Zope2 egg
     ... plone.recipe.zope2instance = 3.9
     ... mailinglogger = 3.3
-    ... 
+    ...
     ... [instance]
     ... recipe = plone.recipe.zope2instance
     ... user = admin:admin
@@ -691,7 +691,7 @@ We can override the additional_filestorages location:
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
-    
+
 
 We can override the additional_filestorages blob source location:
 
@@ -714,9 +714,9 @@ We can override the additional_filestorages blob source location:
     backup: Created /sample-buildout/var/backups_withblob
     backup: Created /sample-buildout/var/snapshotbackups_withblob
     backup: Created /sample-buildout/var/backups_withoutblob
-    backup: Created /sample-buildout/var/snapshotbackups_withoutblob  
+    backup: Created /sample-buildout/var/snapshotbackups_withoutblob
     backup: Created /sample-buildout/var/blobstoragebackups_withblob
-    backup: Created /sample-buildout/var/blobstoragesnapshots_withblob   
+    backup: Created /sample-buildout/var/blobstoragesnapshots_withblob
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -745,7 +745,7 @@ Wrong configurations for additional_filestorages:
     ...
     AttributeError: 'NoneType' object has no attribute 'groupdict'
     <BLANKLINE>
-    
+
 Full cycle tests:
 
     >>> write('buildout.cfg',
@@ -769,7 +769,7 @@ Full cycle tests:
     backup: Created /sample-buildout/var/blobstoragebackups_foo
     backup: Created /sample-buildout/var/blobstoragesnapshots_foo
     backup: Created /sample-buildout/var/blobstoragebackups_bar
-    backup: Created /sample-buildout/var/blobstoragesnapshots_bar    
+    backup: Created /sample-buildout/var/blobstoragesnapshots_bar
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -805,7 +805,7 @@ Test the snapshotbackup first, as that should be easiest.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo
     INFO: rsync -a /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
-    INFO: rsync -a /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0    
+    INFO: rsync -a /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
@@ -836,7 +836,7 @@ easily test restoring to a specific time later.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
-    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo    
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo
     INFO: Renaming blobstorage-foo.0 to blobstorage-foo.1.
     INFO: rsync -a --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
@@ -883,7 +883,7 @@ Now remove an item:
     >>> remove('var', 'blobstorage-bar', 'blob-bar1.txt')
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip    
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
@@ -895,7 +895,7 @@ Now remove an item:
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
     INFO: Renaming blobstorage-bar.1 to blobstorage-bar.2.
     INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0    
+    INFO: rsync -a --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
@@ -928,15 +928,15 @@ Let's see how a bin/backup goes:
 
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --gzip    
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
-    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar    
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragebackups_foo
     INFO: rsync -a /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragebackups_bar
-    INFO: rsync -a /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0    
+    INFO: rsync -a /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
     <BLANKLINE>
@@ -959,7 +959,7 @@ We try again with an extra 'blob':
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --gzip    
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
@@ -969,7 +969,7 @@ We try again with an extra 'blob':
     INFO: rsync -a --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragebackups_bar
     INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0    
+    INFO: rsync -a --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
@@ -1031,7 +1031,7 @@ Now try a restore::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo to /sample-buildout/var/filestorage/foo.fs
-    INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs    
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
     INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
@@ -1096,7 +1096,7 @@ Since release 2.3 we can also restore blobs to a specific date/time.
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at ...
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo to /sample-buildout/var/filestorage/foo.fs
-    INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs    
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
     INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.1/blobstorage-foo /sample-buildout/var
@@ -1115,7 +1115,7 @@ The snapshotrestore works too::
 
     >>> print system('bin/snapshotrestore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo
-    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar    
+    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
     <BLANKLINE>
     This will replace the filestorage:
@@ -1128,7 +1128,7 @@ The snapshotrestore works too::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_foo to /sample-buildout/var/filestorage/foo.fs
-    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_bar to /sample-buildout/var/filestorage/bar.fs    
+    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots_foo to /sample-buildout/var/blobstorage-foo
     INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
@@ -1180,7 +1180,7 @@ Since release 2.3 we can also restore blob snapshots to a specific date/time.
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at ...
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_foo to /sample-buildout/var/filestorage/foo.fs
-    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_bar to /sample-buildout/var/filestorage/bar.fs    
+    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots_foo to /sample-buildout/var/blobstorage-foo
     INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.1/blobstorage-foo /sample-buildout/var
@@ -1286,7 +1286,7 @@ want to separate this into several scripts::
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... backup_blobs = false
-    ... 
+    ...
     ... [blobbackup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
@@ -1586,7 +1586,7 @@ moment, zc.buildout 1.4.x is used above.  We will try 1.5 below.
     ... [versions]
     ... zc.buildout = 1.5.2
     ... zc.recipe.egg = 1.3.2
-    ... 
+    ...
     ... [backup]
     ... recipe = collective.recipe.backup
     ... """)
