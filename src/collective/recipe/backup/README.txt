@@ -1044,6 +1044,27 @@ Now try a restore::
     -  blob1.txt
     -  blob2.txt
 
+With the ``no-prompt`` option we avoid the question::
+
+    >>> print system('bin/restore --no-prompt')
+    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo
+    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    <BLANKLINE>
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo to /sample-buildout/var/filestorage/foo.fs
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_bar to /sample-buildout/var/blobstorage-bar
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
+    INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> ls('var/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+
 Since release 2.3 we can also restore blobs to a specific date/time.
 
     >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups/blobstorage.0')
