@@ -1,4 +1,4 @@
-2.11 (unreleased)
+2.11 (2013-05-06)
 =================
 
 - Print the names of filestorages and blobstorages that will be
