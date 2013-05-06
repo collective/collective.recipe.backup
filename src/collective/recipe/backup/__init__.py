@@ -260,6 +260,9 @@ parser = OptionParser()
 parser.add_option("-q", "--quiet",
                   action="store_false", dest="verbose", default=True,
                   help="don't print status messages to stdout")
+parser.add_option("-n", "--no-prompt",
+                  action="store_true", dest="no_prompt", default=False,
+                  help="don't ask for any user confirmation")
 (options, args) = parser.parse_args()
 # storage = options.storage
 # Allow the user to make the script more quiet (say in a cronjob):
@@ -281,6 +284,7 @@ logging.basicConfig(level=loglevel,
         use_rsync=%(use_rsync)s,
         pre_command=%(pre_command)r,
         post_command=%(post_command)r,
+        no_prompt=options.no_prompt,
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()

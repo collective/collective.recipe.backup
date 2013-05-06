@@ -108,11 +108,21 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
                  **kwargs):
     """Main method, gets called by generated bin/restore."""
     date = None
-    if len(sys.argv) > 1:
-        date = sys.argv[1]
+
+    # Try to find a date in the command line arguments
+    for arg in sys.argv:
+        if arg in ('-q', '-n', '--quiet', '--no-prompt'):
+            continue
+        if arg.find('restore') != -1:
+            continue
+
+        # We can assume this argument is a date
+        date = arg
         logger.debug("Argument passed to bin/restore, we assume it is "
                      "a date that we have to pass to repozo: %s.", date)
         logger.info("Date restriction: restoring state at %s." % date)
+        break
+
 
     question = '\n'
     if not only_blobs:
@@ -120,9 +130,10 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
     if backup_blobs:
         question += "This will replace the blobstorage.\n"
     question += "Are you sure?"
-    if not utils.ask(question, default=False, exact=True):
-        logger.info("Not restoring.")
-        sys.exit(0)
+    if not kwargs['no_prompt']:
+        if not utils.ask(question, default=False, exact=True):
+            logger.info("Not restoring.")
+            sys.exit(0)
 
     utils.execute_or_fail(pre_command)
     if not only_blobs:
