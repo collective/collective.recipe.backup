@@ -130,7 +130,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
     if backup_blobs:
         question += "This will replace the blobstorage.\n"
     question += "Are you sure?"
-    if not kwargs['no_prompt']:
+    if not kwargs.get('no_prompt'):
         if not utils.ask(question, default=False, exact=True):
             logger.info("Not restoring.")
             sys.exit(0)
