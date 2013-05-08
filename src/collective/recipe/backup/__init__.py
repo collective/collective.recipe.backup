@@ -220,12 +220,6 @@ class Recipe(object):
             for s in storages:
                 backup_location = s['backup_location']
                 snapshot_location = s['snapshot_location']
-                if not os.path.isdir(backup_location):
-                    os.makedirs(backup_location)
-                    logger.info('Created %s', backup_location)
-                if not os.path.isdir(snapshot_location):
-                    os.makedirs(snapshot_location)
-                    logger.info('Created %s', snapshot_location)
 
         # Blob backup.
         if self.options['backup_blobs'] in ('true', 'True'):
@@ -235,12 +229,6 @@ class Recipe(object):
                     blob_storage_found = True
                     blob_backup_location = s['blob_backup_location']
                     blob_snapshot_location = s['blob_snapshot_location']
-                    if blob_backup_location and not os.path.isdir(blob_backup_location):
-                        os.makedirs(blob_backup_location)
-                        logger.info('Created %s', blob_backup_location)
-                    if blob_snapshot_location and not os.path.isdir(blob_snapshot_location):
-                        os.makedirs(blob_snapshot_location)
-                        logger.info('Created %s', blob_snapshot_location)
             if not blob_storage_found:
                 raise zc.buildout.UserError(
                     "backup_blobs is true, but no blob_storage could be found.")
