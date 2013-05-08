@@ -15,6 +15,7 @@ def backup_main(bin_dir, storages, keep, full,
                 keep_blob_days=0, pre_command='', post_command='', **kwargs):
     """Main method, gets called by generated bin/backup."""
     utils.execute_or_fail(pre_command)
+    utils.check_folders(storages)
     if not only_blobs:
         result = repozorunner.backup_main(
             bin_dir, storages, keep, full, verbose, gzip)
@@ -44,6 +45,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
                 keep_blob_days=0, pre_command='', post_command='', **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
     utils.execute_or_fail(pre_command)
+    utils.check_folders(storages)
     if not only_blobs:
         # Set Full=True for forced full backups.
         # It was easier to do this here, than mess with
@@ -78,6 +80,7 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
                   pre_command='', post_command='', **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     utils.execute_or_fail(pre_command)
+    utils.check_folders(storages)
     if not only_blobs:
         result = repozorunner.snapshot_main(
             bin_dir, storages, keep, verbose, gzip)
@@ -108,7 +111,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
                  **kwargs):
     """Main method, gets called by generated bin/restore."""
     date = None
-
+    utils.check_folders(storages)
     # Try to find a date in the command line arguments
     for arg in sys.argv:
         if arg in ('-q', '-n', '--quiet', '--no-prompt'):

@@ -30,17 +30,12 @@ creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
 
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
-    backup: Created /sample-buildout/var/backups
-    backup: Created /sample-buildout/var/snapshotbackups
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
-    >>> ls('var')
-    d  backups
-    d  snapshotbackups
     >>> ls('bin')
     -  backup
     -  buildout
@@ -64,6 +59,8 @@ By default, backups are done in ``var/backups``::
 
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Created /sample-buildout/var/backups
+    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
 
@@ -152,13 +149,12 @@ something else,  the script names will also be different as will the created
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
     Installing plonebackup.
-    backup: Created /sample-buildout/var/plonebackups
-    backup: Created /sample-buildout/var/plonebackup-snapshots
     Generated script '/sample-buildout/bin/plonebackup'.
     Generated script '/sample-buildout/bin/plonebackup-full'.
     Generated script '/sample-buildout/bin/plonebackup-snapshot'.
     Generated script '/sample-buildout/bin/plonebackup-restore'.
     Generated script '/sample-buildout/bin/plonebackup-snapshotrestore'.
+    <BLANKLINE>
 
 Note that the ``restore``, ``snapshotbackup`` and ``snapshotrestore`` script name used when the
 name is ``[backup]`` is now prefixed with the part name:
@@ -178,8 +174,6 @@ The different part name *did* result in two directories named after the part:
 
     >>> ls('var')
     d  backups
-    d  plonebackup-snapshots
-    d  plonebackups
     d  snapshotbackups
 
 For the rest of the tests we use the ``[backup]`` name again.  And we clean up
@@ -195,8 +189,6 @@ the ``var/plonebackups`` and ``var/plonebackup-snaphots`` dirs:
     ... recipe = collective.recipe.backup
     ... """)
     >>> dont_care = system(buildout) # doctest:+ELLIPSIS
-    >>> rmdir('var/plonebackups')
-    >>> rmdir('var/plonebackup-snapshots')
 
 
 Supported options
@@ -320,8 +312,6 @@ We'll use all options, except the blob options for now::
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
     Installing backup.
-    backup: Created /sample-buildout/myproject
-    backup: Created /sample-buildout/snap/my
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -340,8 +330,13 @@ stderr.  Anyway::
     >>> print output
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     Can I have a backup?
+    <BLANKLINE>
     Thanks a lot for the backup.
     We are done.
+    <BLANKLINE>
+    <BLANKLINE>
+    INFO: Created /sample-buildout/myproject
+    INFO: Created /sample-buildout/snap/my
     INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
 
 We explicitly look for errors here::
@@ -430,12 +425,6 @@ directories named that way::
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
     Installing backup.
-    backup: Created /sample-buildout/var/backups_catalog
-    backup: Created /sample-buildout/var/snapshotbackups_catalog
-    backup: Created /sample-buildout/var/backups_another
-    backup: Created /sample-buildout/var/snapshotbackups_another
-    backup: Created /sample-buildout/var/backups_foo/bar
-    backup: Created /sample-buildout/var/snapshotbackups_foo/bar
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -444,13 +433,7 @@ directories named that way::
     <BLANKLINE>
     >>> ls('var')
     d  backups
-    d  backups_another
-    d  backups_catalog
-    d  backups_foo
     d  snapshotbackups
-    d  snapshotbackups_another
-    d  snapshotbackups_catalog
-    d  snapshotbackups_foo
 
 The various backups are done one after the other. They cannot be done at the
 same time with repozo. So they are not completely in sync. The "other"
@@ -462,11 +445,27 @@ mildly irritating, but the other way around users can get real errors::
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
     --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Created /sample-buildout/var/backups_catalog
+    INFO: Created /sample-buildout/var/snapshotbackups_catalog
+    INFO: Created /sample-buildout/var/backups_another
+    INFO: Created /sample-buildout/var/snapshotbackups_another
+    INFO: Created /sample-buildout/var/backups_foo/bar
+    INFO: Created /sample-buildout/var/snapshotbackups_foo/bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo/bar.fs to /sample-buildout/var/backups_foo/bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
+    >>> ls('var')
+    d  backups
+    d  backups_another
+    d  backups_catalog
+    d  backups_foo
+    d  snapshotbackups
+    d  snapshotbackups_another
+    d  snapshotbackups_catalog
+    d  snapshotbackups_foo
+
 
 Same with snapshot backups::
 
@@ -649,8 +648,6 @@ speed things up a bit):
     Installing instance.
     Generated script '/sample-buildout/bin/instance'.
     Installing backup.
-    backup: Created /sample-buildout/var/blobstoragebackups
-    backup: Created /sample-buildout/var/blobstoragesnapshots
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -711,12 +708,6 @@ We can override the additional_filestorages blob source location:
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
     Installing backup.
-    backup: Created /sample-buildout/var/backups_withblob
-    backup: Created /sample-buildout/var/snapshotbackups_withblob
-    backup: Created /sample-buildout/var/backups_withoutblob
-    backup: Created /sample-buildout/var/snapshotbackups_withoutblob
-    backup: Created /sample-buildout/var/blobstoragebackups_withblob
-    backup: Created /sample-buildout/var/blobstoragesnapshots_withblob
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -764,12 +755,6 @@ Full cycle tests:
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
-    backup: Created /sample-buildout/var/backups_bar
-    backup: Created /sample-buildout/var/snapshotbackups_bar
-    backup: Created /sample-buildout/var/blobstoragebackups_foo
-    backup: Created /sample-buildout/var/blobstoragesnapshots_foo
-    backup: Created /sample-buildout/var/blobstoragebackups_bar
-    backup: Created /sample-buildout/var/blobstoragesnapshots_bar
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -799,6 +784,14 @@ Test the snapshotbackup first, as that should be easiest.
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Created /sample-buildout/var/blobstoragebackups_foo
+    INFO: Created /sample-buildout/var/blobstoragesnapshots_foo
+    INFO: Created /sample-buildout/var/backups_bar
+    INFO: Created /sample-buildout/var/snapshotbackups_bar
+    INFO: Created /sample-buildout/var/blobstoragebackups_bar
+    INFO: Created /sample-buildout/var/blobstoragesnapshots_bar
+    INFO: Created /sample-buildout/var/blobstoragebackups
+    INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
@@ -1294,16 +1287,12 @@ want to separate this into several scripts::
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing filebackup.
-    backup: Created /sample-buildout/var/filebackups
-    backup: Created /sample-buildout/var/filebackup-snapshots
     Generated script '/sample-buildout/bin/filebackup'.
     Generated script '/sample-buildout/bin/filebackup-full'.
     Generated script '/sample-buildout/bin/filebackup-snapshot'.
     Generated script '/sample-buildout/bin/filebackup-restore'.
     Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
     Installing blobbackup.
-    backup: Created /sample-buildout/var/blobbackup-blobstorages
-    backup: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
     Generated script '/sample-buildout/bin/blobbackup'.
     Generated script '/sample-buildout/bin/blobbackup-full'.
     Generated script '/sample-buildout/bin/blobbackup-snapshot'.
@@ -1316,6 +1305,8 @@ the filestorage::
 
     >>> print system('bin/filebackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups --gzip
+    INFO: Created /sample-buildout/var/filebackups
+    INFO: Created /sample-buildout/var/filebackup-snapshots
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackups
     <BLANKLINE>
     >>> print system('bin/filebackup-snapshot')
@@ -1326,6 +1317,10 @@ the filestorage::
 And blobbackup only backs up the blobstorage::
 
     >>> print system('bin/blobbackup')
+    INFO: Created /sample-buildout/var/blobbackups
+    INFO: Created /sample-buildout/var/blobbackup-snapshots
+    INFO: Created /sample-buildout/var/blobbackup-blobstorages
+    INFO: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstorages
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstorages/blobstorage.0
     <BLANKLINE>
@@ -1403,8 +1398,6 @@ directories that will not get used because have set only_blobs=true::
     Uninstalling blobbackup.
     Uninstalling filebackup.
     Installing backup.
-    backup: Created /sample-buildout/var/blobstoragebackups
-    backup: Created /sample-buildout/var/blobstoragesnapshots
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -1419,6 +1412,10 @@ nowhere to be found::
     >>> 'rsync' in output
     False
     >>> print output
+    INFO: Created /sample-buildout/var/backups
+    INFO: Created /sample-buildout/var/snapshotbackups
+    INFO: Created /sample-buildout/var/blobstoragebackups
+    INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
     <BLANKLINE>
@@ -1600,8 +1597,6 @@ moment, zc.buildout 1.4.x is used above.  We will try 1.5 below.
     Setting socket time out to 5 seconds
     ...
     Installing backup.
-    backup: Created /sample-buildout/var/backups
-    backup: Created /sample-buildout/var/snapshotbackups
     Generated script '/sample-buildout/bin/backup'.
     ...
     <BLANKLINE>
