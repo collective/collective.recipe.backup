@@ -3,7 +3,7 @@
 
 - Backup directories are now created when we launch ``backup`` or
   ``fullbackup`` or ``snapshotbackup`` scripts, no more during
-  initialisation.
+  initialization.
   [bsuttor]
 
 
