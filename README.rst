@@ -1,6 +1,9 @@
 Easy zope backup/restore recipe for buildout
 ********************************************
 
+.. image:: https://travis-ci.org/collective/collective.recipe.backup.png
+    :target: https://travis-ci.org/collective/collective.recipe.backup
+
 .. contents::
 
 
