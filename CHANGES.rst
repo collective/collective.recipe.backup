@@ -1,7 +1,10 @@
 2.12 (unreleased)
 =================
 
-- Nothing changed yet.
+- Backup directories are now created when we launch ``backup`` or
+  ``fullbackup`` or ``snapshotbackup`` scripts, no more during
+  initialization.
+  [bsuttor]
 
 
 2.11 (2013-05-06)
