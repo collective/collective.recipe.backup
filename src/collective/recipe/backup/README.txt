@@ -433,7 +433,9 @@ directories named that way::
     <BLANKLINE>
     >>> ls('var')
     d  backups
+    d  backups_foo
     d  snapshotbackups
+    d  snapshotbackups_foo
 
 The various backups are done one after the other. They cannot be done at the
 same time with repozo. So they are not completely in sync. The "other"
