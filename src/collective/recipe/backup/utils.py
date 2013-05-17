@@ -105,6 +105,5 @@ def try_create_folder(pathdir):
         try:
             os.makedirs(pathdir)
             os.rmdir(pathdir)
-        except OSError as ose:
-            logger.warn('Not able to create {0}, {1}'.format(pathdir,
-                                                            ose.errno))
+        except OSError:
+            logger.warn('WARNING: Not able to create {0}'.format(pathdir))
