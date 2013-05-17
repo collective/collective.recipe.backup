@@ -98,3 +98,13 @@ def check_folders(storages):
             if pathdir and not os.path.isdir(pathdir):
                 os.makedirs(pathdir)
                 logger.info("Created {0}".format(pathdir))
+
+
+def try_create_folder(pathdir):
+    if pathdir and not os.path.isdir(pathdir):
+        try:
+            os.makedirs(pathdir)
+            os.rmdir(pathdir)
+        except OSError as ose:
+            logger.warn('Not able to create {0}, {1}'.format(pathdir,
+                                                            ose.errno))
