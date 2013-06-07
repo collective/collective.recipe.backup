@@ -433,7 +433,9 @@ directories named that way::
     <BLANKLINE>
     >>> ls('var')
     d  backups
+    d  backups_foo
     d  snapshotbackups
+    d  snapshotbackups_foo
 
 The various backups are done one after the other. They cannot be done at the
 same time with repozo. So they are not completely in sync. The "other"
@@ -1608,4 +1610,35 @@ configured::
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    <BLANKLINE>
+
+
+Unexisting backup location
+==========================
+
+The recipe tests the ``location`` option, it will be able to create folders 
+when scripts are called.
+
+
+We'll use all options, except the blob options for now::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... location = /my/unusable/path/for/backup
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    utils: WARNING: Not able to create /my/unusable/path/for/backup
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>

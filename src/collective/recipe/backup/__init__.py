@@ -8,6 +8,8 @@ import pprint
 import zc.recipe.egg
 import zc.buildout
 
+from collective.recipe.backup import utils
+
 logger = logging.getLogger('backup')
 
 if hasattr(zc.buildout.easy_install, 'sitepackage_safe_scripts'):
@@ -220,6 +222,8 @@ class Recipe(object):
             for s in storages:
                 backup_location = s['backup_location']
                 snapshot_location = s['snapshot_location']
+                utils.try_create_folder(backup_location)
+                utils.try_create_folder(snapshot_location)
 
         # Blob backup.
         if self.options['backup_blobs'] in ('true', 'True'):
@@ -229,6 +233,8 @@ class Recipe(object):
                     blob_storage_found = True
                     blob_backup_location = s['blob_backup_location']
                     blob_snapshot_location = s['blob_snapshot_location']
+                    utils.try_create_folder(blob_backup_location)
+                    utils.try_create_folder(blob_snapshot_location)
             if not blob_storage_found:
                 raise zc.buildout.UserError(
                     "backup_blobs is true, but no blob_storage could be found.")
