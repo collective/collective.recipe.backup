@@ -1,4 +1,4 @@
-2.12 (unreleased)
+2.12 (2013-06-28)
 =================
 
 - Backup directories are now created when we launch ``backup`` or
