@@ -19,9 +19,13 @@ def backup_main(bin_dir, storages, keep, full,
     if not only_blobs:
         result = repozorunner.backup_main(
             bin_dir, storages, keep, full, verbose, gzip)
-        if result and backup_blobs:
-            logger.error("Halting execution due to error; not backing up "
-                         "blobs.")
+        if result:
+            if backup_blobs:
+                logger.error("Halting execution due to error; not backing up "
+                             "blobs.")
+            else:
+                logger.error("Halting execution due to error.")
+            sys.exit(1)
 
     if not backup_blobs:
         utils.execute_or_fail(post_command)
@@ -54,9 +58,13 @@ def fullbackup_main(bin_dir, storages, keep, full,
         full = True
         result = repozorunner.fullbackup_main(
             bin_dir, storages, keep, full, verbose, gzip)
-        if result and backup_blobs:
-            logger.error("Halting execution due to error; not backing up "
-                         "blobs.")
+        if result:
+            if backup_blobs:
+                logger.error("Halting execution due to error; not backing up "
+                             "blobs.")
+            else:
+                logger.error("Halting execution due to error.")
+            sys.exit(1)
 
     if not backup_blobs:
         utils.execute_or_fail(post_command)
@@ -84,9 +92,14 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
     if not only_blobs:
         result = repozorunner.snapshot_main(
             bin_dir, storages, keep, verbose, gzip)
-        if result and backup_blobs:
-            logger.error("Halting execution due to error; not backing up "
-                         "blobs.")
+        if result:
+            if backup_blobs:
+                logger.error("Halting execution due to error; not backing up "
+                             "blobs.")
+            else:
+                logger.error("Halting execution due to error.")
+            sys.exit(1)
+
     if not backup_blobs:
         utils.execute_or_fail(post_command)
         return
@@ -145,9 +158,12 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         result = repozorunner.restore_main(
             bin_dir, storages, verbose, date,
             restore_snapshot)
-        if result and backup_blobs:
-            logger.error("Halting execution due to error; not restoring "
-                         "blobs.")
+        if result:
+            if backup_blobs:
+                logger.error("Halting execution due to error; not restoring "
+                             "blobs.")
+            else:
+                logger.error("Halting execution due to error.")
             sys.exit(1)
 
     if not backup_blobs:

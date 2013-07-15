@@ -1,7 +1,9 @@
 2.13 (unreleased)
 =================
 
-- Nothing changed yet.
+- When printing that we halt the execution due to an error running
+  repozo, actually halt the execution.
+  [maurits]
 
 
 2.12 (2013-06-28)
