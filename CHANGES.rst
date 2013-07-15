@@ -1,4 +1,4 @@
-2.13 (unreleased)
+2.13 (2013-07-15)
 =================
 
 - When printing that we halt the execution due to an error running
