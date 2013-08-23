@@ -97,6 +97,7 @@ class Recipe(object):
         options.setdefault('full', 'false')
         options.setdefault('debug', 'false')
         options.setdefault('gzip', 'true')
+        options.setdefault('gzip_blob', 'false')
         options.setdefault('additional_filestorages', '')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('use_rsync', 'true')
@@ -157,7 +158,7 @@ class Recipe(object):
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
         check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
-                                 'backup_blobs', 'use_rsync'])
+                                 'backup_blobs', 'use_rsync', 'gzip_blob'])
 
         # For site_py_dest in scripts generated with buildout 1.5+:
         options['parts-directory'] = os.path.join(
@@ -276,6 +277,7 @@ logging.basicConfig(level=loglevel,
         only_blobs=%(only_blobs)s,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
+        gzip_blob=%(gzip_blob)s,
         pre_command=%(pre_command)r,
         post_command=%(post_command)r,
         no_prompt=options.no_prompt,
