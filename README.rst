@@ -332,6 +332,13 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     false, we fall back to a simple copy (``shutil.copytree`` from
     Python in fact).
 
+``gzip_blob``
+    Use `tar` archiving functionality. ``false`` by default. Set it to ``true``
+    and backup/restore will be done with `tar` command. Note that `tar`
+    commmand must be available on machine if this option is set to `true`.
+    This option also works with snapshot backup/restore commands. As this
+    counts as a full backup `keep_blob_days` is ignored.
+
 ``pre_command``
     Command to execute before starting the backup.  One use case would
     be to mount a remote file system using NFS or sshfs and put the

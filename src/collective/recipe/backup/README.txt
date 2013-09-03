@@ -285,6 +285,13 @@ use_rsync
     false, we fall back to a simple copy (``shutil.copytree`` from
     python in fact).
 
+gzip_blob
+    Use `tar` archiving functionality. ``false`` by default. Set it to ``true``
+    and backup/restore will be done with `tar` command. Note that `tar`
+    commmand must be available on machine if this option is set to `true`.
+    This option also works with snapshot backup/restore commands. As this
+    counts as a full backup `keep_blob_days` is ignored.
+
 
 We'll use all options, except the blob options for now::
 
@@ -1564,6 +1571,140 @@ is probably grudgingly allowed, at least by this particular check.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+
+
+With gzip
+---------
+
+Archived and not-archived separate backup scripts::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = normalbackup tarbackup
+    ...
+    ... [normalbackup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... backup_blobs = true
+    ... gzip = false
+    ... gzip_blob = false
+    ...
+    ... [tarbackup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... backup_blobs = true
+    ... gzip = true
+    ... gzip_blob = true
+    ... """)
+    >>> print system(buildout)
+    Uninstalling backup.
+    Installing normalbackup.
+    Generated script '/sample-buildout/bin/normalbackup'.
+    Generated script '/sample-buildout/bin/normalbackup-full'.
+    Generated script '/sample-buildout/bin/normalbackup-snapshot'.
+    Generated script '/sample-buildout/bin/normalbackup-restore'.
+    Generated script '/sample-buildout/bin/normalbackup-snapshotrestore'.
+    Installing tarbackup.
+    Generated script '/sample-buildout/bin/tarbackup'.
+    Generated script '/sample-buildout/bin/tarbackup-full'.
+    Generated script '/sample-buildout/bin/tarbackup-snapshot'.
+    Generated script '/sample-buildout/bin/tarbackup-restore'.
+    Generated script '/sample-buildout/bin/tarbackup-snapshotrestore'.
+    <BLANKLINE>
+
+Now we test it.  First the `normal` backup.  The normalbackup backs up without
+using archiving technology.
+the normalbackup::
+
+    >>> print system('bin/normalbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/normalbackups
+    INFO: Created /sample-buildout/var/normalbackups
+    INFO: Created /sample-buildout/var/normalbackup-snapshots
+    INFO: Created /sample-buildout/var/normalbackup-blobstorages
+    INFO: Created /sample-buildout/var/normalbackup-blobstoragesnapshots
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/normalbackups
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/normalbackup-blobstorages
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/normalbackup-blobstorages/blobstorage.0
+    <BLANKLINE>
+    >>> print system('bin/normalbackup-snapshot')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/normalbackup-snapshots -F
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/normalbackup-snapshots
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/normalbackup-blobstoragesnapshots
+    INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/normalbackup-blobstoragesnapshots/blobstorage.0
+    <BLANKLINE>
+
+And tarbackup backs up by archiving backup::
+
+    >>> print system('bin/tarbackup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/tarbackups --gzip
+    INFO: Created /sample-buildout/var/tarbackups
+    INFO: Created /sample-buildout/var/tarbackup-snapshots
+    INFO: Created /sample-buildout/var/tarbackup-blobstorages
+    INFO: Created /sample-buildout/var/tarbackup-blobstoragesnapshots
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/tarbackups
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/tarbackup-blobstorages
+    INFO: tar czf /sample-buildout/var/tarbackup-blobstorages/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    <BLANKLINE>
+    >>> print system('bin/tarbackup-snapshot')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/tarbackup-snapshots -F --gzip
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/tarbackup-snapshots
+    INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/tarbackup-blobstoragesnapshots
+    INFO: tar czf /sample-buildout/var/tarbackup-blobstoragesnapshots/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+
+    <BLANKLINE>
+
+Now test the restore::
+
+    >>> print system('bin/normalbackup-restore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/normalbackups
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/normalbackups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/normalbackup-blobstorages to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/normalbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> print system('bin/normalbackup-snapshotrestore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/normalbackup-snapshots
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/normalbackup-snapshots to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/normalbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/var/normalbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> print system('bin/tarbackup-restore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/tarbackups
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/tarbackups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/tarbackup-blobstorages to /sample-buildout/var/blobstorage
+    INFO: Removing /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/tarbackup-blobstorages/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
+    INFO: tar xzf /sample-buildout/var/tarbackup-blobstorages/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    <BLANKLINE>
+    >>> print system('bin/tarbackup-snapshotrestore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/tarbackup-snapshots
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/tarbackup-snapshots to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/tarbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
+    INFO: Removing /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/tarbackup-blobstoragesnapshots/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
+    INFO: tar xzf /sample-buildout/var/tarbackup-blobstoragesnapshots/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
 
 
