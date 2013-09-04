@@ -784,7 +784,7 @@ def restore_blobs_gzip(source, destination, date=None):
         shutil.rmtree(destination)
     os.mkdir(destination)
     logger.info("Extracting %s to %s", backup_source, destination)
-    cmd = "tar xzf {source} -C {dest} .".format(
+    cmd = "tar xzf {source} -C {dest}".format(
         source=backup_source,
         dest=destination,
     )

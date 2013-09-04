@@ -1691,7 +1691,7 @@ Now test the restore::
     INFO: Restoring blobs from /sample-buildout/var/tarbackup-blobstorages to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Extracting /sample-buildout/var/tarbackup-blobstorages/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/var/tarbackup-blobstorages/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar xzf /sample-buildout/var/tarbackup-blobstorages/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
     <BLANKLINE>
     >>> print system('bin/tarbackup-snapshotrestore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/tarbackup-snapshots
@@ -1704,7 +1704,7 @@ Now test the restore::
     INFO: Restoring blobs from /sample-buildout/var/tarbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Extracting /sample-buildout/var/tarbackup-blobstoragesnapshots/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/var/tarbackup-blobstoragesnapshots/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar xzf /sample-buildout/var/tarbackup-blobstoragesnapshots/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
     <BLANKLINE>
 
 
