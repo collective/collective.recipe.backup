@@ -9,6 +9,9 @@ The snapshotrestore script was added by Nejc Zupan (`niteoweb
 
 The fullbackup script was added by `Tom 'Spanky' Kapanka`_.
 
+Archive blob backups feature added by `Matej Cotman`_ (`niteoweb
+<http://www.niteoweb.com>`_).
+
 
 .. Links used above.
 
@@ -23,3 +26,5 @@ The fullbackup script was added by `Tom 'Spanky' Kapanka`_.
 .. _`Tom 'Spanky' Kapanka`: https://github.com/spanktar
 
 .. _`Sylvain Bouchard`: https://github.com/bouchardsyl
+
+.. _`Matej Cotman`: https://github.com/matejc

@@ -7,7 +7,8 @@
 2.14 (2013-09-09)
 =================
 
-- Nothing changed yet.
+- Archive blob backups with buildout option ``gzip_blob``.
+  [matejc]
 
 
 2.13 (2013-07-15)
