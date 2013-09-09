@@ -12,7 +12,8 @@ logger = logging.getLogger('backup')
 
 def backup_main(bin_dir, storages, keep, full,
                 verbose, gzip, backup_blobs, only_blobs, use_rsync,
-                keep_blob_days=0, pre_command='', post_command='', **kwargs):
+                keep_blob_days=0, pre_command='', post_command='',
+                gzip_blob=False, **kwargs):
     """Main method, gets called by generated bin/backup."""
     utils.check_folders(storages)
     utils.execute_or_fail(pre_command)
@@ -40,13 +41,16 @@ def backup_main(bin_dir, storages, keep, full,
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
-                               use_rsync, keep=keep, keep_blob_days=keep_blob_days,)
+                               use_rsync, keep=keep,
+                               keep_blob_days=keep_blob_days,
+                               gzip_blob=gzip_blob)
     utils.execute_or_fail(post_command)
 
 
 def fullbackup_main(bin_dir, storages, keep, full,
-                verbose, gzip, backup_blobs, only_blobs, use_rsync,
-                keep_blob_days=0, pre_command='', post_command='', **kwargs):
+                    verbose, gzip, backup_blobs, only_blobs, use_rsync,
+                    keep_blob_days=0, pre_command='',
+                    post_command='', gzip_blob=False, **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
     utils.check_folders(storages)
     utils.execute_or_fail(pre_command)
@@ -79,13 +83,16 @@ def fullbackup_main(bin_dir, storages, keep, full,
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
-                               use_rsync, keep=keep, keep_blob_days=keep_blob_days,)
+                               use_rsync, keep=keep,
+                               keep_blob_days=keep_blob_days,
+                               gzip_blob=gzip_blob)
     utils.execute_or_fail(post_command)
 
 
 def snapshot_main(bin_dir, storages, keep, verbose, gzip,
-                  backup_blobs, only_blobs, use_rsync, keep_blob_days=0,
-                  pre_command='', post_command='', **kwargs):
+                  backup_blobs, only_blobs, use_rsync,
+                  keep_blob_days=0, pre_command='', post_command='',
+                  gzip_blob=False, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     utils.check_folders(storages)
     utils.execute_or_fail(pre_command)
@@ -113,15 +120,15 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
         logger.info("Please wait while making snapshot of blobs from %s to %s",
                     blobdir, blob_snapshot_location)
         copyblobs.backup_blobs(blobdir, blob_snapshot_location,
-                           full=True, use_rsync=use_rsync, keep=keep,
-                           keep_blob_days=keep_blob_days)
+                               full=True, use_rsync=use_rsync, keep=keep,
+                               keep_blob_days=keep_blob_days,
+                               gzip_blob=gzip_blob)
     utils.execute_or_fail(post_command)
 
 
 def restore_main(bin_dir, storages, verbose, backup_blobs,
-                 only_blobs, use_rsync, restore_snapshot=False,
-                 pre_command='', post_command='',
-                 **kwargs):
+                 only_blobs, use_rsync, restore_snapshot=False, pre_command='',
+                 post_command='', gzip_blob=False, **kwargs):
     """Main method, gets called by generated bin/restore."""
     date = None
     # Try to find a date in the command line arguments
@@ -185,7 +192,8 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         logger.info("Restoring blobs from %s to %s", blob_backup_location,
                     blobdir)
         copyblobs.restore_blobs(blob_backup_location, blobdir,
-                                use_rsync=use_rsync, date=date)
+                                use_rsync=use_rsync, date=date,
+                                gzip_blob=gzip_blob)
     utils.execute_or_fail(post_command)
 
 
