@@ -97,7 +97,7 @@ def check_folders(storages):
         for pathdir in pathdirs:
             if pathdir and not os.path.isdir(pathdir):
                 os.makedirs(pathdir)
-                logger.info("Created {0}".format(pathdir))
+                logger.info("Created %s" % pathdir)
 
 
 def try_create_folder(pathdir):
@@ -106,4 +106,4 @@ def try_create_folder(pathdir):
             os.makedirs(pathdir)
             os.rmdir(pathdir)
         except OSError:
-            logger.warn('WARNING: Not able to create {0}'.format(pathdir))
+            logger.warn('WARNING: Not able to create %s' % pathdir)

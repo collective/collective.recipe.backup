@@ -77,16 +77,16 @@ def strict_cmp_gzips(a, b):
     b_match = re.match("^(.+)\.(\d+)\.tar\.gz$", b)
 
     if a_match is None:
-        raise ValueError("No match: '{0}'".format(a))
+        raise ValueError("No match: %r" % a)
 
     if b_match is None:
-        raise ValueError("No match: '{0}'".format(b))
+        raise ValueError("No match: %r" % b)
 
     a_start, a_num = a_match.groups()
     b_start, b_num = b_match.groups()
     if a_start != b_start:
         raise ValueError(
-            "Not the same start for files: '{a}' vs '{b}'".format(a=a, b=b)
+            "Not the same start for files: %r vs %r" % (a, b)
         )
     a_num = int(a_num)
     b_num = int(b_num)
@@ -187,7 +187,7 @@ def get_valid_gzips(container, name):
     """
     valid_entries = []
     for entry in os.listdir(container):
-        matched = re.match("^{0}\.(\d+)\.tar\.gz$".format(name), entry)
+        matched = re.match("^%s\.(\d+)\.tar\.gz$" % name, entry)
         if matched is None:
             continue
         if not os.path.isfile(os.path.join(container, entry)):
@@ -278,9 +278,9 @@ def rotate_gzips(container, name):
                             reverse=True)
     # Rotate the directories.
     for entry in sorted_backups:
-        matched = re.match("^{0}\.(\d+)\.tar\.gz$".format(name), entry)
+        matched = re.match("^%s\.(\d+)\.tar\.gz$" % name, entry)
         new_num = int(matched.groups()[0]) + 1
-        new_name = "{name}.{num}.tar.gz".format(name=name, num=new_num)
+        new_name = "%s.%s.tar.gz" % (name, new_num)
         logger.info("Renaming %s to %s.", entry, new_name)
         os.rename(os.path.join(container, entry),
                   os.path.join(container, new_name))
@@ -619,8 +619,8 @@ def backup_blobs_gzip(source, destination, keep=0):
     rotate_gzips(destination, base_name)
     dest = os.path.join(destination, base_name + '.0.tar.gz')
     if os.path.exists(dest):
-        raise Exception("Path already exists: '{0}'".format(dest))
-    cmd = "tar czf {dest} -C {source} .".format(dest=dest, source=source)
+        raise Exception("Path already exists: %s" % dest)
+    cmd = "tar czf %s -C %s ." % (dest, source)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -784,10 +784,7 @@ def restore_blobs_gzip(source, destination, date=None):
         shutil.rmtree(destination)
     os.mkdir(destination)
     logger.info("Extracting %s to %s", backup_source, destination)
-    cmd = "tar xzf {source} -C {dest}".format(
-        source=backup_source,
-        dest=destination,
-    )
+    cmd = "tar xzf %s -C %s" % (backup_source, destination)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:

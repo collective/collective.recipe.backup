@@ -1,7 +1,8 @@
 2.15 (unreleased)
 =================
 
-- Nothing changed yet.
+- Restore compatibility with Python 2.4 (Plone 3).
+  [maurits]
 
 
 2.14 (2013-09-09)
