@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(*rnames)).read()
 
-version = '2.15.dev0'
+version = '2.15'
 
 long_description = (
     read('README.rst')

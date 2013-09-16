@@ -1,4 +1,4 @@
-2.15 (unreleased)
+2.15 (2013-09-16)
 =================
 
 - Restore compatibility with Python 2.4 (Plone 3).
