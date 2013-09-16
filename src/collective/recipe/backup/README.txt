@@ -612,7 +612,7 @@ zeoserver recipe) when it is used::
     ... """
     ... [buildout]
     ... # For some reason this is now needed:
-    ... index = http://b.pypi.python.org/simple
+    ... index = http://pypi.python.org/simple
     ... # Avoid suddenly updating zc.buildout or other packages:
     ... newest = false
     ... parts = instance backup
@@ -1717,7 +1717,7 @@ moment, zc.buildout 1.4.x is used above.  We will try 1.5 below.
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
-    ... index = http://b.pypi.python.org/simple
+    ... index = http://pypi.python.org/simple
     ... # allow updating to newer versions:
     ... newest = true
     ... parts = backup
