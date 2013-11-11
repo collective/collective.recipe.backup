@@ -26,6 +26,7 @@ checker = renormalizing.RENormalizing([
     # item, e.g.
     # (re.compile('my-[rR]eg[eE]ps'), 'my-regexps')
     (re.compile(r'DEBUG:.*'), ''),  # Remove DEBUG lines.
+    (re.compile(r'Not SVN Repository\n'), ''),  # svn warning
     zc.buildout.testing.normalize_path,
 ])
 
