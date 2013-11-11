@@ -1708,52 +1708,6 @@ Now test the restore::
     <BLANKLINE>
 
 
-zc.buildout 1.5
----------------
-
-Script generation in zc.buildout 1.5 could give problems.  For the
-moment, zc.buildout 1.4.x is used above.  We will try 1.5 below.
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... index = http://pypi.python.org/simple
-    ... # allow updating to newer versions:
-    ... newest = true
-    ... parts = backup
-    ... versions = versions
-    ...
-    ... [versions]
-    ... zc.buildout = 1.5.2
-    ... zc.recipe.egg = 1.3.2
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... """)
-    >>> print system('bin/buildout -t 5')
-    Setting socket time out to 5 seconds
-    ...
-    Upgraded:
-    ...
-    restarting.
-    Generated script '/sample-buildout/bin/buildout'.
-    Setting socket time out to 5 seconds
-    ...
-    Installing backup.
-    Generated script '/sample-buildout/bin/backup'.
-    ...
-    <BLANKLINE>
-
-Now, the most important thing about this test is that a bin/backup
-call does not give a python exception due to the script being wrongly
-configured::
-
-    >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
-    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
-    <BLANKLINE>
-
-
 Unexisting backup location
 ==========================
 
@@ -1774,7 +1728,8 @@ We'll use all options, except the blob options for now::
     ... location = /my/unusable/path/for/backup
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
+    Uninstalling tarbackup.
+    Uninstalling normalbackup.
     Installing backup.
     utils: WARNING: Not able to create /my/unusable/path/for/backup
     Generated script '/sample-buildout/bin/backup'.
