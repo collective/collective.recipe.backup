@@ -1,4 +1,4 @@
-2.16 (unreleased)
+2.16 (2014-01-14)
 =================
 
 - Do not create blob backup dirs when not backing up blobs.
