@@ -1,7 +1,9 @@
 2.17 (unreleased)
 =================
 
-- Nothing changed yet.
+- No longer test with Python 2.4, because Travis does not support it
+  out of the box.  Should still work fine.
+  [maurits]
 
 
 2.16 (2014-01-14)
