@@ -1,7 +1,10 @@
 2.16 (unreleased)
 =================
 
-- Nothing changed yet.
+- Do not create blob backup dirs when not backing up blobs.
+  Do not create filestorage backup dirs when not backing up filestorage.
+  Fixes https://github.com/collective/collective.recipe.backup/issues/17
+  [maurits]
 
 
 2.15 (2013-09-16)

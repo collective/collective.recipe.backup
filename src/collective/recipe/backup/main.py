@@ -15,7 +15,8 @@ def backup_main(bin_dir, storages, keep, full,
                 keep_blob_days=0, pre_command='', post_command='',
                 gzip_blob=False, **kwargs):
     """Main method, gets called by generated bin/backup."""
-    utils.check_folders(storages)
+    utils.check_folders(storages, backup_blobs=backup_blobs,
+                        only_blobs=only_blobs)
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.backup_main(
@@ -52,7 +53,8 @@ def fullbackup_main(bin_dir, storages, keep, full,
                     keep_blob_days=0, pre_command='',
                     post_command='', gzip_blob=False, **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
-    utils.check_folders(storages)
+    utils.check_folders(storages, backup_blobs=backup_blobs,
+                        only_blobs=only_blobs)
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         # Set Full=True for forced full backups.
@@ -94,7 +96,8 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
                   keep_blob_days=0, pre_command='', post_command='',
                   gzip_blob=False, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
-    utils.check_folders(storages)
+    utils.check_folders(storages, backup_blobs=backup_blobs,
+                        only_blobs=only_blobs)
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.snapshot_main(

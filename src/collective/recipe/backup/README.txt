@@ -1318,22 +1318,31 @@ the filestorage::
     INFO: Created /sample-buildout/var/filebackup-snapshots
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackups
     <BLANKLINE>
-    >>> print system('bin/filebackup-snapshot')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots -F --gzip
-    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackup-snapshots
-    <BLANKLINE>
 
-And blobbackup only backs up the blobstorage::
+Remove the snapshots backup dir, so we can later test the snapshot command::
+
+    >>> rmdir(sample_buildout, 'var', 'filebackup-snapshots')
+
+blobbackup only backs up the blobstorage::
 
     >>> print system('bin/blobbackup')
-    INFO: Created /sample-buildout/var/blobbackups
-    INFO: Created /sample-buildout/var/blobbackup-snapshots
     INFO: Created /sample-buildout/var/blobbackup-blobstorages
     INFO: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstorages
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstorages/blobstorage.0
     <BLANKLINE>
+    >>> rmdir(sample_buildout, 'var', 'blobbackup-blobstoragesnapshots')
+
+Test the snapshots as well, and keep all directories now, as we need
+them in the restore tests below it.
+
+    >>> print system('bin/filebackup-snapshot')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots -F --gzip
+    INFO: Created /sample-buildout/var/filebackup-snapshots
+    INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackup-snapshots
+    <BLANKLINE>
     >>> print system('bin/blobbackup-snapshot')
+    INFO: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstoragesnapshots
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
@@ -1421,8 +1430,6 @@ nowhere to be found::
     >>> 'rsync' in output
     False
     >>> print output
-    INFO: Created /sample-buildout/var/backups
-    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups

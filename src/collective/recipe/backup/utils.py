@@ -85,14 +85,16 @@ def execute_or_fail(command):
         sys.exit(1)
 
 
-def check_folders(storages):
+def check_folders(storages, backup_blobs=True, only_blobs=False):
     """ """
     for storage in storages:
         pathdirs = []
-        pathdirs.append(storage.get('backup_location'))
-        pathdirs.append(storage.get('snapshot_location'))
-        pathdirs.append(storage.get('blob_backup_location'))
-        pathdirs.append(storage.get('blob_snapshot_location'))
+        if not only_blobs:
+            pathdirs.append(storage.get('backup_location'))
+            pathdirs.append(storage.get('snapshot_location'))
+        if backup_blobs:
+            pathdirs.append(storage.get('blob_backup_location'))
+            pathdirs.append(storage.get('blob_snapshot_location'))
 
         for pathdir in pathdirs:
             if pathdir and not os.path.isdir(pathdir):
