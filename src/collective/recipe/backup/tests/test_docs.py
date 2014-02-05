@@ -42,29 +42,21 @@ def setUp(test):
 
 
 def test_suite():
-    suite = unittest.TestSuite((
-        doctest.DocTestSuite(
-            repozorunner,
+    suite = unittest.TestSuite()
+    modules = [
+        repozorunner,
+        collective.recipe.backup,
+        copyblobs,
+        ]
+    for module in modules:
+        suite.addTest(doctest.DocTestSuite(
+            module,
             setUp=setUp,
             tearDown=zc.buildout.testing.buildoutTearDown,
             optionflags=optionflags,
             checker=checker,
-        ),
-        doctest.DocTestSuite(
-            collective.recipe.backup,
-            setUp=setUp,
-            tearDown=zc.buildout.testing.buildoutTearDown,
-            optionflags=optionflags,
-            checker=checker,
-        ),
-        doctest.DocTestSuite(
-            copyblobs,
-            setUp=setUp,
-            tearDown=zc.buildout.testing.buildoutTearDown,
-            optionflags=optionflags,
-            checker=checker,
-        ),
-    ))
+        ))
+
     docfiles = [
         'base.txt',
         'blobs.txt',
