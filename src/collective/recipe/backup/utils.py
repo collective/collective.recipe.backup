@@ -1,5 +1,6 @@
 # Small utility methods.
 import logging
+import shutil
 import subprocess
 import sys
 import os
@@ -103,9 +104,65 @@ def check_folders(storages, backup_blobs=True, only_blobs=False):
 
 
 def try_create_folder(pathdir):
-    if pathdir and not os.path.isdir(pathdir):
+    """Try to create a folder, but remove it again.
+
+    >>> try_create_folder('mytest')
+    >>> mkdir('mytest')
+    >>> mkdir('mytest', 'keep')
+    >>> write('mytest', 'myfile', 'I am a file.')
+    >>> ls('mytest')
+    d   keep
+    -   myfile
+    >>> try_create_folder('mytest')
+    >>> ls('mytest')
+    d   keep
+    -   myfile
+    >>> try_create_folder('mytest/folder')
+    >>> ls('mytest')
+    d   keep
+    -   myfile
+    >>> try_create_folder('mytest/keep')
+    >>> ls('mytest')
+    d   keep
+    -   myfile
+    >>> try_create_folder('mytest/folder/sub')
+    >>> ls('mytest')
+    d   keep
+    -   myfile
+    >>> try_create_folder('mytest/keep/sub')
+    >>> ls('mytest')
+    d   keep
+    -   myfile
+    >>> remove('mytest')
+
+    """
+    if not pathdir:
+        return
+    if os.path.exists(pathdir):
+        if not os.path.isdir(pathdir):
+            logger.warn('WARNING: %s is a file, not a directory.' % pathdir)
+        return
+    # Now the tricky thing is: if only a/ exists, without sub
+    # directories, and we call this function with a/b/c, we do not
+    # want to have a directory a/b/ left over at the end.
+    if os.path.isabs(pathdir):
+        newdir = os.path.sep
+    else:
+        newdir = os.getcwd()
+    parts = pathdir.split(os.path.sep)
+    # Find the first part that does not exist.
+    for part in parts:
+        newdir = os.path.join(newdir, part)
+        if os.path.exists(newdir):
+            if not os.path.isdir(newdir):
+                logger.warn('WARNING: %s is a file, not a directory.' % newdir)
+                return
+            continue
+        # newdir does not exist.  Try to create the full path, and the
+        # remove newdir.
         try:
             os.makedirs(pathdir)
-            os.rmdir(pathdir)
+            shutil.rmtree(newdir)
         except OSError:
             logger.warn('WARNING: Not able to create %s' % pathdir)
+        return

@@ -11,6 +11,7 @@ import zc.buildout.testing
 import collective.recipe.backup
 from collective.recipe.backup import repozorunner
 from collective.recipe.backup import copyblobs
+from collective.recipe.backup import utils
 from zope.testing import doctest, renormalizing
 
 # Importing modules so that we can install their eggs in the test buildout.
@@ -44,6 +45,7 @@ def setUp(test):
 def test_suite():
     suite = unittest.TestSuite()
     modules = [
+        utils,
         repozorunner,
         collective.recipe.backup,
         copyblobs,

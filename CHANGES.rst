@@ -1,6 +1,11 @@
 2.17 (unreleased)
 =================
 
+- When checking if the backup script will be able to create a path,
+  remove all created directories.  Until now, only the final directory
+  was removed, and not any created parent directories.
+  [maurits]
+
 - Testing: split the single big doctest file into multiple files, to
   make the automated tests less dependent on one another, making it
   easier to change them and add new ones.

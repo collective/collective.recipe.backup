@@ -14,6 +14,10 @@ Add mock ``bin/repozo`` script::
     ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
+Create var directory::
+
+    >>> mkdir('var')
+
 Sometimes, a Data.fs is split into several files. Most common reason is to
 have a regular Data.fs and a catalog.fs which contains the
 portal_catalog. This is supported with the ``additional_filestorages``
@@ -46,10 +50,6 @@ directories named that way::
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> ls('var')
-    d  backups_foo
-    d  snapshotbackups_foo
-
-XXX The directories above probably should be created later, when running bin/backup.
 
 The various backups are done one after the other. They cannot be done at the
 same time with repozo. So they are not completely in sync. The "other"
