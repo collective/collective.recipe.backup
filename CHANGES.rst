@@ -1,6 +1,11 @@
 2.17 (unreleased)
 =================
 
+- Testing: split the single big doctest file into multiple files, to
+  make the automated tests less dependent on one another, making it
+  easier to change them and add new ones.
+  [maurits]
+
 - No longer test with Python 2.4, because Travis does not support it
   out of the box.  Should still work fine.
   [maurits]

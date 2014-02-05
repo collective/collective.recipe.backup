@@ -43,13 +43,6 @@ def setUp(test):
 
 def test_suite():
     suite = unittest.TestSuite((
-        doctest.DocFileSuite(
-            '../README.txt',
-            setUp=setUp,
-            tearDown=zc.buildout.testing.buildoutTearDown,
-            optionflags=optionflags,
-            checker=checker,
-        ),
         doctest.DocTestSuite(
             repozorunner,
             setUp=setUp,
@@ -72,6 +65,22 @@ def test_suite():
             checker=checker,
         ),
     ))
+    docfiles = [
+        'base.txt',
+        'blobs.txt',
+        'gzip.txt',
+        'location.txt',
+        'multiple.txt',
+        'no_rsync.txt',
+        'options.txt',
+        ]
+    for docfile in docfiles:
+        suite.addTest(doctest.DocFileSuite(
+            docfile,
+            setUp=setUp,
+            tearDown=zc.buildout.testing.buildoutTearDown,
+            optionflags=optionflags,
+            checker=checker))
     return suite
 
 

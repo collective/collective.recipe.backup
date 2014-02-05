@@ -58,7 +58,7 @@ Development
   contain a big file with lots of test code that showed how to use the
   recipe.  This grew too large, so we left it out.  It is probably
   still good reading if you are wondering about the effect some
-  options have.  See ``src/collective/recipe/backup/README.txt``.
+  options have.  See ``src/collective/recipe/backup/tests/*.txt``.
 
 - Questions and comments to the Plone product-developers list or to
   mailto:maurits@vanrees.org and mailto:reinout@vanrees.org.
