@@ -302,7 +302,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     do not make the best decision here.  Use this option to override
     it in that case.
 
-``blob``-storage
+``blob-storage``
     Alternative spelling for the preferred ``blob_storage``, as
     ``plone.recipe.zope2instance`` spells it as ``blob-storage`` and we are
     using underscores in all the other options.  Pick one.
