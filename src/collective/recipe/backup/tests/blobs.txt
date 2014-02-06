@@ -245,7 +245,7 @@ Let's try that some more, with a second in between so we can more
 easily test restoring to a specific time later.
 
     >>> import time
-    >>> time.sleep(1)
+    >>> time.sleep(2)
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> write('var', 'blobstorage-foo', 'blob-foo2.txt', "Sample blob foo 2.")
     >>> write('var', 'blobstorage-bar', 'blob-bar2.txt', "Sample blob bar 2.")
@@ -297,7 +297,7 @@ easily test restoring to a specific time later.
 
 Now remove an item:
 
-    >>> time.sleep(1)
+    >>> time.sleep(2)
     >>> remove('var', 'blobstorage', 'blob2.txt')
     >>> remove('var', 'blobstorage-foo', 'blob-foo1.txt')
     >>> remove('var', 'blobstorage-bar', 'blob-bar1.txt')
@@ -375,7 +375,7 @@ Let's see how a bin/backup goes:
 
 We try again with an extra 'blob':
 
-    >>> time.sleep(1)
+    >>> time.sleep(2)
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --gzip
@@ -423,7 +423,6 @@ copies, so also in this case the inodes can be the same::
 
 Now try a restore::
 
-    >>> time.sleep(1)
     >>> print system('bin/restore', input='no\n')
     <BLANKLINE>
     This will replace the filestorage:
@@ -487,13 +486,19 @@ With the ``no-prompt`` option we avoid the question::
     -  blob2.txt
 
 Since release 2.3 we can also restore blobs to a specific date/time.
+blobstorage.0 is the newest, blobstorage.1 is the oldest.  The restore
+script will restore the first blobstorage with a modification time the
+same or higher than the time we ask for.  Here we ask for a time that
+should be the same as the modification date of blobstorage.1.  We
+subtract half a second to avoid random errors that have plagued these
+tests due to rounding or similar sillyness.
 
     >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups/blobstorage.0')
     >>> mod_time_1 = os.path.getmtime('var/blobstoragebackups/blobstorage.1')
     >>> mod_time_0 > mod_time_1
     True
     >>> from datetime import datetime
-    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1).timetuple()[:6]])
+    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1 - 0.5).timetuple()[:6]])
     >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups_bar/blobstorage-bar.0')
     >>> mod_time_1 = os.path.getmtime('var/blobstoragebackups_bar/blobstorage-bar.1')
     >>> mod_time_0 > mod_time_1
@@ -585,7 +590,7 @@ Since release 2.3 we can also restore blob snapshots to a specific date/time.
     True
     >>> mod_time_1 > mod_time_2
     True
-    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1).timetuple()[:6]])
+    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1 - 0.5).timetuple()[:6]])
     >>> print system('bin/snapshotrestore %s' % time_string, input='yes\n')
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -D ...
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
