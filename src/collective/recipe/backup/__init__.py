@@ -296,14 +296,16 @@ class Recipe(object):
                     raise zc.buildout.UserError(
                         "alternative_restore_sources key %r is used twice."
                         % orig_key)
-                storage['alt_location'] = source['datafs']
+                storage['alt_location'] = construct_path(
+                        buildout_dir, source['datafs'])
                 blobdir = source['blobdir']
                 if storage['blobdir']:
                     if not blobdir:
                         raise zc.buildout.UserError(
                             "alternative_restore_sources key %r is missing a "
                             "blobdir." % orig_key)
-                    storage['blob_alt_location'] = blobdir
+                    storage['blob_alt_location'] = construct_path(
+                        buildout_dir, blobdir)
                 elif blobdir:
                     raise zc.buildout.UserError(
                         "alternative_restore_sources key %r specifies "
