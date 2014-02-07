@@ -540,8 +540,10 @@ syntax::
         ...
 
 The storagenames *must* be the same as in the additional_filestorages
-option, plus a key `Data` for the standard `Data.fs` and optionally its
+option, plus a key ``Data`` for the standard ``Data.fs`` and optionally its
 blobstorage.
+
+The result is a ``bin/altrestore`` script.
 
 This will work for a standard buildout with a single filestorage and
 blobstorage::
@@ -557,6 +559,11 @@ the ``/path/to/production/var/backups`` repository to the standard
 blobstorage backup from
 ``/path/to/production/var/blobstoragebackups/`` to the standard
 ``var/blobstorage`` location.
+
+Calling the script with a specific date is supported just like the
+normal restore script::
+
+    bin/altrestore 2000-12-31-23-59
 
 If you have additional filestorages, it would be like this::
 
