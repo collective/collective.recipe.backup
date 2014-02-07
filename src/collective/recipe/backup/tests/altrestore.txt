@@ -241,6 +241,62 @@ Test in combination with additional filestorage::
     >>> cat('var', 'blobstorage-foo', 'fooblobfile.txt')
     Hello fooblob.
 
+When gzip_blob is true, we use it::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... gzip_blob = true
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    Generated script '/sample-buildout/bin/altrestore'.
+    <BLANKLINE>
+    >>> print system('bin/backup')  # doctest:+ELLIPSIS
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Created /sample-buildout/var/backups
+    INFO: Created /sample-buildout/var/snapshotbackups
+    INFO: Created /sample-buildout/var/blobstoragebackups
+    INFO: Created /sample-buildout/var/blobstoragesnapshots
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: tar czf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    >>> remove('alt', 'data')
+    >>> remove('alt', 'blobs')
+    >>> print system('mv var/backups alt/data')
+    >>> print system('mv var/blobstoragebackups alt/blobs')
+    >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)?
+    <BLANKLINE>
+    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
+    INFO: Removing /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/alt/blobs/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
+    INFO: tar xzf /sample-buildout/alt/blobs/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
+    >>> ls('var', 'blobstorage')
+    -   blobfile.txt
+
+
 Corner cases
 ------------
 

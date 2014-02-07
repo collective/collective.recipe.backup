@@ -580,3 +580,8 @@ During install of the recipe, so during the ``bin/buildout`` run, it
 does not check if the sources exist: you might have the production
 backups on a different server and need to setup a remote shared
 directory, or you copy the data over manually.
+
+Note that the script takes the ``gzip_blob`` and ``use_rsync`` options
+into account.  So if the alternative restore source contains a blob
+backup that was made with ``gzip_blob = true``, you need an
+``altrestore`` script that also uses this setting.
