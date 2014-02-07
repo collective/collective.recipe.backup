@@ -60,14 +60,14 @@ def test_suite():
         ))
 
     docfiles = [
-        'altrestore.txt',
-        'base.txt',
-        'blobs.txt',
-        'gzip.txt',
-        'location.txt',
-        'multiple.txt',
-        'no_rsync.txt',
-        'options.txt',
+        'altrestore.rst',
+        'base.rst',
+        'blobs.rst',
+        'gzip.rst',
+        'location.rst',
+        'multiple.rst',
+        'no_rsync.rst',
+        'options.rst',
         ]
     for docfile in docfiles:
         suite.addTest(doctest.DocFileSuite(
