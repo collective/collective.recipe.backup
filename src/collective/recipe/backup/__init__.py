@@ -260,14 +260,22 @@ class Recipe(object):
         alt_sources = self.options['alternative_restore_sources']
         if alt_sources:
             storage_keys = [s['storage'] for s in storages]
+            alt_keys = []
             ALT_REGEX = (
                 r'^\s*(?P<storage>[^\s]+)'
-                '\s*(?P<datafs>[^\s]+)'
+                '\s+(?P<datafs>[^\s]+)'
                 '\s*(?P<blobdir>[^\s]*)\s*$')
             for a in alt_sources.split('\n'):
                 if not a:
                     continue
-                source = re.match(ALT_REGEX, a).groupdict()
+                match = re.match(ALT_REGEX, a)
+                if match is None:
+                    raise zc.buildout.UserError(
+                        "alternative_restore_sources line %r has a wrong "
+                        "format. Should be: 'storage-name "
+                        "filestorage-backup-path', optionally followed by "
+                        "a blobstorage-backup-path." % a)
+                source = match.groupdict()
                 key = orig_key = source['storage']
                 if key == 'Data':
                     key = '1'  # Data.fs is called storage '1'.
@@ -275,7 +283,19 @@ class Recipe(object):
                     raise zc.buildout.UserError(
                         "alternative_restore_sources key %r unknown in "
                         "storages." % orig_key)
+                alt_keys.append(key)
                 storage = [s for s in storages if key == s['storage']][0]
+                if storage.get('alt_location'):
+                    # Duplicate key.
+                    if key == '1':
+                        raise zc.buildout.UserError(
+                            "alternative_restore_sources key %r is used. "
+                            "Are you using both '1' and 'Data'? They are "
+                            "alternative keys for the same Data.fs."
+                            % orig_key)
+                    raise zc.buildout.UserError(
+                        "alternative_restore_sources key %r is used twice."
+                        % orig_key)
                 storage['alt_location'] = source['datafs']
                 blobdir = source['blobdir']
                 if storage['blobdir']:
@@ -291,6 +311,14 @@ class Recipe(object):
                         "blobstorage." % (orig_key, blobdir))
                 else:
                     storage['blob_alt_location'] = ''
+            # Check the all original storages have an alternative.
+            for key in storage_keys:
+                if key not in alt_keys:
+                    if key == '1':
+                        key = 'Data'  # canonical spelling
+                    raise zc.buildout.UserError(
+                        "alternative_restore_sources is missing key %r. "
+                        % key)
 
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'

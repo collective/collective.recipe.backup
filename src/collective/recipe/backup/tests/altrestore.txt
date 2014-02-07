@@ -240,3 +240,156 @@ Test in combination with additional filestorage::
     -   fooblobfile.txt
     >>> cat('var', 'blobstorage-foo', 'fooblobfile.txt')
     Hello fooblob.
+
+Corner cases
+------------
+
+Specifying ``1`` instead of ``Data`` is fine::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     1 ${buildout:directory}/alt/data
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    Generated script '/sample-buildout/bin/altrestore'.
+    <BLANKLINE>
+    >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
+
+
+Specifying both ``1`` and ``Data`` is bad::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     1 ${buildout:directory}/alt/one
+    ...     Data ${buildout:directory}/alt/data
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources key 'Data' is used. Are you using both '1' and 'Data'? They are alternative keys for the same Data.fs.
+
+Switching them around also fails::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data
+    ...     1 ${buildout:directory}/alt/one
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources key '1' is used. Are you using both '1' and 'Data'? They are alternative keys for the same Data.fs.
+
+Missing keys is bad::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... additional_filestorages =
+    ...     foo ${buildout:directory}/var/filestorage/foo/foo.fs
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources is missing key 'foo'.
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... additional_filestorages =
+    ...     foo ${buildout:directory}/var/filestorage/foo/foo.fs
+    ... alternative_restore_sources =
+    ...     foo ${buildout:directory}/alt/foo
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources is missing key 'Data'.
+
+Extra keys are also bad::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     foo ${buildout:directory}/alt/foo
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources key 'foo' unknown in storages.
+
+A filestorage source path is required::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     Data
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources line 'Data' has a wrong format. Should be: 'storage-name filestorage-backup-path', optionally followed by a blobstorage-backup-path.
