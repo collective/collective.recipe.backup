@@ -188,24 +188,35 @@ class Recipe(object):
         datafs = construct_path(buildout_dir, self.options['datafs'])
         filestorage_dir = os.path.split(datafs)[0]
         if additional:
-            ADDITIONAL_REGEX = r'^\s*(?P<storage>[^\s]+)\s*(?P<datafs>[^\s]*)\s*(?P<blobdir>[^\s]*)\s*$'
+            ADDITIONAL_REGEX = (
+                r'^\s*(?P<storage>[^\s]+)'
+                '\s*(?P<datafs>[^\s]*)'
+                '\s*(?P<blobdir>[^\s]*)\s*$')
             for a in additional.split('\n'):
                 if not a:
                     continue
                 storage = re.match(ADDITIONAL_REGEX, a).groupdict()
                 if storage['storage'] in [s['storage'] for s in storages]:
-                    logger.warning('storage %s duplicated' % storage['storage'])
+                    logger.warning(
+                        'storage %s duplicated' % storage['storage'])
                 if not storage['datafs']:
-                    storage['datafs'] = os.path.join(filestorage_dir, '%s.fs' % storage['storage'])
-                storage['backup_location'] = backup_location + '_' + storage['storage']
-                storage['snapshot_location'] = snapshot_location + '_' + storage['storage']
+                    storage['datafs'] = os.path.join(
+                        filestorage_dir, '%s.fs' % storage['storage'])
+                storage['backup_location'] = backup_location + '_' + \
+                    storage['storage']
+                storage['snapshot_location'] = snapshot_location + '_' + \
+                    storage['storage']
                 if storage['blobdir']:
-                    storage['blob_backup_location'] = blob_backup_location and (blob_backup_location + '_' + storage['storage'])
-                    storage['blob_snapshot_location'] = blob_snapshot_location and (blob_snapshot_location + '_' + storage['storage'])
+                    storage['blob_backup_location'] = blob_backup_location \
+                        and (blob_backup_location + '_' + storage['storage'])
+                    storage['blob_snapshot_location'] = \
+                        blob_snapshot_location and (blob_snapshot_location +
+                                                    '_' + storage['storage'])
                 storages.append(storage)
 
-        # '1' is the default root storagename for Zope. The property ``storage``
-        # on this recipe currently is used only for logging.
+        # '1' is the default root storagename for Zope. The property
+        # ``storage`` on this recipe currently is used only for
+        # logging.
         storage = dict(
             storage="1",
             datafs=datafs,
@@ -238,7 +249,8 @@ class Recipe(object):
                     utils.try_create_folder(blob_snapshot_location)
             if not blob_storage_found:
                 raise zc.buildout.UserError(
-                    "backup_blobs is true, but no blob_storage could be found.")
+                    "backup_blobs is true, but no blob_storage could be "
+                    "found.")
 
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'

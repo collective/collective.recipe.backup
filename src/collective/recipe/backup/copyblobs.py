@@ -551,10 +551,9 @@ def backup_blobs(source, destination, full=False,
             # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
             #     backups/blobstorage.0
             prev_link = os.path.join(os.pardir, base_name + '.1')
-            cmd = 'rsync -a --delete --link-dest=%(link)s %(source)s %(dest)s' % \
-                  dict(link=prev_link,
-                       source=source,
-                       dest=dest)
+            cmd = ('rsync -a --delete --link-dest=%(link)s %(source)s '
+                   '%(dest)s' % dict(link=prev_link, source=source,
+                   dest=dest))
         else:
             # No previous directory to hardlink against.
             cmd = 'rsync -a %(source)s %(dest)s' % dict(
