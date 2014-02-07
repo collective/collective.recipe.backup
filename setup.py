@@ -17,7 +17,7 @@ long_description = (
     'Contributors\n'
     '************\n'
     + '\n' +
-    read('CONTRIBUTORS.txt')
+    read('CONTRIBUTORS.rst')
     + '\n' +
     'Change history\n'
     '**************\n'
