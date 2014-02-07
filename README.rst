@@ -518,3 +518,62 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 We have not tried this on Windows.  Reports are welcome, but best is
 probably to set the ``use_rsync = false`` option in the backup part.
 Then we simply copy the blobstorage directory.
+
+
+Alternative restore sources
+===========================
+
+You can restore from an alternative source.  Use case: first make a
+backup of your production site, then go to the testing or staging
+server and restore the production data there.
+
+In the ``alternative_restore_sources`` option you can define different
+filestorage and blobstorage backup source directories using this
+syntax::
+
+    alternative_restore_sources =
+        storagename1 datafs1_backup [blobdir1_backup]
+        storagename2 datafs2_backup [blobdir2_backup]
+        ...
+
+The storagenames *must* be the same as in the additional_filestorages
+option, plus a key `Data` for the standard `Data.fs` and optionally its
+blobstorage.
+
+This will work for a standard buildout with a single filestorage and
+blobstorage::
+
+    [backup]
+    recipe = collective.recipe.backup
+    alternative_restore_sources =
+        Data /path/to/production/var/backups /path/to/production/var/blobstoragebackups
+
+The above configuration uses ``repozo`` to restore the Data.fs from
+the ``/path/to/production/var/backups`` repository to the standard
+``var/filestorage/Data.fs`` location.  It copies the most recent
+blobstorage backup from
+``/path/to/production/var/blobstoragebackups/`` to the standard
+``var/blobstorage`` location.
+
+If you have additional filestorages, it would be like this::
+
+    [backup]
+    recipe = collective.recipe.backup
+    additional_filestorages =
+        foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
+        bar ${buildout:directory}/var/filestorage/bar/bar.fs
+    alternative_restore_sources =
+        Data /path/to/production/var/backups /path/to/production/var/blobstoragebackups
+        foo /path/to/production/var/backups_foo /path/to/production/var/blobstoragebackups_foo
+        bar /path/to/production/var/backups_bar
+
+The recipe will fail if the alternative sources do not match the
+standard filestorage, blobstorage and additional storages.  For
+example, you get an error when the ``alternative_restore_sources`` is
+missing the ``Data`` key, when it has extra or missing keys, when a
+key has no paths, when a key has an extra or missing blobstorage.
+
+During install of the recipe, so during the ``bin/buildout`` run, it
+does not check if the sources exist: you might have the production
+backups on a different server and need to setup a remote shared
+directory, or you copy the data over manually.
