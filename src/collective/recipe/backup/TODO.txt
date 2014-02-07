@@ -1,6 +1,0 @@
-* We could be smarter about restoring blobs to a specific point in
-  time (pick the first blob backup with a modification date after the
-  requested time), but it may be safer not to try to be too smart
-  here.  Then again, if you restore a Data.fs from before the last
-  zeopack then you need a blob backup from before that last zeopack
-  too.
