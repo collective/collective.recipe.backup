@@ -268,13 +268,13 @@ class Recipe(object):
                 if not a:
                     continue
                 source = re.match(ALT_REGEX, a).groupdict()
-                key = source['storage']
+                key = orig_key = source['storage']
                 if key == 'Data':
                     key = '1'  # Data.fs is called storage '1'.
                 if key not in storage_keys:
                     raise zc.buildout.UserError(
                         "alternative_restore_sources key %r unknown in "
-                        "storages." % key)
+                        "storages." % orig_key)
                 storage = [s for s in storages if key == s['storage']][0]
                 storage['alt_location'] = source['datafs']
                 blobdir = source['blobdir']
@@ -282,13 +282,13 @@ class Recipe(object):
                     if not blobdir:
                         raise zc.buildout.UserError(
                             "alternative_restore_sources key %r is missing a "
-                            "blobdir: %s" % key)
+                            "blobdir." % orig_key)
                     storage['blob_alt_location'] = blobdir
                 elif blobdir:
                     raise zc.buildout.UserError(
                         "alternative_restore_sources key %r specifies "
                         "blobdir %r but the original storage has no "
-                        "blobstorage." % (key, blobdir))
+                        "blobstorage." % (orig_key, blobdir))
 
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'

@@ -14,9 +14,12 @@ Add mock ``bin/repozo`` script::
     ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
-Create var directory::
+Create directories::
 
     >>> mkdir('var')
+    >>> mkdir('alt')
+    >>> mkdir('alt', 'data')
+    >>> mkdir('alt', 'blobs')
 
 You can restore from an alternative source.  Use case: first make a
 backup of your production site, then go to the testing or staging
@@ -32,7 +35,7 @@ the ``alternative_restore_sources`` option::
     ... [backup]
     ... recipe = collective.recipe.backup
     ... alternative_restore_sources =
-    ...     Data alt/data
+    ...     Data ${buildout:directory}/alt/data
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing backup.
@@ -47,9 +50,120 @@ the ``alternative_restore_sources`` option::
 Call the script::
 
     >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r alt/data
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
-    INFO: Please wait while restoring database file: alt/data to /sample-buildout/var/filestorage/Data.fs
+    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
+
+Add original blobstorage (usually done by having a part that creates a
+zope instance or a zeoserver, but we do it simpler here) but forget to
+add it to the alternative::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources key 'Data' is missing a blobdir.
+    <BLANKLINE>
+
+Add blobstorage to the alternative, but not the original::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    While:
+      Installing backup.
+    Error: alternative_restore_sources key 'Data' specifies blobdir '/sample-buildout/alt/blobs' but the original storage has no blobstorage.
+    <BLANKLINE>
+
+Add blobstorage to original and alternative::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    Generated script '/sample-buildout/bin/altrestore'.
+    <BLANKLINE>
+
+Call the script::
+
+    >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)?
+    rsync: change_dir "/sample-buildout/alt/blobs/blobstorage.0" failed: No such file or directory...
+    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> ls('var')
+
+Note that the rsync error is printed before the line that actually
+calls rsync, but that is a strangeness in how ``stdout`` and
+``stderr`` is combined in the tests.
+
+Create the necessary sample directories and call the script again::
+
+    >>> mkdir('alt', 'blobs', 'blobstorage.0')
+    >>> mkdir('alt', 'blobs', 'blobstorage.0', 'blobstorage')
+    >>> write('alt', 'blobs', 'blobstorage.0', 'blobstorage', 'blobfile.txt', 'Hello')
+    >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> ls('var')
+    d   blobstorage
+    >>> ls('var', 'blobstorage')
+    -   blobfile.txt
