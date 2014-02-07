@@ -296,6 +296,47 @@ When gzip_blob is true, we use it::
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
 
+When the buildout part is not called ``backup``, we end up with
+different names for the scripts::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... # I do not understand the order of the parts here.  The second
+    ... # listed part gets executed first.
+    ... parts =
+    ...     secondbackup
+    ...     firstbackup
+    ...
+    ... [firstbackup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data
+    ...
+    ... [secondbackup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing firstbackup.
+    Generated script '/sample-buildout/bin/firstbackup'.
+    Generated script '/sample-buildout/bin/firstbackup-full'.
+    Generated script '/sample-buildout/bin/firstbackup-snapshot'.
+    Generated script '/sample-buildout/bin/firstbackup-restore'.
+    Generated script '/sample-buildout/bin/firstbackup-snapshotrestore'.
+    Generated script '/sample-buildout/bin/firstbackup-altrestore'.
+    Installing secondbackup.
+    Generated script '/sample-buildout/bin/secondbackup'.
+    Generated script '/sample-buildout/bin/secondbackup-full'.
+    Generated script '/sample-buildout/bin/secondbackup-snapshot'.
+    Generated script '/sample-buildout/bin/secondbackup-restore'.
+    Generated script '/sample-buildout/bin/secondbackup-snapshotrestore'.
+    Generated script '/sample-buildout/bin/secondbackup-altrestore'.
+    <BLANKLINE>
+
 
 Corner cases
 ------------
@@ -314,7 +355,8 @@ Specifying ``1`` instead of ``Data`` is fine::
     ...     1 ${buildout:directory}/alt/data
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
+    Uninstalling secondbackup.
+    Uninstalling firstbackup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
