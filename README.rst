@@ -540,8 +540,8 @@ syntax::
         ...
 
 The storagenames *must* be the same as in the additional_filestorages
-option, plus a key ``Data`` for the standard ``Data.fs`` and optionally its
-blobstorage.
+option, plus a key ``Data`` (or ``1``) for the standard ``Data.fs``
+and optionally its blobstorage.
 
 The result is a ``bin/altrestore`` script.
 
