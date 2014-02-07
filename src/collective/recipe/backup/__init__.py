@@ -50,6 +50,7 @@ class Recipe(object):
             snapshot_name = 'snapshotbackup'
             restore_name = 'restore'
             snapshotrestore_name = 'snapshotrestore'
+            altrestore_name = 'altrestore'
             blob_backup_name = 'blobstoragebackup'
             blob_snapshot_name = 'blobstoragesnapshot'
         else:
@@ -58,6 +59,7 @@ class Recipe(object):
             snapshot_name = self.name + '-snapshot'
             restore_name = self.name + '-restore'
             snapshotrestore_name = self.name + '-snapshotrestore'
+            altrestore_name = self.name + '-altrestore'
             blob_backup_name = self.name + '-blobstorage'
             blob_snapshot_name = self.name + '-blobstoragesnapshot'
 
@@ -99,6 +101,7 @@ class Recipe(object):
         options.setdefault('gzip', 'true')
         options.setdefault('gzip_blob', 'false')
         options.setdefault('additional_filestorages', '')
+        options.setdefault('alternative_restore_sources', '')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('use_rsync', 'true')
         options.setdefault('only_blobs', 'false')
@@ -157,6 +160,7 @@ class Recipe(object):
         options['snapshot_name'] = snapshot_name
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
+        options['altrestore_name'] = altrestore_name
         check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
                                  'backup_blobs', 'use_rsync', 'gzip_blob'])
 
@@ -251,6 +255,40 @@ class Recipe(object):
                 raise zc.buildout.UserError(
                     "backup_blobs is true, but no blob_storage could be "
                     "found.")
+
+        # Handle alternative restore sources.
+        alt_sources = self.options['alternative_restore_sources']
+        if alt_sources:
+            storage_keys = [s['storage'] for s in storages]
+            ALT_REGEX = (
+                r'^\s*(?P<storage>[^\s]+)'
+                '\s*(?P<datafs>[^\s]+)'
+                '\s*(?P<blobdir>[^\s]*)\s*$')
+            for a in alt_sources.split('\n'):
+                if not a:
+                    continue
+                source = re.match(ALT_REGEX, a).groupdict()
+                key = source['storage']
+                if key == 'Data':
+                    key = '1'  # Data.fs is called storage '1'.
+                if key not in storage_keys:
+                    raise zc.buildout.UserError(
+                        "alternative_restore_sources key %r unknown in "
+                        "storages." % key)
+                storage = [s for s in storages if key == s['storage']][0]
+                storage['alt_location'] = source['datafs']
+                blobdir = source['blobdir']
+                if storage['blobdir']:
+                    if not blobdir:
+                        raise zc.buildout.UserError(
+                            "alternative_restore_sources key %r is missing a "
+                            "blobdir: %s" % key)
+                    storage['blob_alt_location'] = blobdir
+                elif blobdir:
+                    raise zc.buildout.UserError(
+                        "alternative_restore_sources key %r specifies "
+                        "blobdir %r but the original storage has no "
+                        "blobstorage." % (key, blobdir))
 
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
@@ -362,6 +400,14 @@ logging.basicConfig(level=loglevel,
             reqs = [(self.options['snapshotrestore_name'],
                      'collective.recipe.backup.main',
                      'snapshot_restore_main')]
+            creation_args['reqs'] = reqs
+            generated += create_script(**creation_args)
+
+        # Create alternative sources restore script
+        if self.options['alternative_restore_sources']:
+            reqs = [(self.options['altrestore_name'],
+                     'collective.recipe.backup.main',
+                     'alt_restore_main')]
             creation_args['reqs'] = reqs
             generated += create_script(**creation_args)
 

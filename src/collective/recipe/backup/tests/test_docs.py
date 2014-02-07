@@ -60,6 +60,7 @@ def test_suite():
         ))
 
     docfiles = [
+        'altrestore.txt',
         'base.txt',
         'blobs.txt',
         'gzip.txt',

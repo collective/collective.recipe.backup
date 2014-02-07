@@ -1,0 +1,55 @@
+# -*-doctest-*-
+
+Alternative restore sources
+===========================
+
+Just to isolate some test differences, we run an empty buildout once::
+
+    >>> ignore = system(buildout)
+
+Add mock ``bin/repozo`` script::
+
+    >>> import sys
+    >>> write('bin', 'repozo',
+    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    >>> dontcare = system('chmod u+x bin/repozo')
+
+Create var directory::
+
+    >>> mkdir('var')
+
+You can restore from an alternative source.  Use case: first make a
+backup of your production site, then go to the testing or staging
+server and restore the production data there.  This is supported with
+the ``alternative_restore_sources`` option::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... alternative_restore_sources =
+    ...     Data alt/data
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    Generated script '/sample-buildout/bin/altrestore'.
+    <BLANKLINE>
+
+Call the script::
+
+    >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r alt/data
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: alt/data to /sample-buildout/var/filestorage/Data.fs

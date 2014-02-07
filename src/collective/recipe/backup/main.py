@@ -131,8 +131,12 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
 
 def restore_main(bin_dir, storages, verbose, backup_blobs,
                  only_blobs, use_rsync, restore_snapshot=False, pre_command='',
-                 post_command='', gzip_blob=False, **kwargs):
+                 post_command='', gzip_blob=False, alt_restore=False,
+                 **kwargs):
     """Main method, gets called by generated bin/restore."""
+    if restore_snapshot and alt_restore:
+        logger.error("Cannot use both restore_snapshot and alt_restore.")
+        sys.exit(1)
     date = None
     # Try to find a date in the command line arguments
     for arg in sys.argv:
@@ -167,7 +171,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
     if not only_blobs:
         result = repozorunner.restore_main(
             bin_dir, storages, verbose, date,
-            restore_snapshot)
+            restore_snapshot, alt_restore)
         if result:
             if backup_blobs:
                 logger.error("Halting execution due to error; not restoring "
@@ -183,13 +187,15 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         blobdir = storage['blobdir']
         if restore_snapshot:
             blob_backup_location = storage['blob_snapshot_location']
+        elif alt_restore:
+            blob_backup_location = storage['blob_alt_location']
         else:
             blob_backup_location = storage['blob_backup_location']
         if not blobdir:
             logger.info("No blob dir defined for %s storage" %
                         storage['storage'])
             continue
-        if not blobdir:
+        if not blob_backup_location:
             logger.error("No blob storage source specified")
             sys.exit(1)
         logger.info("Restoring blobs from %s to %s", blob_backup_location,
@@ -203,9 +209,20 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
 def snapshot_restore_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotrestore.
 
-    Difference with restore_main is that we get need to use the
+    Difference with restore_main is that we use the
     snapshot_location and blob_snapshot_location.
     """
     # Override the locations:
     kwargs['restore_snapshot'] = True
+    return restore_main(*args, **kwargs)
+
+
+def alt_restore_main(*args, **kwargs):
+    """Main method, gets called by generated bin/altrestore.
+
+    Difference with restore_main is that we use the
+    alternative restore sources.
+    """
+    # Override the locations:
+    kwargs['alt_restore'] = True
     return restore_main(*args, **kwargs)

@@ -94,13 +94,18 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip):
 
 
 def restore_main(bin_dir, storages, verbose,
-                 date=None, restore_snapshot=False):
+                 date=None, restore_snapshot=False, alt_restore=False):
     """Main method, gets called by generated bin/restore."""
+    if restore_snapshot and alt_restore:
+        logger.error("Cannot use both restore_snapshot and alt_restore.")
+        sys.exit(1)
     repozo = os.path.join(bin_dir, 'repozo')
     logger.debug("If things break: did you stop zope?")
     for storage in storages:
         if restore_snapshot:
             backup_location = storage['snapshot_location']
+        elif alt_restore:
+            backup_location = storage['alt_location']
         else:
             backup_location = storage['backup_location']
         fs = storage['datafs']
