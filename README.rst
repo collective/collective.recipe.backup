@@ -464,14 +464,15 @@ Work is in progress to improve this.
 Blob storage
 ============
 
-New in this recipe (since version 2.0) is that we backup the blob
-storage.  Plone 4 uses a blob storage to store files (Binary Large
-OBjects) on the file system.  In Plone 3 this is optional.  When this
-is used, it should be backed up of course.  You must specify the
-source blob_storage directory where Plone (or Zope) stores its blobs.
-As indicated earlier, when we do not set it specifically, we try to
-get the location from other parts, for example the
-``plone.recipe.zope2instance`` recipe::
+Added in version 2.0.
+
+We can backup the blob storage.  Plone 4 uses a blob storage to store
+files (Binary Large OBjects) on the file system.  In Plone 3 this is
+optional.  When this is used, it should be backed up of course.  You
+must specify the source blob_storage directory where Plone (or Zope)
+stores its blobs.  As indicated earlier, when we do not set it
+specifically, we try to get the location from other parts, for example
+the ``plone.recipe.zope2instance`` recipe::
 
     [buildout]
     parts = instance backup
@@ -522,6 +523,8 @@ Then we simply copy the blobstorage directory.
 
 Alternative restore sources
 ===========================
+
+Added in version 2.17.
 
 You can restore from an alternative source.  Use case: first make a
 backup of your production site, then go to the testing or staging

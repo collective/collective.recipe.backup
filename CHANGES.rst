@@ -1,6 +1,12 @@
 2.17 (unreleased)
 =================
 
+- Add ``alternative_restore_sources`` option.  This creates a
+  ``bin/altrestore`` script that restores from an alternative backup
+  location, specified by that option.  You can use this to restore a
+  backup of the production data to your testing or staging server.
+  [maurits]
+
 - When checking if the backup script will be able to create a path,
   remove all created directories.  Until now, only the final directory
   was removed, and not any created parent directories.
