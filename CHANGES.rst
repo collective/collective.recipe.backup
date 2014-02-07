@@ -1,4 +1,4 @@
-2.17 (unreleased)
+2.17 (2014-02-07)
 =================
 
 - Add ``alternative_restore_sources`` option.  This creates a
