@@ -431,21 +431,23 @@ same time with ``repozo``. So they are not completely in sync. The "other"
 databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors.
 
-If you want more control of the filestorage source path, you can explicitly
-set it (with or without the blobstorage path). For example::
+In the ``additional_filestorages`` option you can define different
+filestorages using this syntax::
+
+    additional_filestorages =
+        storagename1 [datafs1_path [blobdir1]]
+        storagename2 [datafs2_path [blobdir2]]
+        ...
+
+So if you want more control over the filestorage source path, you can
+explicitly set it, with or without the blobstorage path.  For
+example::
 
     [backup]
     recipe = collective.recipe.backup
     additional_filestorages =
         foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
         bar ${buildout:directory}/var/filestorage/bar/bar.fs
-
-In the ``additional_filestorages`` option you can define different filestorage using
-this syntax::
-
-    additional_filestorages =
-        storagename1 [datafs1_path [blobdir1]]
-        storagename2 [datafs2_path [blobdir2]]
 
 If the ``datafs_path`` is missing, then the default value will be used
 (``var/filestorage/storagename1.fs``).  If you do not specify a
