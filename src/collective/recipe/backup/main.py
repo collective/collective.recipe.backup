@@ -160,7 +160,8 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
     if backup_blobs:
         question += "This will replace the blobstorage:\n"
         for storage in storages:
-            question += "    %s\n" % storage.get('blobdir')
+            if storage.get('blobdir'):
+                question += "    %s\n" % storage.get('blobdir')
     question += "Are you sure?"
     if not kwargs.get('no_prompt'):
         if not utils.ask(question, default=False, exact=True):
@@ -185,16 +186,16 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         return
     for storage in storages:
         blobdir = storage['blobdir']
+        if not blobdir:
+            logger.info("No blob dir defined for %s storage" %
+                        storage['storage'])
+            continue
         if restore_snapshot:
             blob_backup_location = storage['blob_snapshot_location']
         elif alt_restore:
             blob_backup_location = storage['blob_alt_location']
         else:
             blob_backup_location = storage['blob_backup_location']
-        if not blobdir:
-            logger.info("No blob dir defined for %s storage" %
-                        storage['storage'])
-            continue
         if not blob_backup_location:
             logger.error("No blob storage source specified")
             sys.exit(1)

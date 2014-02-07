@@ -150,7 +150,7 @@ Create the necessary sample directories and call the script again::
 
     >>> mkdir('alt', 'blobs', 'blobstorage.0')
     >>> mkdir('alt', 'blobs', 'blobstorage.0', 'blobstorage')
-    >>> write('alt', 'blobs', 'blobstorage.0', 'blobstorage', 'blobfile.txt', 'Hello')
+    >>> write('alt', 'blobs', 'blobstorage.0', 'blobstorage', 'blobfile.txt', 'Hello blob.')
     >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
@@ -167,3 +167,76 @@ Create the necessary sample directories and call the script again::
     d   blobstorage
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
+    >>> cat('var', 'blobstorage', 'blobfile.txt')
+    Hello blob.
+
+Test in combination with additional filestorage::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... additional_filestorages =
+    ...     foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
+    ...     bar ${buildout:directory}/var/filestorage/bar/bar.fs
+    ... alternative_restore_sources =
+    ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
+    ...     foo ${buildout:directory}/alt/foo ${buildout:directory}/alt/fooblobs
+    ...     bar ${buildout:directory}/alt/bar
+    ... """)
+    >>> remove('var')
+    >>> mkdir('var')
+    >>> mkdir('alt', 'foo')
+    >>> mkdir('alt', 'bar')
+    >>> mkdir('alt', 'fooblobs')
+    >>> mkdir('alt', 'fooblobs', 'blobstorage-foo.0')
+    >>> mkdir('alt', 'fooblobs', 'blobstorage-foo.0', 'blobstorage-foo')
+    >>> write('alt', 'fooblobs', 'blobstorage-foo.0', 'blobstorage-foo', 'fooblobfile.txt', 'Hello fooblob.')
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    Generated script '/sample-buildout/bin/altrestore'.
+    <BLANKLINE>
+    >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/foo/foo.fs -r /sample-buildout/alt/foo
+    --recover -o /sample-buildout/var/filestorage/bar/bar.fs -r /sample-buildout/alt/bar
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo/foo.fs
+        /sample-buildout/var/filestorage/bar/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/alt/foo to /sample-buildout/var/filestorage/foo/foo.fs
+    INFO: Please wait while restoring database file: /sample-buildout/alt/bar to /sample-buildout/var/filestorage/bar/bar.fs
+    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/alt/fooblobs to /sample-buildout/var/blobstorage-foo
+    INFO: rsync -a --delete /sample-buildout/alt/fooblobs/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: No blob dir defined for bar storage
+    INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
+    INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> ls('var')
+    d   blobstorage
+    d   blobstorage-foo
+    >>> ls('var', 'blobstorage')
+    -   blobfile.txt
+    >>> cat('var', 'blobstorage', 'blobfile.txt')
+    Hello blob.
+    >>> ls('var', 'blobstorage-foo')
+    -   fooblobfile.txt
+    >>> cat('var', 'blobstorage-foo', 'fooblobfile.txt')
+    Hello fooblob.

@@ -289,6 +289,8 @@ class Recipe(object):
                         "alternative_restore_sources key %r specifies "
                         "blobdir %r but the original storage has no "
                         "blobstorage." % (orig_key, blobdir))
+                else:
+                    storage['blob_alt_location'] = ''
 
         if self.options['debug'] == 'True':
             loglevel = 'DEBUG'
