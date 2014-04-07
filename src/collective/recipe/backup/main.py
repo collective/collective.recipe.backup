@@ -13,7 +13,7 @@ logger = logging.getLogger('backup')
 def backup_main(bin_dir, storages, keep, full,
                 verbose, gzip, backup_blobs, only_blobs, use_rsync,
                 keep_blob_days=0, pre_command='', post_command='',
-                gzip_blob=False, **kwargs):
+                gzip_blob=False, rsync_options='', **kwargs):
     """Main method, gets called by generated bin/backup."""
     utils.check_folders(storages, backup_blobs=backup_blobs,
                         only_blobs=only_blobs)
@@ -44,14 +44,16 @@ def backup_main(bin_dir, storages, keep, full,
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob)
+                               gzip_blob=gzip_blob,
+                               rsync_options=rsync_options)
     utils.execute_or_fail(post_command)
 
 
 def fullbackup_main(bin_dir, storages, keep, full,
                     verbose, gzip, backup_blobs, only_blobs, use_rsync,
                     keep_blob_days=0, pre_command='',
-                    post_command='', gzip_blob=False, **kwargs):
+                    post_command='', gzip_blob=False, 
+                    rsync_options='', **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
     utils.check_folders(storages, backup_blobs=backup_blobs,
                         only_blobs=only_blobs)
@@ -87,14 +89,15 @@ def fullbackup_main(bin_dir, storages, keep, full,
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob)
+                               gzip_blob=gzip_blob, 
+                               rsync_options=rsync_options)
     utils.execute_or_fail(post_command)
 
 
 def snapshot_main(bin_dir, storages, keep, verbose, gzip,
                   backup_blobs, only_blobs, use_rsync,
                   keep_blob_days=0, pre_command='', post_command='',
-                  gzip_blob=False, **kwargs):
+                  gzip_blob=False, rsync_options='', **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     utils.check_folders(storages, backup_blobs=backup_blobs,
                         only_blobs=only_blobs)
@@ -125,14 +128,15 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
         copyblobs.backup_blobs(blobdir, blob_snapshot_location,
                                full=True, use_rsync=use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob)
+                               gzip_blob=gzip_blob,
+                               rsync_options=rsync_options)
     utils.execute_or_fail(post_command)
 
 
 def restore_main(bin_dir, storages, verbose, backup_blobs,
                  only_blobs, use_rsync, restore_snapshot=False, pre_command='',
-                 post_command='', gzip_blob=False, alt_restore=False,
-                 **kwargs):
+                 post_command='', gzip_blob=False, alt_restore=False, 
+                 rsync_options ='', **kwargs):
     """Main method, gets called by generated bin/restore."""
     if restore_snapshot and alt_restore:
         logger.error("Cannot use both restore_snapshot and alt_restore.")
@@ -203,7 +207,8 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
                     blobdir)
         copyblobs.restore_blobs(blob_backup_location, blobdir,
                                 use_rsync=use_rsync, date=date,
-                                gzip_blob=gzip_blob)
+                                gzip_blob=gzip_blob, 
+                                rsync_options=rsync_options)
     utils.execute_or_fail(post_command)
 
 
