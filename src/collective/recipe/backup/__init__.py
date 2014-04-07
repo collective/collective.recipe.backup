@@ -313,7 +313,7 @@ class Recipe(object):
                         "blobstorage." % (orig_key, blobdir))
                 else:
                     storage['blob_alt_location'] = ''
-            # Check the all original storages have an alternative.
+            # Check that all original storages have an alternative.
             for key in storage_keys:
                 if key not in alt_keys:
                     if key == '1':
