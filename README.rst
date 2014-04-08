@@ -332,6 +332,12 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     false, we fall back to a simple copy (``shutil.copytree`` from
     Python in fact).
 
+``rsync_options``
+    Add extra options to the default ``rsync -a`` command. Default is no 
+    extra parameters. This can be useful for example when you want to restore 
+    a backup from a symlinked directory, in which case 
+    ``rsync_options = --no-l -k`` does the trick. 
+
 ``gzip_blob``
     Use `tar` archiving functionality. ``false`` by default. Set it to ``true``
     and backup/restore will be done with `tar` command. Note that `tar`
