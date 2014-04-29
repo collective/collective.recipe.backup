@@ -1,7 +1,13 @@
 2.18 (unreleased)
 =================
 
-- Nothing changed yet.
+- Add ``rsync_options`` option.  These are added to the default
+  ``rsync -a`` command. Default is no extra parameters. This can be
+  useful for example when you want to restore a backup from a
+  symlinked directory, in which case ``rsync_options = --no-l -k``
+  does the trick.
+  [fiterbek]
+
 
 
 2.17 (2014-02-07)
