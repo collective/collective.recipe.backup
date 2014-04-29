@@ -377,8 +377,8 @@ def get_blob_backup_gzips(backup_location):
     return backup_gzips
 
 
-def backup_blobs(source, destination, full=False,
-                 use_rsync=True, keep=0, keep_blob_days=0, gzip_blob=False):
+def backup_blobs(source, destination, full=False, use_rsync=True, 
+                 keep=0, keep_blob_days=0, gzip_blob=False, rsync_options=''):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -551,13 +551,13 @@ def backup_blobs(source, destination, full=False,
             # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
             #     backups/blobstorage.0
             prev_link = os.path.join(os.pardir, base_name + '.1')
-            cmd = ('rsync -a --delete --link-dest=%(link)s %(source)s '
-                   '%(dest)s' % dict(link=prev_link, source=source,
+            cmd = ('rsync -a %(options)s --delete --link-dest=%(link)s %(source)s '
+                   '%(dest)s' % dict(options=rsync_options,link=prev_link, source=source,
                    dest=dest))
         else:
             # No previous directory to hardlink against.
-            cmd = 'rsync -a %(source)s %(dest)s' % dict(
-                source=source, dest=dest)
+            cmd = 'rsync -a %(options)s %(source)s %(dest)s' % dict(
+                   options=rsync_options, source=source, dest=dest)
         logger.info(cmd)
         output, failed = utils.system(cmd)
         if output:
@@ -630,8 +630,8 @@ def backup_blobs_gzip(source, destination, keep=0):
     cleanup_gzips(destination, keep=keep)
 
 
-def restore_blobs(source, destination,
-                  use_rsync=True, date=None, gzip_blob=False):
+def restore_blobs(source, destination, use_rsync=True, 
+                  date=None, gzip_blob=False, rsync_options=''):
     """Restore blobs from source to destination.
 
     With 'use_rsync' at the default True, we use rsync to copy,
@@ -691,7 +691,8 @@ def restore_blobs(source, destination,
     # You should end up with something like this:
     #rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
     if use_rsync:
-        cmd = 'rsync -a --delete %(source)s %(dest)s' % dict(
+        cmd = 'rsync -a %(options)s --delete %(source)s %(dest)s' % dict(
+            options=rsync_options, 
             source=backup_source,
             dest=dest_dir)
         logger.info(cmd)

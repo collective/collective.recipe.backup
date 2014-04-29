@@ -104,6 +104,7 @@ class Recipe(object):
         options.setdefault('alternative_restore_sources', '')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('use_rsync', 'true')
+        options.setdefault('rsync_options', '')
         options.setdefault('only_blobs', 'false')
         # Accept both blob-storage (used by plone.recipe.zope2instance
         # and friends) and blob_storage (as we use underscores
@@ -359,6 +360,7 @@ logging.basicConfig(level=loglevel,
         only_blobs=%(only_blobs)s,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
+        rsync_options=%(rsync_options)r,
         gzip_blob=%(gzip_blob)s,
         pre_command=%(pre_command)r,
         post_command=%(post_command)r,

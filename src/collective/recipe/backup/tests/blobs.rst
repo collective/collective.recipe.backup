@@ -806,3 +806,107 @@ Now test the restore::
     INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+
+Test extra rsync options, currently only testing --no-l -k to allow for symlinked directory dereferencing in restore. We use this to test passing of valid rsync options additional to the default -a option. Since all backup and restore variants with blobs and using rsync use the same code, we only need to test the standard backup and restore to ensure passing of extra options to rsync works:: 
+
+    >>> # first remove some previously created directories interfering with this test
+    >>> import shutil
+    >>> shutil.rmtree('var/blobstoragebackups/blobstorage.0')
+    >>> shutil.rmtree('var/blobstoragebackups/blobstorage.1')
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ... 
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... rsync_options = --no-l -k    
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling blobbackup.
+    Uninstalling filebackup.
+    Installing backup. 
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> ls('bin')
+    - backup
+    - buildout
+    - fullbackup
+    - instance
+    - mkzopeinstance
+    - repozo
+    - restore
+    - snapshotbackup
+    - snapshotrestore
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
+    INFO: rsync -a --no-l -k /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
+    <BLANKLINE>
+    >>> ls('var/blobstoragebackups')
+    d  blobstorage.0
+    >>> ls('var/blobstoragebackups/blobstorage.0')
+    d  blobstorage
+    >>> ls('var/blobstoragebackups/blobstorage.0/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
+
+So backup still works, now test restore that uses a symlinked directory as the backup source::
+
+    >>> # first remove blobs from blobstorage as we are testing restore
+    >>> remove('var','blobstorage','blob1.txt')
+    >>> remove('var','blobstorage','blob2.txt')
+    >>> mkdir('var/test')
+    >>> mkdir('var/test/blobstorage.0')
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ... 
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... blobbackuplocation = ${buildout:directory}/var/test
+    ... rsync_options = --no-l -k
+    ... # we use pre_ and post_commands to set/unset the symlink 
+    ... # using os.symlink instead causes rsync to fail for some reason
+    ... pre_command = ln -s ${buildout:directory}/var/blobstoragebackups/blobstorage.0/blobstorage ${backup:blobbackuplocation}/blobstorage.0/blobstorage
+    ... post_command = unlink ${backup:blobbackuplocation}/blobstorage.0/blobstorage   
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup. 
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> ls('bin')
+    - backup
+    - buildout
+    - fullbackup
+    - instance
+    - mkzopeinstance
+    - repozo
+    - restore
+    - snapshotbackup
+    - snapshotrestore
+    >>> print system('bin/restore --no-prompt')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
+    <BLANKLINE>
+    INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
+    INFO: Restoring blobs from /sample-buildout/var/test to /sample-buildout/var/blobstorage
+    INFO: rsync -a --no-l -k --delete /sample-buildout/var/test/blobstorage.0/blobstorage /sample-buildout/var
+    <BLANKLINE>
+    >>> ls('var/blobstorage')
+    -  blob1.txt
+    -  blob2.txt
