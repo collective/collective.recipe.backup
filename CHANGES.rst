@@ -1,4 +1,4 @@
-2.18 (unreleased)
+2.18 (2014-04-29)
 =================
 
 - Add ``rsync_options`` option.  These are added to the default
