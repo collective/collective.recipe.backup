@@ -55,9 +55,9 @@ def fullbackup_main(bin_dir, storages, keep, full,
                     post_command='', gzip_blob=False, 
                     rsync_options='', **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
+    utils.execute_or_fail(pre_command)
     utils.check_folders(storages, backup_blobs=backup_blobs,
                         only_blobs=only_blobs)
-    utils.execute_or_fail(pre_command)
     if not only_blobs:
         # Set Full=True for forced full backups.
         # It was easier to do this here, than mess with
