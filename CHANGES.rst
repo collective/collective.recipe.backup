@@ -1,7 +1,8 @@
 2.19 (unreleased)
 =================
 
-- Nothing changed yet.
+- check and create folders now happens after pre_commands is run
+  [@djay]
 
 
 2.18 (2014-04-29)
