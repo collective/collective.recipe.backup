@@ -2,7 +2,10 @@
 =================
 
 - Call repozo with ``--quick`` when making an incremental backup.
-  This is a lot faster.
+  This is a lot faster.  Theoretically it lead to inconsistency if
+  someone is messing in your backup directory.  You can return to the
+  previous behavior by specifying ``quick = false`` in the backup
+  recipe part in your buildout config.
   [maurits]
 
 - check and create folders now happens after pre_commands is run
