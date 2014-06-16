@@ -1,4 +1,4 @@
-2.19 (unreleased)
+2.19 (2014-06-16)
 =================
 
 - Call repozo with ``--quick`` when making an incremental backup.
