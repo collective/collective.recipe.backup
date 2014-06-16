@@ -55,7 +55,7 @@ stderr.  Anyway::
 
     >>> output = system('bin/backup')
     >>> print output
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     Can I have a backup?
     <BLANKLINE>
     Thanks a lot for the backup.
@@ -99,12 +99,12 @@ In the tests, we do get messages unfortunately, though at least the
 INFO level logging is not there::
 
     >>> print system('bin/backup -q')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
     We are done.
     >>> print system('bin/backup --quiet')
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
     We are done.
@@ -157,3 +157,40 @@ generated script).
     -  repozo
     -  restore
     -  snapshotbackup
+
+
+Not quick
+---------
+
+The repozo script has the quick option set the false by default.
+Usually it makes sense to set it to true, as this can be a *lot*
+quicker.  So version 2.19 introduced the quick option for the backup
+script and has set the default to true.  You can set it to false if
+wanted.
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... quick = false
+    ... """)
+
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> print system('bin/backup')
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    INFO: Created /sample-buildout/var/backups
+    INFO: Created /sample-buildout/var/snapshotbackups
+    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
+    <BLANKLINE>

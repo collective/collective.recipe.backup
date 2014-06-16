@@ -61,7 +61,7 @@ Now we test it.  First the `normal` backup.  The nozipbackup backs up without
 using archiving technology::
 
     >>> print system('bin/nozipbackup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackups
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackups --quick
     INFO: Created /sample-buildout/var/nozipbackups
     INFO: Created /sample-buildout/var/nozipbackup-snapshots
     INFO: Created /sample-buildout/var/nozipbackup-blobstorages
@@ -80,7 +80,7 @@ using archiving technology::
 And zippedbackup backs up by archiving backup::
 
     >>> print system('bin/zippedbackup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackups --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackups --quick --gzip
     INFO: Created /sample-buildout/var/zippedbackups
     INFO: Created /sample-buildout/var/zippedbackup-snapshots
     INFO: Created /sample-buildout/var/zippedbackup-blobstorages

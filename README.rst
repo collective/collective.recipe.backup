@@ -360,9 +360,28 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     earlier using the ``pre_command``.  See that ``pre_command`` above for
     more info.
 
+``quick``
+    Call ``repozo`` with the ``--quick`` option.  This option was
+    introduced to ``collective.recipe.backup`` in version 2.19, with
+    **default value true**.  Due to all the checksums that the repozo
+    default non-quick behavior does, an amount of data is read that is
+    three to four times as much as is in the actual filestorage.  With
+    the quick option it could easily be just a few kilobytes.
+    Theoretically the quick option is less safe, but it looks like it
+    can only go wrong when someone edits the ``.dat`` file in the
+    repository or removes a ``.deltafs`` file.
 
-An example buildout snippet using most options, except the blob
-options, would look like this::
+    The ``quick`` option only influences the created ``bin/backup``
+    script.  It has no effect on the snapshot or restore scripts.
+
+    The repozo help says about this option: "Verify via md5 checksum
+    only the last incremental written.  This significantly reduces the
+    disk i/o at the (theoretical) cost of inconsistency.  This is a
+    probabilistic way of determining whether a full backup is
+    necessary."
+
+
+An example buildout snippet using various options, would look like this::
 
     [backup]
     recipe = collective.recipe.backup

@@ -13,14 +13,14 @@ logger = logging.getLogger('backup')
 def backup_main(bin_dir, storages, keep, full,
                 verbose, gzip, backup_blobs, only_blobs, use_rsync,
                 keep_blob_days=0, pre_command='', post_command='',
-                gzip_blob=False, rsync_options='', **kwargs):
+                gzip_blob=False, rsync_options='', quick=True, **kwargs):
     """Main method, gets called by generated bin/backup."""
     utils.check_folders(storages, backup_blobs=backup_blobs,
                         only_blobs=only_blobs)
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.backup_main(
-            bin_dir, storages, keep, full, verbose, gzip)
+            bin_dir, storages, keep, full, verbose, gzip, quick)
         if result:
             if backup_blobs:
                 logger.error("Halting execution due to error; not backing up "
@@ -53,7 +53,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
                     verbose, gzip, backup_blobs, only_blobs, use_rsync,
                     keep_blob_days=0, pre_command='',
                     post_command='', gzip_blob=False, 
-                    rsync_options='', **kwargs):
+                    rsync_options='', quick=True, **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
     utils.execute_or_fail(pre_command)
     utils.check_folders(storages, backup_blobs=backup_blobs,
@@ -97,7 +97,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
 def snapshot_main(bin_dir, storages, keep, verbose, gzip,
                   backup_blobs, only_blobs, use_rsync,
                   keep_blob_days=0, pre_command='', post_command='',
-                  gzip_blob=False, rsync_options='', **kwargs):
+                  gzip_blob=False, rsync_options='', quick=True, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     utils.check_folders(storages, backup_blobs=backup_blobs,
                         only_blobs=only_blobs)
@@ -136,7 +136,7 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
 def restore_main(bin_dir, storages, verbose, backup_blobs,
                  only_blobs, use_rsync, restore_snapshot=False, pre_command='',
                  post_command='', gzip_blob=False, alt_restore=False, 
-                 rsync_options ='', **kwargs):
+                 rsync_options ='', quick=True, **kwargs):
     """Main method, gets called by generated bin/restore."""
     if restore_snapshot and alt_restore:
         logger.error("Cannot use both restore_snapshot and alt_restore.")

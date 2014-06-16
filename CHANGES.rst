@@ -1,6 +1,10 @@
 2.19 (unreleased)
 =================
 
+- Call repozo with ``--quick`` when making an incremental backup.
+  This is a lot faster.
+  [maurits]
+
 - check and create folders now happens after pre_commands is run
   [@djay]
 

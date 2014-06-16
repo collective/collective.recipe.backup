@@ -57,10 +57,10 @@ databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors::
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --gzip
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
-    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups_catalog
     INFO: Created /sample-buildout/var/snapshotbackups_catalog
     INFO: Created /sample-buildout/var/backups_another
@@ -141,10 +141,10 @@ test if the 'keep' parameter is working correctly.
     -  1.fs
     -  2.fs
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --gzip
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --gzip
-    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
     INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another

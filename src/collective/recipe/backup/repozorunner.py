@@ -30,7 +30,7 @@ def quote_command(command):
     return command
 
 
-def backup_main(bin_dir, storages, keep, full, verbose, gzip):
+def backup_main(bin_dir, storages, keep, full, verbose, gzip, quick):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
 
@@ -41,7 +41,7 @@ def backup_main(bin_dir, storages, keep, full, verbose, gzip):
                     fs, backup_location)
         result = os.system(quote_command([repozo] +
                            backup_arguments(fs, backup_location, full,
-                                            verbose, gzip,
+                                            verbose, gzip, quick,
                                             as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
@@ -124,6 +124,7 @@ def backup_arguments(datafs=None,
                      full=False,
                      verbose=False,
                      gzip=False,
+                     quick=False,
                      as_list=False):
     """
       >>> backup_arguments()
@@ -135,6 +136,8 @@ def backup_arguments(datafs=None,
       >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
       ...                  full=True)
       '--backup -f in/Data.fs -r out -F'
+      >>> backup_arguments(datafs='in/Data.fs', backup_location='out', quick=True)
+      '--backup -f in/Data.fs -r out --quick'
 
     """
     if datafs is None or backup_location is None:
@@ -145,6 +148,13 @@ def backup_arguments(datafs=None,
     arguments.append(datafs)
     arguments.append('-r')
     arguments.append(backup_location)
+    if quick:
+        # From the repozo help text:
+        # Verify via md5 checksum only the last incremental written.
+        # This significantly reduces the disk i/o at the (theoretical)
+        # cost of inconsistency.  This is a probabilistic way of
+        # determining whether a full backup is necessary.
+        arguments.append('--quick')
     if full:
         # By default, there's an incremental backup, if possible.
         arguments.append('-F')

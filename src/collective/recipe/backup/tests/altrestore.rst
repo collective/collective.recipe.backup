@@ -284,7 +284,7 @@ When gzip_blob is true, we use it::
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
     >>> print system('bin/backup')  # doctest:+ELLIPSIS
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups
     INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Created /sample-buildout/var/blobstoragebackups

@@ -56,7 +56,7 @@ Some needed imports:
 By default, backups are done in ``var/backups``::
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups
     INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups

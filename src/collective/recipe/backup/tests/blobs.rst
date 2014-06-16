@@ -347,9 +347,9 @@ Now remove an item:
 Let's see how a bin/backup goes:
 
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
@@ -378,9 +378,9 @@ We try again with an extra 'blob':
     >>> time.sleep(2)
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
@@ -738,7 +738,7 @@ Now we test it.  First the backup.  The filebackup now only backs up
 the filestorage::
 
     >>> print system('bin/filebackup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups --quick --gzip
     INFO: Created /sample-buildout/var/filebackups
     INFO: Created /sample-buildout/var/filebackup-snapshots
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackups
@@ -845,7 +845,7 @@ Test extra rsync options, currently only testing --no-l -k to allow for symlinke
     - snapshotbackup
     - snapshotrestore
     >>> print system('bin/backup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: rsync -a --no-l -k /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
