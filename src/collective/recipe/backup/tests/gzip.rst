@@ -46,14 +46,18 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     Installing nozipbackup.
     Generated script '/sample-buildout/bin/nozipbackup'.
     Generated script '/sample-buildout/bin/nozipbackup-full'.
+    Generated script '/sample-buildout/bin/nozipbackup-zip'.
     Generated script '/sample-buildout/bin/nozipbackup-snapshot'.
     Generated script '/sample-buildout/bin/nozipbackup-restore'.
+    Generated script '/sample-buildout/bin/nozipbackup-ziprestore'.
     Generated script '/sample-buildout/bin/nozipbackup-snapshotrestore'.
     Installing zippedbackup.
     Generated script '/sample-buildout/bin/zippedbackup'.
     Generated script '/sample-buildout/bin/zippedbackup-full'.
+    Generated script '/sample-buildout/bin/zippedbackup-zip'.
     Generated script '/sample-buildout/bin/zippedbackup-snapshot'.
     Generated script '/sample-buildout/bin/zippedbackup-restore'.
+    Generated script '/sample-buildout/bin/zippedbackup-ziprestore'.
     Generated script '/sample-buildout/bin/zippedbackup-snapshotrestore'.
     <BLANKLINE>
 

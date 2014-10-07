@@ -33,13 +33,23 @@ cake is important!
 
 - ``bin/backup`` makes an incremental backup.
 
-- ``bin/fullbackup`` always makes a full backup.
+- ``bin/fullbackup`` always makes a full backup, in the same directory
+  as the normal backups.
 
-- ``bin/restore`` restores the latest backup.
+- ``bin/restore`` restores the latest backup, created by the backup or
+  fullbackup script.
 
-- ``bin/snapshotbackup`` makes a full backup, separate from the
-  regular backups. Handy for copying the current production database
-  to your laptop or right before a big change in the site.
+- ``bin/snapshotbackup`` makes a full snapshot backup, separate from the
+  regular backups. Handy right before a big change in the site.
+
+- ``bin/snapshotrestore`` restores the latest full snapshot backup.
+
+- ``bin/zipbackup`` makes a zip backup.  This zips the Data.fs and the
+  blobstorage, handy for copying production data to your local
+  machine, especially the blobstorage with its many files.
+
+- ``bin/ziprestore`` restores the latest zip backup.
+
 
 
 Development
@@ -79,10 +89,9 @@ You can set lots of extra options, but the recipe authors like to
 think they have created sane defaults, so this single line stating the
 recipe name should be enough in most cases.
 
-Running the buildout adds the ``backup``, ``fullbackup``, ``snapshotbackup``,
-``restore`` and ``snapshotrestore`` scripts to the ``bin/`` directory
-of the buildout and, by default, it creates the ``var/backups`` and
-``var/snapshotbackups`` directories in that same buildout.
+Running the buildout adds the ``backup``, ``fullbackup``,
+``snapshotbackup``, ``zipbackup``, ``restore``, ``snapshotrestore``
+and ``ziprestore`` scripts to the ``bin/`` directory of the buildout.
 
 
 Backed up data
@@ -147,18 +156,47 @@ You should normally do a ``bin/zeopack`` regularly, say once a week,
 to remove unused objects from your Zope ``Data.fs``.  The next time
 ``bin/backup`` is called, a complete fresh backup is made, because an
 incremental backup is not possible anymore.  This is standard
-``bin/repozo`` behaviour.
+``bin/repozo`` behaviour.  So you might not need the
+``bin/fullbackup`` script.
 
 
 Snapshots
 =========
 
+A quick backup just before updating the production server is a good
+idea.  But you may not want to interfere with the regular backup
+regime.  For that, the ``bin/snapshotbackup`` is great. It places a
+full backup in, by default, ``var/snapshotbackups``.
+
+
+Zipbackups
+==========
+
 For quickly grabbing the current state of a production database so you
-can download it to your development laptop, you want a full backup.
-But you shouldn't interfere with the regular backup regime.  Likewise,
-a quick backup just before updating the production server is a good
-idea.  For that, the ``bin/snapshotbackup`` is great. It places a full
-backup in, by default, ``var/snapshotbackups``.
+can download it to your development laptop, you want a full and zipped
+backup.  The zipped part is important for the blobstorage, because you
+do not want to use ``scp`` to recursively copy over all those blob
+files: downloading one tarball is faster.
+
+You can use the ``bin/zipbackup`` script for this.  This script
+overrides a few settings, ignoring whatever is set in the buildout
+config section:
+
+- ``gzip`` is explicitly turned on for the filestorage (this is
+  already the default, but we make sure).
+
+- ``gzip_blob`` is turned on.
+
+- ``keep`` is set to 1 to avoid keeping lots of needless backups.
+
+- ``keep_blob_days`` is ignored because it is a full backup.
+
+The script places a full backup in, by default, ``var/zipbackups`` and
+it puts a tarball of the blobstorage in ``var/blobstoragezips``.
+
+You can switch off creation of these scripts by setting the
+``enable_zipbackup`` option to false.  Also, if ``backup_blobs`` is
+false, the scripts are useless, so we do not create them.
 
 
 Restore
@@ -168,6 +206,8 @@ Calling ``bin/restore`` restores the very latest normal incremental
 ``repozo`` backup and restores the blobstorage if you have that.
 
 You can restore the very latest snapshotbackup with ``bin/snapshotrestore``.
+
+You can restore the zipbackup with ``bin/ziprestore``.
 
 You can also restore the backup as of a certain date. Just pass a date
 argument. According to ``repozo``: specify UTC (not local) time.
@@ -203,17 +243,14 @@ something else,  the script names will also be different, as will the created
     [plonebackup]
     recipe = collective.recipe.backup
 
-That buildout snippet will create these directories::
-
-    var/plonebackups
-    var/plonebackup-snapshots
-
-and these scripts::
+That buildout snippet will create these scripts::
 
     bin/plonebackup
     bin/plonebackup-full
+    bin/plonebackup-zip
     bin/plonebackup-snapshot
     bin/plonebackup-restore
+    bin/plonebackup-ziprestore
     bin/plonebackup-snapshotrestore
 
 
@@ -289,6 +326,11 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     (this has been changed to require an explicit ``yes`` as answer).
     If you don't want a ``snapshotrestore`` script, set this option to false.
 
+``enable_zipbackup``
+    Create ``zipbackup`` and ``ziprestore`` scripts.  Default: true.
+    If ``backup_blobs`` is not on, these scripts are disabled anyway,
+    because they are not useful then.
+
 ``blob_storage``
     Location of the directory where the blobs (binary large objects)
     are stored.  This is used in Plone 4 and higher, or on Plone 3 if
@@ -311,7 +353,9 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Backup the blob storage.  This requires the ``blob_storage`` location
     to be set.  If no ``blob_storage`` location has been set and we cannot
     find one by looking in the other buildout parts, we default to
-    ``False``, otherwise to ``True``.
+    ``False``, otherwise to ``True``.  If ``backup_blobs`` is false,
+    we set the ``enable_zipbackup`` option to false as well, because
+    the ``zipbackup`` script is not useful then.
 
 ``blobsnapshotlocation``
     Directory where the blob storage snapshots will be created.

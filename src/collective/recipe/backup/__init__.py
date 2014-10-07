@@ -41,54 +41,66 @@ class Recipe(object):
         # conf/prod.cfg' the 'directory' is main/conf instead of the
         # expected main.  So we use the parent of the bin-directory
         # instead.
-        #buildout_dir = self.buildout['buildout']['directory']
         bin_dir = self.buildout['buildout']['bin-directory']
         buildout_dir = os.path.join(bin_dir, os.path.pardir)
         if self.name == 'backup':
             backup_name = 'backup'
             fullbackup_name = 'fullbackup'
+            zipbackup_name = 'zipbackup'
             snapshot_name = 'snapshotbackup'
             restore_name = 'restore'
             snapshotrestore_name = 'snapshotrestore'
             altrestore_name = 'altrestore'
+            ziprestore_name = 'ziprestore'
             blob_backup_name = 'blobstoragebackup'
             blob_snapshot_name = 'blobstoragesnapshot'
+            blob_zip_name = 'blobstoragezip'
         else:
             backup_name = self.name
             fullbackup_name = self.name + '-full'
+            zipbackup_name = self.name + '-zip'
             snapshot_name = self.name + '-snapshot'
             restore_name = self.name + '-restore'
             snapshotrestore_name = self.name + '-snapshotrestore'
             altrestore_name = self.name + '-altrestore'
+            ziprestore_name = self.name + '-ziprestore'
             blob_backup_name = self.name + '-blobstorage'
             blob_snapshot_name = self.name + '-blobstoragesnapshot'
+            blob_zip_name = self.name + '-blobstoragezip'
 
         backup_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', backup_name + 's'))
         snapshot_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', snapshot_name + 's'))
+        zip_backup_dir = os.path.abspath(
+            os.path.join(buildout_dir, 'var', zipbackup_name + 's'))
         datafs = os.path.abspath(
             os.path.join(buildout_dir, 'var', 'filestorage', 'Data.fs'))
         blob_backup_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', blob_backup_name + 's'))
         blob_snapshot_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', blob_snapshot_name + 's'))
+        blob_zip_dir = os.path.abspath(
+            os.path.join(buildout_dir, 'var', blob_zip_name + 's'))
 
         options.setdefault('buildout_dir', buildout_dir)
         options.setdefault('location', backup_dir)
         options.setdefault('snapshotlocation', snapshot_dir)
+        options.setdefault('ziplocation', zip_backup_dir)
         options.setdefault('blobbackuplocation', blob_backup_dir)
         options.setdefault('blobsnapshotlocation', blob_snapshot_dir)
-        # These must be four distinct locations.
+        options.setdefault('blobziplocation', blob_zip_dir)
+        # These must be distinct locations.
         locations = {}
         for opt in ('location', 'snapshotlocation',
-                    'blobbackuplocation', 'blobsnapshotlocation'):
+                    'blobbackuplocation', 'blobsnapshotlocation',
+                    'ziplocation', 'blobziplocation'):
             value = options.get(opt)
             if value:
                 locations[opt] = value
         if len(locations.keys()) != len(set(locations.values())):
             raise zc.buildout.UserError(
-                "These must be four distinct locations:\n",
+                "These must be distinct locations:\n",
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
                 sorted(locations.items())]))
         options.setdefault('pre_command', '')
@@ -104,6 +116,7 @@ class Recipe(object):
         options.setdefault('additional_filestorages', '')
         options.setdefault('alternative_restore_sources', '')
         options.setdefault('enable_snapshotrestore', 'true')
+        options.setdefault('enable_zipbackup', 'true')
         options.setdefault('use_rsync', 'true')
         options.setdefault('rsync_options', '')
         options.setdefault('only_blobs', 'false')
@@ -151,6 +164,8 @@ class Recipe(object):
                 options['backup_blobs'] = 'True'
             else:
                 options['backup_blobs'] = 'False'
+                # zipbackup is not useful in this case
+                options['enable_zipbackup'] = 'False'
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
@@ -159,13 +174,16 @@ class Recipe(object):
         options['bin-directory'] = buildout['buildout']['bin-directory']
         options['backup_name'] = backup_name
         options['fullbackup_name'] = fullbackup_name
+        options['zipbackup_name'] = zipbackup_name
         options['snapshot_name'] = snapshot_name
         options['restore_name'] = restore_name
         options['snapshotrestore_name'] = snapshotrestore_name
+        options['ziprestore_name'] = ziprestore_name
         options['altrestore_name'] = altrestore_name
         check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
                                  'backup_blobs', 'use_rsync', 'gzip_blob',
-                                 'quick'])
+                                 'quick', 'enable_snapshotrestore',
+                                 'enable_zipbackup'])
 
         # For site_py_dest in scripts generated with buildout 1.5+:
         options['parts-directory'] = os.path.join(
@@ -179,6 +197,8 @@ class Recipe(object):
             buildout_dir, self.options['location'])
         snapshot_location = construct_path(
             buildout_dir, self.options['snapshotlocation'])
+        zip_location = construct_path(
+            buildout_dir, self.options['ziplocation'])
 
         # Blob backup.
         if self.options['backup_blobs'] == 'True':
@@ -186,9 +206,12 @@ class Recipe(object):
                 buildout_dir, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(
                 buildout_dir, self.options['blobsnapshotlocation'])
+            blob_zip_location = construct_path(
+                buildout_dir, self.options['blobziplocation'])
         else:
             blob_backup_location = ''
             blob_snapshot_location = ''
+            blob_zip_location = ''
 
         additional = self.options['additional_filestorages']
         storages = []
@@ -213,12 +236,17 @@ class Recipe(object):
                     storage['storage']
                 storage['snapshot_location'] = snapshot_location + '_' + \
                     storage['storage']
+                storage['zip_location'] = zip_location + '_' + \
+                    storage['storage']
                 if storage['blobdir']:
                     storage['blob_backup_location'] = blob_backup_location \
                         and (blob_backup_location + '_' + storage['storage'])
                     storage['blob_snapshot_location'] = \
                         blob_snapshot_location and (blob_snapshot_location +
                                                     '_' + storage['storage'])
+                    storage['blob_zip_location'] = \
+                        blob_zip_location and (blob_zip_location +
+                                               '_' + storage['storage'])
                 storages.append(storage)
 
         # '1' is the default root storagename for Zope. The property
@@ -230,11 +258,13 @@ class Recipe(object):
             blobdir=self.options['blob_storage'],
             backup_location=backup_location,
             snapshot_location=snapshot_location,
+            zip_location=zip_location,
         )
 
         if storage['blobdir']:
             storage['blob_backup_location'] = blob_backup_location
             storage['blob_snapshot_location'] = blob_snapshot_location
+            storage['blob_zip_location'] = blob_zip_location
         storages.append(storage)
 
         if self.options['only_blobs'] in ('false', 'False'):
@@ -418,6 +448,14 @@ logging.basicConfig(level=loglevel,
         creation_args['reqs'] = reqs
         generated += create_script(**creation_args)
 
+        # Create zip backup script.
+        if self.options['enable_zipbackup'] == 'True':
+            reqs = [(self.options['zipbackup_name'],
+                     'collective.recipe.backup.main',
+                     'zipbackup_main')]
+            creation_args['reqs'] = reqs
+            generated += create_script(**creation_args)
+
         # Create backup snapshot script
         reqs = [(self.options['snapshot_name'],
                  'collective.recipe.backup.main',
@@ -432,8 +470,16 @@ logging.basicConfig(level=loglevel,
         creation_args['reqs'] = reqs
         generated += create_script(**creation_args)
 
+        # Create zip restore script.
+        if self.options['enable_zipbackup'] == 'True':
+            reqs = [(self.options['ziprestore_name'],
+                     'collective.recipe.backup.main',
+                     'zip_restore_main')]
+            creation_args['reqs'] = reqs
+            generated += create_script(**creation_args)
+
         # Create snapshot restore script
-        if self.options['enable_snapshotrestore'] == 'true':
+        if self.options['enable_snapshotrestore'] == 'True':
             reqs = [(self.options['snapshotrestore_name'],
                      'collective.recipe.backup.main',
                      'snapshot_restore_main')]

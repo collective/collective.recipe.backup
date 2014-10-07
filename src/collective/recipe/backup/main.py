@@ -52,7 +52,7 @@ def backup_main(bin_dir, storages, keep, full,
 def fullbackup_main(bin_dir, storages, keep, full,
                     verbose, gzip, backup_blobs, only_blobs, use_rsync,
                     keep_blob_days=0, pre_command='',
-                    post_command='', gzip_blob=False, 
+                    post_command='', gzip_blob=False,
                     rsync_options='', quick=True, **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
     utils.execute_or_fail(pre_command)
@@ -89,7 +89,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob, 
+                               gzip_blob=gzip_blob,
                                rsync_options=rsync_options)
     utils.execute_or_fail(post_command)
 
@@ -133,13 +133,62 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
     utils.execute_or_fail(post_command)
 
 
+def zipbackup_main(bin_dir, storages, keep, full,
+                   verbose, gzip, backup_blobs, only_blobs, use_rsync,
+                   keep_blob_days=0, pre_command='',
+                   post_command='', gzip_blob=True,
+                   rsync_options='', quick=True, **kwargs):
+    """Main method, gets called by generated bin/zipbackup."""
+    utils.execute_or_fail(pre_command)
+    utils.check_folders(storages, backup_blobs=backup_blobs,
+                        only_blobs=only_blobs,
+                        backup=False, snapshot=False, zipbackup=True)
+
+    # Force some options.
+    full = True
+    gzip = True
+    gzip_blob = True
+    keep = 1
+    if not only_blobs:
+        result = repozorunner.zipbackup_main(
+            bin_dir, storages, keep, full, verbose, gzip)
+        if result:
+            if backup_blobs:
+                logger.error("Halting execution due to error; not backing up "
+                             "blobs.")
+            else:
+                logger.error("Halting execution due to error.")
+            sys.exit(1)
+
+    if not backup_blobs:
+        utils.execute_or_fail(post_command)
+        return
+    for storage in storages:
+        blobdir = storage['blobdir']
+        if not blobdir:
+            logger.info("No blob dir defined for %s storage" %
+                        storage['storage'])
+            continue
+        blob_backup_location = storage['blob_zip_location']
+        logger.info("Please wait while backing up blobs from %s to %s",
+                    blobdir, blob_backup_location)
+        copyblobs.backup_blobs(blobdir, blob_backup_location, full,
+                               use_rsync, keep=keep,
+                               keep_blob_days=keep_blob_days,
+                               gzip_blob=gzip_blob,
+                               rsync_options=rsync_options)
+    utils.execute_or_fail(post_command)
+
+
 def restore_main(bin_dir, storages, verbose, backup_blobs,
                  only_blobs, use_rsync, restore_snapshot=False, pre_command='',
-                 post_command='', gzip_blob=False, alt_restore=False, 
-                 rsync_options ='', quick=True, **kwargs):
+                 post_command='', gzip_blob=False, alt_restore=False,
+                 rsync_options ='', quick=True, zip_restore=False, **kwargs):
     """Main method, gets called by generated bin/restore."""
-    if restore_snapshot and alt_restore:
-        logger.error("Cannot use both restore_snapshot and alt_restore.")
+    explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
+    if sum([1 for opt in explicit_restore_opts if opt]) > 1:
+        logger.error("Must use at most one option of restore_snapshot, "
+                     "alt_restore and zip_restore.")
         sys.exit(1)
     date = None
     # Try to find a date in the command line arguments
@@ -176,7 +225,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
     if not only_blobs:
         result = repozorunner.restore_main(
             bin_dir, storages, verbose, date,
-            restore_snapshot, alt_restore)
+            restore_snapshot, alt_restore, zip_restore)
         if result:
             if backup_blobs:
                 logger.error("Halting execution due to error; not restoring "
@@ -198,6 +247,8 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
             blob_backup_location = storage['blob_snapshot_location']
         elif alt_restore:
             blob_backup_location = storage['blob_alt_location']
+        elif zip_restore:
+            blob_backup_location = storage['blob_zip_location']
         else:
             blob_backup_location = storage['blob_backup_location']
         if not blob_backup_location:
@@ -207,7 +258,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
                     blobdir)
         copyblobs.restore_blobs(blob_backup_location, blobdir,
                                 use_rsync=use_rsync, date=date,
-                                gzip_blob=gzip_blob, 
+                                gzip_blob=gzip_blob,
                                 rsync_options=rsync_options)
     utils.execute_or_fail(post_command)
 
@@ -231,4 +282,14 @@ def alt_restore_main(*args, **kwargs):
     """
     # Override the locations:
     kwargs['alt_restore'] = True
+    return restore_main(*args, **kwargs)
+
+
+def zip_restore_main(*args, **kwargs):
+    """Main method, gets called by generated bin/ziprestore.
+    """
+    # Override the locations:
+    kwargs['zip_restore'] = True
+    # Override another option.
+    kwargs['gzip_blob'] = True
     return restore_main(*args, **kwargs)

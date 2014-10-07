@@ -1,7 +1,8 @@
 2.20 (unreleased)
 =================
 
-- Nothing changed yet.
+- Add zipbackup and ziprestore scripts by default.
+  [maurits]
 
 
 2.19 (2014-06-16)

@@ -93,11 +93,39 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip):
         cleanup(snapshot_location, keep)
 
 
+def zipbackup_main(bin_dir, storages, keep, full, verbose, gzip):
+    """Main method, gets called by generated bin/zipbackup."""
+    # Force some options.
+    full = True
+    gzip = True
+    gzip_blob = True
+    keep = 1
+
+    repozo = os.path.join(bin_dir, 'repozo')
+    for storage in storages:
+        backup_location = storage['zip_location']
+        fs = storage['datafs']
+        logger.info("Please wait while backing up database file: %s to %s",
+                    fs, backup_location)
+        result = os.system(quote_command([repozo] +
+                           backup_arguments(fs, backup_location, full,
+                                            verbose, gzip,
+                                            as_list=True)))
+        logger.debug("Repozo command executed.")
+        if result:
+            logger.error("Repozo command failed. See message above.")
+            return result
+        cleanup(backup_location, keep)
+
+
 def restore_main(bin_dir, storages, verbose,
-                 date=None, restore_snapshot=False, alt_restore=False):
+                 date=None, restore_snapshot=False, alt_restore=False,
+                 zip_restore=False):
     """Main method, gets called by generated bin/restore."""
-    if restore_snapshot and alt_restore:
-        logger.error("Cannot use both restore_snapshot and alt_restore.")
+    explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
+    if sum([1 for opt in explicit_restore_opts if opt]) > 1:
+        logger.error("Must use at most one option of restore_snapshot, "
+                     "alt_restore and zip_restore.")
         sys.exit(1)
     repozo = os.path.join(bin_dir, 'repozo')
     logger.debug("If things break: did you stop zope?")
@@ -106,6 +134,8 @@ def restore_main(bin_dir, storages, verbose,
             backup_location = storage['snapshot_location']
         elif alt_restore:
             backup_location = storage['alt_location']
+        elif zip_restore:
+            backup_location = storage['zip_location']
         else:
             backup_location = storage['backup_location']
         fs = storage['datafs']

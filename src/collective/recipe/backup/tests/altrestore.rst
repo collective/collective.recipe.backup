@@ -119,8 +119,10 @@ Add blobstorage to original and alternative::
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
@@ -219,8 +221,10 @@ Test in combination with additional filestorage::
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
@@ -278,8 +282,10 @@ When gzip_blob is true, we use it::
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
