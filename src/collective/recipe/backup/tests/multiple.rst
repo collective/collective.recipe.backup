@@ -62,13 +62,9 @@ mildly irritating, but the other way around users can get real errors::
     --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups_catalog
-    INFO: Created /sample-buildout/var/snapshotbackups_catalog
     INFO: Created /sample-buildout/var/backups_another
-    INFO: Created /sample-buildout/var/snapshotbackups_another
     INFO: Created /sample-buildout/var/backups_foo/bar
-    INFO: Created /sample-buildout/var/snapshotbackups_foo/bar
     INFO: Created /sample-buildout/var/backups
-    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo/bar.fs to /sample-buildout/var/backups_foo/bar
@@ -79,11 +75,6 @@ mildly irritating, but the other way around users can get real errors::
     d  backups_another
     d  backups_catalog
     d  backups_foo
-    d  snapshotbackups
-    d  snapshotbackups_another
-    d  snapshotbackups_catalog
-    d  snapshotbackups_foo
-
 
 Same with snapshot backups::
 
@@ -92,6 +83,10 @@ Same with snapshot backups::
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
     --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/snapshotbackups_foo/bar -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Created /sample-buildout/var/snapshotbackups_catalog
+    INFO: Created /sample-buildout/var/snapshotbackups_another
+    INFO: Created /sample-buildout/var/snapshotbackups_foo/bar
+    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/snapshotbackups_catalog
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/snapshotbackups_another
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo/bar.fs to /sample-buildout/var/snapshotbackups_foo/bar

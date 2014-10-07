@@ -1,6 +1,11 @@
 2.20 (unreleased)
 =================
 
+- Create backup/snapshot/zipbackup directories only when needed.
+  Running the backup script should not create the snapshot
+  directories.
+  [maurits]
+
 - Add zipbackup and ziprestore scripts by default.
   [maurits]
 

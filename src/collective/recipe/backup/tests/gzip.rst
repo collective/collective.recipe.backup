@@ -67,15 +67,15 @@ using archiving technology::
     >>> print system('bin/nozipbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackups --quick
     INFO: Created /sample-buildout/var/nozipbackups
-    INFO: Created /sample-buildout/var/nozipbackup-snapshots
     INFO: Created /sample-buildout/var/nozipbackup-blobstorages
-    INFO: Created /sample-buildout/var/nozipbackup-blobstoragesnapshots
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/nozipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/nozipbackup-blobstorages
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/nozipbackup-blobstorages/blobstorage.0
     <BLANKLINE>
     >>> print system('bin/nozipbackup-snapshot')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackup-snapshots -F
+    INFO: Created /sample-buildout/var/nozipbackup-snapshots
+    INFO: Created /sample-buildout/var/nozipbackup-blobstoragesnapshots
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/nozipbackup-snapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/nozipbackup-blobstoragesnapshots
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/nozipbackup-blobstoragesnapshots/blobstorage.0
@@ -86,15 +86,15 @@ And zippedbackup backs up by archiving backup::
     >>> print system('bin/zippedbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackups --quick --gzip
     INFO: Created /sample-buildout/var/zippedbackups
-    INFO: Created /sample-buildout/var/zippedbackup-snapshots
     INFO: Created /sample-buildout/var/zippedbackup-blobstorages
-    INFO: Created /sample-buildout/var/zippedbackup-blobstoragesnapshots
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zippedbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/zippedbackup-blobstorages
     INFO: tar czf /sample-buildout/var/zippedbackup-blobstorages/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
     >>> print system('bin/zippedbackup-snapshot')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackup-snapshots -F --gzip
+    INFO: Created /sample-buildout/var/zippedbackup-snapshots
+    INFO: Created /sample-buildout/var/zippedbackup-blobstoragesnapshots
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zippedbackup-snapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/zippedbackup-blobstoragesnapshots
     INFO: tar czf /sample-buildout/var/zippedbackup-blobstoragesnapshots/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .

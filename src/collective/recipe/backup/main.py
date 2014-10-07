@@ -16,7 +16,8 @@ def backup_main(bin_dir, storages, keep, full,
                 gzip_blob=False, rsync_options='', quick=True, **kwargs):
     """Main method, gets called by generated bin/backup."""
     utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs)
+                        only_blobs=only_blobs, backup=True,
+                        snapshot=False, zipbackup=False)
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.backup_main(
@@ -57,7 +58,8 @@ def fullbackup_main(bin_dir, storages, keep, full,
     """Main method, gets called by generated bin/fullbackup."""
     utils.execute_or_fail(pre_command)
     utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs)
+                        only_blobs=only_blobs, backup=True,
+                        snapshot=False, zipbackup=False)
     if not only_blobs:
         # Set Full=True for forced full backups.
         # It was easier to do this here, than mess with
@@ -100,7 +102,8 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
                   gzip_blob=False, rsync_options='', quick=True, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs)
+                        only_blobs=only_blobs, backup=False,
+                        snapshot=True, zipbackup=False)
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.snapshot_main(
@@ -141,9 +144,8 @@ def zipbackup_main(bin_dir, storages, keep, full,
     """Main method, gets called by generated bin/zipbackup."""
     utils.execute_or_fail(pre_command)
     utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs,
-                        backup=False, snapshot=False, zipbackup=True)
-
+                        only_blobs=only_blobs, backup=False,
+                        snapshot=False, zipbackup=True)
     # Force some options.
     full = True
     gzip = True

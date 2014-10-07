@@ -57,7 +57,6 @@ nowhere to be found::
     False
     >>> print output
     INFO: Created /sample-buildout/var/blobstoragebackups
-    INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
     <BLANKLINE>
@@ -106,6 +105,7 @@ Snapshots should work too::
     >>> 'rsync' in output
     False
     >>> print output
+    INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
     <BLANKLINE>

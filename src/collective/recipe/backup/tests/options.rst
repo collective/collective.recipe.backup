@@ -63,7 +63,6 @@ stderr.  Anyway::
     <BLANKLINE>
     <BLANKLINE>
     INFO: Created /sample-buildout/myproject
-    INFO: Created /sample-buildout/snap/my
     INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
 
 We explicitly look for errors here::
@@ -78,6 +77,7 @@ The same is true for the snapshot backup.
     Can I have a backup?
     Thanks a lot for the backup.
     We are done.
+    INFO: Created /sample-buildout/snap/my
     INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/snap/my
     >>> if 'ERROR' in output: print output
 
@@ -191,6 +191,5 @@ wanted.
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Created /sample-buildout/var/backups
-    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>

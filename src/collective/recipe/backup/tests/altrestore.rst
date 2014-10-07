@@ -292,9 +292,7 @@ When gzip_blob is true, we use it::
     >>> print system('bin/backup')  # doctest:+ELLIPSIS
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups
-    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Created /sample-buildout/var/blobstoragebackups
-    INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: tar czf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .

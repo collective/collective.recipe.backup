@@ -216,17 +216,11 @@ Test the snapshotbackup first, as that should be easiest.
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
-    INFO: Created /sample-buildout/var/backups_foo
     INFO: Created /sample-buildout/var/snapshotbackups_foo
-    INFO: Created /sample-buildout/var/blobstoragebackups_foo
     INFO: Created /sample-buildout/var/blobstoragesnapshots_foo
-    INFO: Created /sample-buildout/var/backups_bar
     INFO: Created /sample-buildout/var/snapshotbackups_bar
-    INFO: Created /sample-buildout/var/blobstoragebackups_bar
     INFO: Created /sample-buildout/var/blobstoragesnapshots_bar
-    INFO: Created /sample-buildout/var/backups
     INFO: Created /sample-buildout/var/snapshotbackups
-    INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
@@ -360,6 +354,12 @@ Let's see how a bin/backup goes:
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
+    INFO: Created /sample-buildout/var/backups_foo
+    INFO: Created /sample-buildout/var/blobstoragebackups_foo
+    INFO: Created /sample-buildout/var/backups_bar
+    INFO: Created /sample-buildout/var/blobstoragebackups_bar
+    INFO: Created /sample-buildout/var/backups
+    INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
@@ -754,26 +754,18 @@ the filestorage::
     >>> print system('bin/filebackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackups --quick --gzip
     INFO: Created /sample-buildout/var/filebackups
-    INFO: Created /sample-buildout/var/filebackup-snapshots
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/filebackups
     <BLANKLINE>
-
-Remove the snapshots backup dir, so we can later test the snapshot command::
-
-    >>> rmdir(sample_buildout, 'var', 'filebackup-snapshots')
 
 blobbackup only backs up the blobstorage::
 
     >>> print system('bin/blobbackup')
     INFO: Created /sample-buildout/var/blobbackup-blobstorages
-    INFO: Created /sample-buildout/var/blobbackup-blobstoragesnapshots
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobbackup-blobstorages
     INFO: rsync -a /sample-buildout/var/blobstorage /sample-buildout/var/blobbackup-blobstorages/blobstorage.0
     <BLANKLINE>
-    >>> rmdir(sample_buildout, 'var', 'blobbackup-blobstoragesnapshots')
 
-Test the snapshots as well, and keep all directories now, as we need
-them in the restore tests below it.
+Test the snapshots as well::
 
     >>> print system('bin/filebackup-snapshot')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/filebackup-snapshots -F --gzip

@@ -58,7 +58,6 @@ By default, backups are done in ``var/backups``::
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups
-    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
 
@@ -83,16 +82,6 @@ You can restore the very latest backup with ``bin/restore``::
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     <BLANKLINE>
-
-You can restore the very latest snapshotbackup with ``bin/snapshotrestore``::
-
-    >>> print system('bin/snapshotrestore', input='yes\n')
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
-    <BLANKLINE>
-    This will replace the filestorage:
-        /sample-buildout/var/filestorage/Data.fs
-    Are you sure? (yes/No)?
-    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
 
 You can also restore the backup as of a certain date. Just pass a date
 argument. According to repozo: specify UTC (not local) time.  The format is
@@ -123,8 +112,19 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 
     >>> print system('bin/snapshotbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
+    INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     <BLANKLINE>
+
+You can restore the very latest snapshotbackup with ``bin/snapshotrestore``::
+
+    >>> print system('bin/snapshotrestore', input='yes\n')
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    Are you sure? (yes/No)?
+    INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
 
 
 Names of created scripts
