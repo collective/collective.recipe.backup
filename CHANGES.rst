@@ -6,7 +6,7 @@
   directories.
   [maurits]
 
-- Add zipbackup and ziprestore scripts by default.
+- Add zipbackup and ziprestore scripts when ``enable_zipbackup = true``.
   [maurits]
 
 

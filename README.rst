@@ -46,9 +46,12 @@ cake is important!
 
 - ``bin/zipbackup`` makes a zip backup.  This zips the Data.fs and the
   blobstorage, handy for copying production data to your local
-  machine, especially the blobstorage with its many files.
+  machine, especially the blobstorage with its many files.  *Note*:
+  the Data.fs and blobstorage (or other storages) are *not* combined
+  in one file; you need to download multiple files.  Enable this
+  script by using the ``enable_zipbackup`` option.
 
-- ``bin/ziprestore`` restores the latest zip backup.
+- ``bin/ziprestore`` restores the latest zipbackup.
 
 
 
@@ -327,8 +330,8 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     If you don't want a ``snapshotrestore`` script, set this option to false.
 
 ``enable_zipbackup``
-    Create ``zipbackup`` and ``ziprestore`` scripts.  Default: true.
-    If ``backup_blobs`` is not on, these scripts are disabled anyway,
+    Create ``zipbackup`` and ``ziprestore`` scripts.  Default: false.
+    If ``backup_blobs`` is not on, these scripts are always disabled,
     because they are not useful then.
 
 ``blob_storage``

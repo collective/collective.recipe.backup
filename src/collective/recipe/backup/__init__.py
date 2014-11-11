@@ -116,7 +116,7 @@ class Recipe(object):
         options.setdefault('additional_filestorages', '')
         options.setdefault('alternative_restore_sources', '')
         options.setdefault('enable_snapshotrestore', 'true')
-        options.setdefault('enable_zipbackup', 'true')
+        options.setdefault('enable_zipbackup', 'false')
         options.setdefault('use_rsync', 'true')
         options.setdefault('rsync_options', '')
         options.setdefault('only_blobs', 'false')
@@ -164,8 +164,6 @@ class Recipe(object):
                 options['backup_blobs'] = 'True'
             else:
                 options['backup_blobs'] = 'False'
-                # zipbackup is not useful in this case
-                options['enable_zipbackup'] = 'False'
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
@@ -184,6 +182,9 @@ class Recipe(object):
                                  'backup_blobs', 'use_rsync', 'gzip_blob',
                                  'quick', 'enable_snapshotrestore',
                                  'enable_zipbackup'])
+        if options['backup_blobs'] == 'False':
+            # zipbackup is not useful in this case
+            options['enable_zipbackup'] = 'False'
 
         # For site_py_dest in scripts generated with buildout 1.5+:
         options['parts-directory'] = os.path.join(

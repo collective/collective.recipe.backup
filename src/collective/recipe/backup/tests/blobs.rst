@@ -72,10 +72,8 @@ speed things up a bit):
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> ls('bin')
@@ -88,8 +86,6 @@ speed things up a bit):
     -  restore
     -  snapshotbackup
     -  snapshotrestore
-    -  zipbackup
-    -  ziprestore
 
 We can override the additional_filestorages location:
 
@@ -136,10 +132,8 @@ We can override the additional_filestorages blob source location:
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
 
@@ -185,10 +179,8 @@ Full cycle tests:
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> ls('bin')
@@ -201,8 +193,6 @@ Full cycle tests:
     -  restore
     -  snapshotbackup
     -  snapshotrestore
-    -  zipbackup
-    -  ziprestore
     >>> mkdir('var/blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
     >>> mkdir('var/blobstorage-foo')
@@ -711,7 +701,8 @@ Combining blob_backup=false and only_blobs=true will not work::
     <BLANKLINE>
 
 Specifying backup_blobs and only_blobs might be useful in case you
-want to separate this into several scripts::
+want to separate this into several scripts.  Let's specify
+enable_zipbackup too::
 
     >>> write('buildout.cfg',
     ... """
@@ -723,20 +714,21 @@ want to separate this into several scripts::
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... backup_blobs = false
+    ... # enable_zipbackup is ignored here because we are not backing up blobs
+    ... enable_zipbackup = true
     ...
     ... [blobbackup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... only_blobs = true
+    ... enable_zipbackup = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Installing filebackup.
     Generated script '/sample-buildout/bin/filebackup'.
     Generated script '/sample-buildout/bin/filebackup-full'.
-    Generated script '/sample-buildout/bin/filebackup-zip'.
     Generated script '/sample-buildout/bin/filebackup-snapshot'.
     Generated script '/sample-buildout/bin/filebackup-restore'.
-    Generated script '/sample-buildout/bin/filebackup-ziprestore'.
     Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
     Installing blobbackup.
     Generated script '/sample-buildout/bin/blobbackup'.
@@ -836,10 +828,8 @@ Test extra rsync options, currently only testing --no-l -k to allow for symlinke
     Installing backup. 
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> ls('bin')
@@ -852,8 +842,6 @@ Test extra rsync options, currently only testing --no-l -k to allow for symlinke
     - restore
     - snapshotbackup
     - snapshotrestore
-    - zipbackup
-    - ziprestore
     >>> print system('bin/backup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
@@ -896,10 +884,8 @@ So backup still works, now test restore that uses a symlinked directory as the b
     Installing backup. 
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> ls('bin')
@@ -912,8 +898,6 @@ So backup still works, now test restore that uses a symlinked directory as the b
     - restore
     - snapshotbackup
     - snapshotrestore
-    - zipbackup
-    - ziprestore
     >>> print system('bin/restore --no-prompt')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>

@@ -3,14 +3,15 @@
 zipbackup and ziprestore
 ========================
 
-Since version 2.20, we always create a zipbackup and ziprestore
+Since version 2.20, we can create a zipbackup and ziprestore
 script.  These use a different backup location and have a few options
 hardcoded: gzip and gzip_blobs are True, keep is 1, regardless of what
 the options in the buildout recipe section are.  You can always create
 a separate buildout section where you explicitly change this using
-options for the standard bin/backup script.  And you can disable the
-creation of this script by setting the enable_zipbackup option to
-false.
+options for the standard bin/backup script.
+
+By default the scripts are not created.  You can ensable the them by
+setting the enable_zipbackup option to true.
 
 Just to isolate some test differences, we run an empty buildout once::
 
@@ -42,6 +43,7 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... # keep is ignored by the zipbackup script
     ... keep = 42
+    ... enable_zipbackup = true
     ... """)
     >>> print system(buildout)
     Installing backup.
@@ -115,6 +117,31 @@ You can choose not to enable the zip scripts::
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  fullbackup
+    -  repozo
+    -  restore
+    -  snapshotbackup
+    -  snapshotrestore
+
+Or you simply do not list the enable_zipbackup option, falling back to
+the default::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... keep = 42
+    ... """)
+    >>> print system(buildout)
+    Updating backup.
     >>> ls('bin')
     -  backup
     -  buildout

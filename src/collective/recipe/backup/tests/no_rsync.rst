@@ -42,10 +42,8 @@ directories that will not get used because have set only_blobs=true::
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/ziprestore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
 

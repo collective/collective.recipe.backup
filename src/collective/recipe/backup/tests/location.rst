@@ -57,10 +57,13 @@ is probably grudgingly allowed, at least by this particular check.
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... enable_zipbackup = true
     ... location =
     ... blobbackuplocation =
     ... snapshotlocation =
     ... blobsnapshotlocation =
+    ... ziplocation =
+    ... blobziplocation =
     ... """)
     >>> print system('bin/buildout')
     Installing backup.
