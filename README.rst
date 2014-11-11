@@ -268,54 +268,7 @@ default. The most common ones to change are ``location`` and
 some system-wide directory like ``/var/zopebackups/instancename/`` and
 ``/var/zopebackups/instancename-blobs/``.
 
-``location``
-    Location where backups are stored. Defaults to ``var/backups`` inside the
-    buildout directory.
-
-``blobbackuplocation`` 
-    Directory where the blob storage will be backed up to.  Defaults
-    to ``var/blobstoragebackups`` inside the buildout directory.
-
-``keep``
-    Number of full backups to keep. Defaults to ``2``, which means that the
-    current and the previous full backup are kept. Older backups are removed,
-    including their incremental backups. Set it to ``0`` to keep all backups.
-
-``keep_blob_days``
-    Number of *days* of blob backups to keep.  Defaults to ``14``, so
-    two weeks.  This is **only** used for partial (full=False)
-    backups, so this is what gets used normally when you do a
-    ``bin/backup``.  This option has been added in 2.2.  For full
-    backups (snapshots) we just use the ``keep`` option.  Recommended
-    is to keep these values in sync with how often you do a ``zeopack`` on
-    the ``Data.fs``, according to the formula ``keep *
-    days_between_zeopacks = keep_blob_days``.  The default matches one
-    zeopack per seven days (``2*7=14``).
-
-``datafs``
-    In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``
-    location, this option can overwrite it.
-
-``full``
-    By default, incremental backups are made. If this option is set to ``true``,
-    ``bin/backup`` will always make a full backup.  This option is (obviously)
-    the default when using the ``fullbackup`` script.
-
-``debug``
-    In rare cases when you want to know exactly what's going on, set debug to
-    ``true`` to get debug level logging of the recipe itself. ``repozo`` is also run
-    with ``--verbose`` if this option is enabled.
-
-``snapshotlocation``
-    Location where snapshot backups of the filestorage are stored. Defaults to
-    ``var/snapshotbackups`` inside the buildout directory.
-
-``gzip``
-    Use repozo's zipping functionality. ``true`` by default. Set it to ``false``
-    and repozo will not gzip its files. Note that gzipped databases are called
-    ``*.fsz``, not ``*.fs.gz``. **Changed in 0.8**: the default used to be
-    false, but it so totally makes sense to gzip your backups that we changed
-    the default.
+.. Note: keep this in alphabetical order please.
 
 ``additional_filestorages``
     Advanced option, only needed when you have split for instance a
@@ -323,21 +276,13 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Use it to specify the extra
     filestorages. (See explanation further on).
 
-``enable_snapshotrestore``
-    Having a ``snapshotrestore`` script is very useful in development
-    environments, but can be harmful in a production buildout. The
-    script restores the latest snapshot directly to your filestorage
-    and it used to do this without asking any questions whatsoever
-    (this has been changed to require an explicit ``yes`` as answer).
-    If you don't want a ``snapshotrestore`` script, set this option to false.
-
-``enable_fullbackup``
-    Create ``fullbackup`` script.  Default: true.
-
-``enable_zipbackup``
-    Create ``zipbackup`` and ``ziprestore`` scripts.  Default: false.
-    If ``backup_blobs`` is not on, these scripts are always disabled,
-    because they are not useful then.
+``backup_blobs``
+    Backup the blob storage.  This requires the ``blob_storage`` location
+    to be set.  If no ``blob_storage`` location has been set and we cannot
+    find one by looking in the other buildout parts, we default to
+    ``False``, otherwise to ``True``.  If ``backup_blobs`` is false,
+    we set the ``enable_zipbackup`` option to false as well, because
+    the ``zipbackup`` script is not useful then.
 
 ``blob_storage``
     Location of the directory where the blobs (binary large objects)
@@ -357,38 +302,51 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``plone.recipe.zope2instance`` spells it as ``blob-storage`` and we are
     using underscores in all the other options.  Pick one.
 
-``backup_blobs``
-    Backup the blob storage.  This requires the ``blob_storage`` location
-    to be set.  If no ``blob_storage`` location has been set and we cannot
-    find one by looking in the other buildout parts, we default to
-    ``False``, otherwise to ``True``.  If ``backup_blobs`` is false,
-    we set the ``enable_zipbackup`` option to false as well, because
-    the ``zipbackup`` script is not useful then.
+``blobbackuplocation`` 
+    Directory where the blob storage will be backed up to.  Defaults
+    to ``var/blobstoragebackups`` inside the buildout directory.
 
 ``blobsnapshotlocation``
     Directory where the blob storage snapshots will be created.
     Defaults to ``var/blobstoragesnapshots`` inside the buildout
     directory.
 
-``only_blobs``
-    Only backup the blobstorage, not the ``Data.fs`` filestorage.  False
-    by default.  May be a useful option if for example you want to
-    create one ``bin/filestoragebackup`` script and one
-    ``bin/blobstoragebackup`` script, using ``only_blobs`` in one and
-    ``backup_blobs`` in the other.
+``datafs``
+    In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``
+    location, this option can overwrite it.
 
-``use_rsync``
-    Use ``rsync`` with hard links for backing up the blobs.  Default is
-    true.  ``rsync`` is probably not available on all machines though, and
-    I guess hard links will not work on Windows.  When you set this to
-    false, we fall back to a simple copy (``shutil.copytree`` from
-    Python in fact).
+``debug``
+    In rare cases when you want to know exactly what's going on, set debug to
+    ``true`` to get debug level logging of the recipe itself. ``repozo`` is also run
+    with ``--verbose`` if this option is enabled.
 
-``rsync_options``
-    Add extra options to the default ``rsync -a`` command. Default is no 
-    extra parameters. This can be useful for example when you want to restore 
-    a backup from a symlinked directory, in which case 
-    ``rsync_options = --no-l -k`` does the trick. 
+``enable_fullbackup``
+    Create ``fullbackup`` script.  Default: true.
+
+``enable_snapshotrestore``
+    Having a ``snapshotrestore`` script is very useful in development
+    environments, but can be harmful in a production buildout. The
+    script restores the latest snapshot directly to your filestorage
+    and it used to do this without asking any questions whatsoever
+    (this has been changed to require an explicit ``yes`` as answer).
+    If you don't want a ``snapshotrestore`` script, set this option to false.
+
+``enable_zipbackup``
+    Create ``zipbackup`` and ``ziprestore`` scripts.  Default: false.
+    If ``backup_blobs`` is not on, these scripts are always disabled,
+    because they are not useful then.
+
+``full``
+    By default, incremental backups are made. If this option is set to ``true``,
+    ``bin/backup`` will always make a full backup.  This option is (obviously)
+    the default when using the ``fullbackup`` script.
+
+``gzip``
+    Use repozo's zipping functionality. ``true`` by default. Set it to ``false``
+    and repozo will not gzip its files. Note that gzipped databases are called
+    ``*.fsz``, not ``*.fs.gz``. **Changed in 0.8**: the default used to be
+    false, but it so totally makes sense to gzip your backups that we changed
+    the default.
 
 ``gzip_blob``
     Use `tar` archiving functionality. ``false`` by default. Set it to ``true``
@@ -396,6 +354,33 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     commmand must be available on machine if this option is set to `true`.
     This option also works with snapshot backup/restore commands. As this
     counts as a full backup `keep_blob_days` is ignored.
+
+``keep``
+    Number of full backups to keep. Defaults to ``2``, which means that the
+    current and the previous full backup are kept. Older backups are removed,
+    including their incremental backups. Set it to ``0`` to keep all backups.
+
+``keep_blob_days``
+    Number of *days* of blob backups to keep.  Defaults to ``14``, so
+    two weeks.  This is **only** used for partial (full=False)
+    backups, so this is what gets used normally when you do a
+    ``bin/backup``.  This option has been added in 2.2.  For full
+    backups (snapshots) we just use the ``keep`` option.  Recommended
+    is to keep these values in sync with how often you do a ``zeopack`` on
+    the ``Data.fs``, according to the formula ``keep *
+    days_between_zeopacks = keep_blob_days``.  The default matches one
+    zeopack per seven days (``2*7=14``).
+
+``location``
+    Location where backups are stored. Defaults to ``var/backups`` inside the
+    buildout directory.
+
+``only_blobs``
+    Only backup the blobstorage, not the ``Data.fs`` filestorage.  False
+    by default.  May be a useful option if for example you want to
+    create one ``bin/filestoragebackup`` script and one
+    ``bin/blobstoragebackup`` script, using ``only_blobs`` in one and
+    ``backup_blobs`` in the other.
 
 ``pre_command``
     Command to execute before starting the backup.  One use case would
@@ -431,6 +416,23 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     disk i/o at the (theoretical) cost of inconsistency.  This is a
     probabilistic way of determining whether a full backup is
     necessary."
+
+``rsync_options``
+    Add extra options to the default ``rsync -a`` command. Default is no 
+    extra parameters. This can be useful for example when you want to restore 
+    a backup from a symlinked directory, in which case 
+    ``rsync_options = --no-l -k`` does the trick. 
+
+``snapshotlocation``
+    Location where snapshot backups of the filestorage are stored. Defaults to
+    ``var/snapshotbackups`` inside the buildout directory.
+
+``use_rsync``
+    Use ``rsync`` with hard links for backing up the blobs.  Default is
+    true.  ``rsync`` is probably not available on all machines though, and
+    I guess hard links will not work on Windows.  When you set this to
+    false, we fall back to a simple copy (``shutil.copytree`` from
+    Python in fact).
 
 
 An example buildout snippet using various options, would look like this::
