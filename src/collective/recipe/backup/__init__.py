@@ -117,6 +117,7 @@ class Recipe(object):
         options.setdefault('alternative_restore_sources', '')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('enable_zipbackup', 'false')
+        options.setdefault('enable_fullbackup', 'true')
         options.setdefault('use_rsync', 'true')
         options.setdefault('rsync_options', '')
         options.setdefault('only_blobs', 'false')
@@ -181,7 +182,7 @@ class Recipe(object):
         check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
                                  'backup_blobs', 'use_rsync', 'gzip_blob',
                                  'quick', 'enable_snapshotrestore',
-                                 'enable_zipbackup'])
+                                 'enable_zipbackup', 'enable_fullbackup'])
         if options['backup_blobs'] == 'False':
             # zipbackup is not useful in this case
             options['enable_zipbackup'] = 'False'
@@ -443,11 +444,12 @@ logging.basicConfig(level=loglevel,
         generated += create_script(**creation_args)
 
         # Create full backup script
-        reqs = [(self.options['fullbackup_name'],
-                 'collective.recipe.backup.main',
-                 'fullbackup_main')]
-        creation_args['reqs'] = reqs
-        generated += create_script(**creation_args)
+        if self.options['enable_fullbackup'] == 'True':
+            reqs = [(self.options['fullbackup_name'],
+                     'collective.recipe.backup.main',
+                     'fullbackup_main')]
+            creation_args['reqs'] = reqs
+            generated += create_script(**creation_args)
 
         # Create zip backup script.
         if self.options['enable_zipbackup'] == 'True':

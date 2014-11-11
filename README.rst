@@ -34,7 +34,8 @@ cake is important!
 - ``bin/backup`` makes an incremental backup.
 
 - ``bin/fullbackup`` always makes a full backup, in the same directory
-  as the normal backups.
+  as the normal backups.  You can disable this by setting the
+  ``enable_fullbackup`` option to false.
 
 - ``bin/restore`` restores the latest backup, created by the backup or
   fullbackup script.
@@ -95,6 +96,7 @@ recipe name should be enough in most cases.
 Running the buildout adds the ``backup``, ``fullbackup``,
 ``snapshotbackup``, ``zipbackup``, ``restore``, ``snapshotrestore``
 and ``ziprestore`` scripts to the ``bin/`` directory of the buildout.
+Some are not added by default, others can be switched off.
 
 
 Backed up data
@@ -328,6 +330,9 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     and it used to do this without asking any questions whatsoever
     (this has been changed to require an explicit ``yes`` as answer).
     If you don't want a ``snapshotrestore`` script, set this option to false.
+
+``enable_fullbackup``
+    Create ``fullbackup`` script.  Default: true.
 
 ``enable_zipbackup``
     Create ``zipbackup`` and ``ziprestore`` scripts.  Default: false.

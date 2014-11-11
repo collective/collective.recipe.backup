@@ -1,6 +1,10 @@
 2.20 (unreleased)
 =================
 
+- Add ``enable_fullbackup`` option.  Default: true, so no change
+  compared to previous version.
+  [maurits]
+
 - Create backup/snapshot/zipbackup directories only when needed.
   Running the backup script should not create the snapshot
   directories.

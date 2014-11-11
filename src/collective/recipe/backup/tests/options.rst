@@ -193,3 +193,38 @@ wanted.
     INFO: Created /sample-buildout/var/backups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
+
+
+Disable the fullbackup script
+-----------------------------
+
+We generate a new buildout with enable_fullbackup set to false.  The
+fullbackup script should not be generated now (and buildout will
+actually remove the previously generated script).
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... enable_fullbackup = false
+    ... """)
+
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  repozo
+    -  restore
+    -  snapshotbackup
+    -  snapshotrestore
