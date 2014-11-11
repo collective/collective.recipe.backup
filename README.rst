@@ -74,6 +74,9 @@ Development
   still good reading if you are wondering about the effect some
   options have.  See ``src/collective/recipe/backup/tests/*.txt``.
 
+- We are tested on Travis:
+  https://travis-ci.org/collective/collective.recipe.backup
+
 - Questions and comments to the Plone product-developers list or to
   mailto:maurits@vanrees.org and mailto:reinout@vanrees.org.
 
