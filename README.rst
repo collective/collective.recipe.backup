@@ -311,6 +311,11 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Defaults to ``var/blobstoragesnapshots`` inside the buildout
     directory.
 
+``blobziplocation``
+    Directory where the blob storage zipbackups will be created.
+    Defaults to ``var/blobstoragezips`` inside the buildout
+    directory.
+
 ``datafs``
     In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``
     location, this option can overwrite it.
@@ -433,6 +438,10 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     I guess hard links will not work on Windows.  When you set this to
     false, we fall back to a simple copy (``shutil.copytree`` from
     Python in fact).
+
+``ziplocation``
+    Location where zip backups of the filestorage are stored. Defaults to
+    ``var/zipbackups`` inside the buildout directory.
 
 
 An example buildout snippet using various options, would look like this::
