@@ -98,7 +98,6 @@ def zipbackup_main(bin_dir, storages, keep, full, verbose, gzip):
     # Force some options.
     full = True
     gzip = True
-    gzip_blob = True
     keep = 1
 
     repozo = os.path.join(bin_dir, 'repozo')
