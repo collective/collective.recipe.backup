@@ -377,7 +377,7 @@ def get_blob_backup_gzips(backup_location):
     return backup_gzips
 
 
-def backup_blobs(source, destination, full=False, use_rsync=True, 
+def backup_blobs(source, destination, full=False, use_rsync=True,
                  keep=0, keep_blob_days=0, gzip_blob=False, rsync_options=''):
     """Copy blobs from source to destination.
 
@@ -630,7 +630,7 @@ def backup_blobs_gzip(source, destination, keep=0):
     cleanup_gzips(destination, keep=keep)
 
 
-def restore_blobs(source, destination, use_rsync=True, 
+def restore_blobs(source, destination, use_rsync=True,
                   date=None, gzip_blob=False, rsync_options=''):
     """Restore blobs from source to destination.
 
@@ -692,7 +692,7 @@ def restore_blobs(source, destination, use_rsync=True,
     #rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
     if use_rsync:
         cmd = 'rsync -a %(options)s --delete %(source)s %(dest)s' % dict(
-            options=rsync_options, 
+            options=rsync_options,
             source=backup_source,
             dest=dest_dir)
         logger.info(cmd)

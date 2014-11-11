@@ -85,7 +85,7 @@ The simplest way to use this recipe is to add a part in ``buildout.cfg`` like th
 
     [buildout]
     parts = backup
-    
+
     [backup]
     recipe = collective.recipe.backup
 
@@ -244,7 +244,7 @@ something else,  the script names will also be different, as will the created
 
     [buildout]
     parts = plonebackup
-    
+
     [plonebackup]
     recipe = collective.recipe.backup
 
@@ -302,7 +302,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``plone.recipe.zope2instance`` spells it as ``blob-storage`` and we are
     using underscores in all the other options.  Pick one.
 
-``blobbackuplocation`` 
+``blobbackuplocation``
     Directory where the blob storage will be backed up to.  Defaults
     to ``var/blobstoragebackups`` inside the buildout directory.
 
@@ -418,10 +418,10 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     necessary."
 
 ``rsync_options``
-    Add extra options to the default ``rsync -a`` command. Default is no 
-    extra parameters. This can be useful for example when you want to restore 
-    a backup from a symlinked directory, in which case 
-    ``rsync_options = --no-l -k`` does the trick. 
+    Add extra options to the default ``rsync -a`` command. Default is no
+    extra parameters. This can be useful for example when you want to restore
+    a backup from a symlinked directory, in which case
+    ``rsync_options = --no-l -k`` does the trick.
 
 ``snapshotlocation``
     Location where snapshot backups of the filestorage are stored. Defaults to
@@ -572,11 +572,11 @@ case you want to separate this into several scripts::
     [buildout]
     newest = false
     parts = filebackup blobbackup
-    
+
     [filebackup]
     recipe = collective.recipe.backup
     backup_blobs = false
-    
+
     [blobbackup]
     recipe = collective.recipe.backup
     blob_storage = ${buildout:directory}/var/blobstorage
