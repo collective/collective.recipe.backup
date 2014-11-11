@@ -4,13 +4,11 @@ van Rees and Maurits van Rees, both from `Zest software`_
 
 Creating the buildout recipe was done by Reinout_ with some fixes by Maurits_.
 
-The snapshotrestore script was added by Nejc Zupan (`niteoweb
-<http://www.niteoweb.com>`_).
+The snapshotrestore script was added by Nejc Zupan (niteoweb_).
 
 The fullbackup script was added by `Tom 'Spanky' Kapanka`_.
 
-Archive blob backups feature added by `Matej Cotman`_ (`niteoweb
-<http://www.niteoweb.com>`_).
+Archive blob backups feature added by `Matej Cotman`_ (niteoweb_).
 
 
 .. Links used above.
@@ -28,3 +26,5 @@ Archive blob backups feature added by `Matej Cotman`_ (`niteoweb
 .. _`Sylvain Bouchard`: https://github.com/bouchardsyl
 
 .. _`Matej Cotman`: https://github.com/matejc
+
+.. _niteoweb: http://www.niteoweb.com
