@@ -83,13 +83,14 @@ class Recipe(object):
         blob_zip_dir = os.path.abspath(
             os.path.join(buildout_dir, 'var', blob_zip_name + 's'))
 
+        # locations, alphabetical
+        options.setdefault('blobbackuplocation', blob_backup_dir)
+        options.setdefault('blobsnapshotlocation', blob_snapshot_dir)
+        options.setdefault('blobziplocation', blob_zip_dir)
         options.setdefault('buildout_dir', buildout_dir)
         options.setdefault('location', backup_dir)
         options.setdefault('snapshotlocation', snapshot_dir)
         options.setdefault('ziplocation', zip_backup_dir)
-        options.setdefault('blobbackuplocation', blob_backup_dir)
-        options.setdefault('blobsnapshotlocation', blob_snapshot_dir)
-        options.setdefault('blobziplocation', blob_zip_dir)
         # These must be distinct locations.
         locations = {}
         for opt in ('location', 'snapshotlocation',
@@ -103,24 +104,25 @@ class Recipe(object):
                 "These must be distinct locations:\n",
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
                            sorted(locations.items())]))
-        options.setdefault('pre_command', '')
-        options.setdefault('post_command', '')
-        options.setdefault('keep', '2')
-        options.setdefault('keep_blob_days', '14')  # two weeks
-        options.setdefault('datafs', datafs)
-        options.setdefault('full', 'false')
-        options.setdefault('debug', 'false')
-        options.setdefault('gzip', 'true')
-        options.setdefault('gzip_blob', 'false')
-        options.setdefault('quick', 'true')
+        # more options, alphabetical
         options.setdefault('additional_filestorages', '')
         options.setdefault('alternative_restore_sources', '')
+        options.setdefault('datafs', datafs)
+        options.setdefault('debug', 'false')
+        options.setdefault('enable_fullbackup', 'true')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('enable_zipbackup', 'false')
-        options.setdefault('enable_fullbackup', 'true')
-        options.setdefault('use_rsync', 'true')
-        options.setdefault('rsync_options', '')
+        options.setdefault('full', 'false')
+        options.setdefault('gzip', 'true')
+        options.setdefault('gzip_blob', 'false')
+        options.setdefault('keep', '2')
+        options.setdefault('keep_blob_days', '14')  # two weeks
         options.setdefault('only_blobs', 'false')
+        options.setdefault('post_command', '')
+        options.setdefault('pre_command', '')
+        options.setdefault('quick', 'true')
+        options.setdefault('rsync_options', '')
+        options.setdefault('use_rsync', 'true')
         # Accept both blob-storage (used by plone.recipe.zope2instance
         # and friends) and blob_storage (as we use underscores
         # everywhere).
