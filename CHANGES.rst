@@ -1,4 +1,4 @@
-2.20 (unreleased)
+2.20 (2014-11-11)
 =================
 
 - Add ``enable_fullbackup`` option.  Default: true, so no change
