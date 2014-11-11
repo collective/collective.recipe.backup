@@ -78,7 +78,7 @@ Development
   https://travis-ci.org/collective/collective.recipe.backup
 
 - Questions and comments to the Plone product-developers list or to
-  mailto:maurits@vanrees.org and mailto:reinout@vanrees.org.
+  mailto:maurits@vanrees.org.
 
 
 Example usage
