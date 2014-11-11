@@ -199,9 +199,10 @@ config section:
 The script places a full backup in, by default, ``var/zipbackups`` and
 it puts a tarball of the blobstorage in ``var/blobstoragezips``.
 
-You can switch off creation of these scripts by setting the
-``enable_zipbackup`` option to false.  Also, if ``backup_blobs`` is
-false, the scripts are useless, so we do not create them.
+These scripts are not created by default.  You can enable them by
+setting the ``enable_zipbackup`` option to true.  Also, if
+``backup_blobs`` is false, the scripts are useless, so we do not
+create them, even when you have enabled them explicitly.
 
 
 Restore
@@ -273,8 +274,14 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
 ``additional_filestorages``
     Advanced option, only needed when you have split for instance a
     ``catalog.fs`` out of the regular ``Data.fs``.
-    Use it to specify the extra
-    filestorages. (See explanation further on).
+    Use it to specify the extra filestorages.
+    (See `Advanced usage: multiple Data.fs files`_).
+
+``alternative_restore_sources``:
+    You can restore from an alternative source.  Use case: first make
+    a backup of your production site, then go to the testing or
+    staging server and restore the production data there.  See
+    `Alternative restore sources`_
 
 ``backup_blobs``
     Backup the blob storage.  This requires the ``blob_storage`` location
@@ -387,6 +394,12 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``bin/blobstoragebackup`` script, using ``only_blobs`` in one and
     ``backup_blobs`` in the other.
 
+``post_command``
+    Command to execute after the backup has finished.  One use case
+    would be to unmount the remote file system that you mounted
+    earlier using the ``pre_command``.  See that ``pre_command`` above for
+    more info.
+
 ``pre_command``
     Command to execute before starting the backup.  One use case would
     be to mount a remote file system using NFS or sshfs and put the
@@ -395,12 +408,6 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     /dev/null`` on Unix).  Refer to your local Unix guru for more
     information.  If the command fails, the backup script quits with
     an error.  You can specify multiple commands.
-
-``post_command``
-    Command to execute after the backup has finished.  One use case
-    would be to unmount the remote file system that you mounted
-    earlier using the ``pre_command``.  See that ``pre_command`` above for
-    more info.
 
 ``quick``
     Call ``repozo`` with the ``--quick`` option.  This option was
