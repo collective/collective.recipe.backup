@@ -49,7 +49,7 @@ def test_suite():
         repozorunner,
         collective.recipe.backup,
         copyblobs,
-        ]
+    ]
     for module in modules:
         suite.addTest(doctest.DocTestSuite(
             module,
@@ -69,7 +69,7 @@ def test_suite():
         'no_rsync.rst',
         'options.rst',
         'zipbackup.rst',
-        ]
+    ]
     for docfile in docfiles:
         suite.addTest(doctest.DocFileSuite(
             docfile,

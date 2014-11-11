@@ -319,7 +319,7 @@ def get_blob_backup_dirs(backup_location):
                     "Different backup prefixes found in %s (%s, %s). Are you "
                     "mixing two backups in one directory? For safety we will "
                     "not cleanup old backups here." % (
-                    backup_location, prefix, parts[0]))
+                        backup_location, prefix, parts[0]))
                 sys.exit(1)
         else:
             prefix = parts[0]
@@ -552,12 +552,12 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             #     backups/blobstorage.0
             prev_link = os.path.join(os.pardir, base_name + '.1')
             cmd = ('rsync -a %(options)s --delete --link-dest=%(link)s %(source)s '
-                   '%(dest)s' % dict(options=rsync_options,link=prev_link, source=source,
-                   dest=dest))
+                   '%(dest)s' % dict(options=rsync_options, link=prev_link, source=source,
+                                     dest=dest))
         else:
             # No previous directory to hardlink against.
             cmd = 'rsync -a %(options)s %(source)s %(dest)s' % dict(
-                   options=rsync_options, source=source, dest=dest)
+                options=rsync_options, source=source, dest=dest)
         logger.info(cmd)
         output, failed = utils.system(cmd)
         if output:
@@ -689,7 +689,7 @@ def restore_blobs(source, destination, use_rsync=True,
         backup_source = os.path.join(source, base_name + '.0', base_name)
 
     # You should end up with something like this:
-    #rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
+    # rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
     if use_rsync:
         cmd = 'rsync -a %(options)s --delete %(source)s %(dest)s' % dict(
             options=rsync_options,

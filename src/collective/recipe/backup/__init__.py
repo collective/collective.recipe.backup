@@ -102,7 +102,7 @@ class Recipe(object):
             raise zc.buildout.UserError(
                 "These must be distinct locations:\n",
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
-                sorted(locations.items())]))
+                           sorted(locations.items())]))
         options.setdefault('pre_command', '')
         options.setdefault('post_command', '')
         options.setdefault('keep', '2')
@@ -332,7 +332,7 @@ class Recipe(object):
                         "alternative_restore_sources key %r is used twice."
                         % orig_key)
                 storage['alt_location'] = construct_path(
-                        buildout_dir, source['datafs'])
+                    buildout_dir, source['datafs'])
                 blobdir = source['blobdir']
                 if storage['blobdir']:
                     if not blobdir:

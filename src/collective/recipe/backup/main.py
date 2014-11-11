@@ -185,7 +185,7 @@ def zipbackup_main(bin_dir, storages, keep, full,
 def restore_main(bin_dir, storages, verbose, backup_blobs,
                  only_blobs, use_rsync, restore_snapshot=False, pre_command='',
                  post_command='', gzip_blob=False, alt_restore=False,
-                 rsync_options ='', quick=True, zip_restore=False, **kwargs):
+                 rsync_options='', quick=True, zip_restore=False, **kwargs):
     """Main method, gets called by generated bin/restore."""
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
     if sum([1 for opt in explicit_restore_opts if opt]) > 1:
