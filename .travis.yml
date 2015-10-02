@@ -6,6 +6,8 @@ python:
 cache:
   directories:
   - eggs
+matrix:
+  fast_finish: true
 before_install:
 install:
   - python bootstrap.py
