@@ -280,7 +280,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Use it to specify the extra filestorages.
     (See `Advanced usage: multiple Data.fs files`_).
 
-``alternative_restore_sources``:
+``alternative_restore_sources``
     You can restore from an alternative source.  Use case: first make
     a backup of your production site, then go to the testing or
     staging server and restore the production data there.  See
