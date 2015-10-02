@@ -35,7 +35,7 @@ You should not mix backup locations; it is confusing for the recipe
     While:
       Installing.
       Getting section backup.
-      Initializing part backup.
+      Initializing section backup.
     Error: These must be distinct locations:
     blobbackuplocation = /sample-buildout/var/loc1
     blobsnapshotlocation = /sample-buildout/var/loc2

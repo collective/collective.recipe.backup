@@ -62,7 +62,7 @@ and apparently a few servers are currently down so a timeout helps
 speed things up a bit):
 
     >>> print system('bin/buildout -t 5') # doctest:+ELLIPSIS
-    Setting socket time out to 5 seconds
+    Setting socket time out to 5 seconds.
     Getting distribution for 'plone.recipe.zope2instance==3.9'...
     Got plone.recipe.zope2instance 3.9.
     Getting distribution for 'mailinglogger==3.3'...
