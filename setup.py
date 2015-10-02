@@ -32,7 +32,7 @@ entry_points = {
     #        ]
 }
 
-tests_require = ['zope.testing', 'zc.buildout', 'zc.recipe.egg']
+tests_require = ['zope.testing', 'zc.buildout[test]', 'zc.recipe.egg']
 
 setup(name='collective.recipe.backup',
       version=version,
