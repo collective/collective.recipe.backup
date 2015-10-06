@@ -1,4 +1,4 @@
-2.21 (unreleased)
+2.21 (2015-10-06)
 =================
 
 - When restoring, create ``var/filestorage`` if needed.
