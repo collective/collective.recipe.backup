@@ -169,7 +169,8 @@ def backup_arguments(datafs=None,
       >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
       ...                  full=True)
       '--backup -f in/Data.fs -r out -F'
-      >>> backup_arguments(datafs='in/Data.fs', backup_location='out', quick=True)
+      >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
+      ...                  quick=True)
       '--backup -f in/Data.fs -r out --quick'
 
     """
