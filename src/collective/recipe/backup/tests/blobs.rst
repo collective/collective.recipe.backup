@@ -805,7 +805,12 @@ Now test the restore::
     INFO: rsync -a  --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
 
-Test extra rsync options, currently only testing --no-l -k to allow for symlinked directory dereferencing in restore. We use this to test passing of valid rsync options additional to the default -a option. Since all backup and restore variants with blobs and using rsync use the same code, we only need to test the standard backup and restore to ensure passing of extra options to rsync works:: 
+Test extra rsync options, currently only testing --no-l -k to allow
+for symlinked directory dereferencing in restore. We use this to test
+passing of valid rsync options additional to the default -a
+option. Since all backup and restore variants with blobs and using
+rsync use the same code, we only need to test the standard backup and
+restore to ensure passing of extra options to rsync works::
 
     >>> # first remove some previously created directories interfering with this test
     >>> import shutil
@@ -816,16 +821,16 @@ Test extra rsync options, currently only testing --no-l -k to allow for symlinke
     ... [buildout]
     ... newest = false
     ... parts = backup
-    ... 
+    ...
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
-    ... rsync_options = --no-l -k    
+    ... rsync_options = --no-l -k
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling blobbackup.
     Uninstalling filebackup.
-    Installing backup. 
+    Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -868,20 +873,20 @@ So backup still works, now test restore that uses a symlinked directory as the b
     ... [buildout]
     ... newest = false
     ... parts = backup
-    ... 
+    ...
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... blobbackuplocation = ${buildout:directory}/var/test
     ... rsync_options = --no-l -k
-    ... # we use pre_ and post_commands to set/unset the symlink 
+    ... # we use pre_ and post_commands to set/unset the symlink
     ... # using os.symlink instead causes rsync to fail for some reason
     ... pre_command = ln -s ${buildout:directory}/var/blobstoragebackups/blobstorage.0/blobstorage ${backup:blobbackuplocation}/blobstorage.0/blobstorage
-    ... post_command = unlink ${backup:blobbackuplocation}/blobstorage.0/blobstorage   
+    ... post_command = unlink ${backup:blobbackuplocation}/blobstorage.0/blobstorage
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
-    Installing backup. 
+    Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
