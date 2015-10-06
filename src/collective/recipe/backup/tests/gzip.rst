@@ -106,7 +106,9 @@ Now test the restore::
         /sample-buildout/var/filestorage/Data.fs
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage
-    Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/nozipbackups to /sample-buildout/var/filestorage/Data.fs
+    Are you sure? (yes/No)?
+    INFO: Created directory /sample-buildout/var/filestorage
+    INFO: Please wait while restoring database file: /sample-buildout/var/nozipbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/nozipbackup-blobstorages to /sample-buildout/var/blobstorage
     INFO: rsync -a --delete /sample-buildout/var/nozipbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>

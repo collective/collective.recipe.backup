@@ -72,16 +72,24 @@ Full backups are placed there too::
 Restore
 -------
 
-You can restore the very latest backup with ``bin/restore``::
+You can restore the very latest backup with ``bin/restore``.
+This will create the target directory when it does not exist::
 
+    >>> ls('var')
+    d  backups
     >>> print system('bin/restore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
+    INFO: Created directory /sample-buildout/var/filestorage
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     <BLANKLINE>
+    >>> ls('var')
+    d  backups
+    d  filestorage
+    >>> ls('var' , 'filestorage')
 
 You can also restore the backup as of a certain date. Just pass a date
 argument. According to repozo: specify UTC (not local) time.  The format is
@@ -172,6 +180,7 @@ The different part name *did* result in two directories named after the part:
 
     >>> ls('var')
     d  backups
+    d  filestorage
     d  snapshotbackups
 
 For the rest of the tests we use the ``[backup]`` name again.  And we clean up

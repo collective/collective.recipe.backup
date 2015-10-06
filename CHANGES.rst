@@ -1,7 +1,9 @@
 2.21 (unreleased)
 =================
 
-- Nothing changed yet.
+- When restoring, create ``var/filestorage`` if needed.
+  Fixes #23.
+  [maurits]
 
 
 2.20 (2014-11-11)

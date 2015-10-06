@@ -55,6 +55,7 @@ Call the script::
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
+    INFO: Created directory /sample-buildout/var/filestorage
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
 
 Add original blobstorage (usually done by having a part that creates a
@@ -127,6 +128,9 @@ Add blobstorage to original and alternative::
 
 Call the script::
 
+    >>> ls('var')
+    d  filestorage
+    >>> remove('var', 'filestorage')
     >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
@@ -141,6 +145,7 @@ Call the script::
     INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var')
+    d  filestorage
 
 Note that the rsync error is printed before the line that actually
 calls rsync, but that is a strangeness in how ``stdout`` and
@@ -165,6 +170,7 @@ Create the necessary sample directories and call the script again::
     <BLANKLINE>
     >>> ls('var')
     d   blobstorage
+    d   filestorage
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
     >>> cat('var', 'blobstorage', 'blobfile.txt')
@@ -237,7 +243,9 @@ Test in combination with additional filestorage::
         /sample-buildout/var/blobstorage-foo
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
+    INFO: Created directory /sample-buildout/var/filestorage/foo
     INFO: Please wait while restoring database file: /sample-buildout/alt/foo to /sample-buildout/var/filestorage/foo/foo.fs
+    INFO: Created directory /sample-buildout/var/filestorage/bar
     INFO: Please wait while restoring database file: /sample-buildout/alt/bar to /sample-buildout/var/filestorage/bar/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/fooblobs to /sample-buildout/var/blobstorage-foo
@@ -249,6 +257,7 @@ Test in combination with additional filestorage::
     >>> ls('var')
     d   blobstorage
     d   blobstorage-foo
+    d   filestorage
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
     >>> cat('var', 'blobstorage', 'blobfile.txt')

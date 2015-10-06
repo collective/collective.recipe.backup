@@ -87,7 +87,9 @@ Now test the ziprestore script::
         /sample-buildout/var/filestorage/Data.fs
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage
-    Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/zipbackups to /sample-buildout/var/filestorage/Data.fs
+    Are you sure? (yes/No)?
+    INFO: Created directory /sample-buildout/var/filestorage
+    INFO: Please wait while restoring database file: /sample-buildout/var/zipbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragezips to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage

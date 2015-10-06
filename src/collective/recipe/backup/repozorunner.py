@@ -138,6 +138,10 @@ def restore_main(bin_dir, storages, verbose,
         else:
             backup_location = storage['backup_location']
         fs = storage['datafs']
+        fs_dir = os.path.dirname(fs)
+        if not os.path.exists(fs_dir):
+            os.makedirs(fs_dir)
+            logger.info('Created directory %s', fs_dir)
         logger.info("Please wait while restoring database file: %s to %s",
                     backup_location, fs)
         result = os.system(quote_command([repozo] +
