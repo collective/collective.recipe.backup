@@ -169,8 +169,8 @@ Create the necessary sample directories and call the script again::
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var')
-    d   blobstorage
-    d   filestorage
+    d  blobstorage
+    d  filestorage
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
     >>> cat('var', 'blobstorage', 'blobfile.txt')
@@ -255,9 +255,9 @@ Test in combination with additional filestorage::
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var')
-    d   blobstorage
-    d   blobstorage-foo
-    d   filestorage
+    d  blobstorage
+    d  blobstorage-foo
+    d  filestorage
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
     >>> cat('var', 'blobstorage', 'blobfile.txt')

@@ -120,27 +120,27 @@ def try_create_folder(pathdir):
     >>> mkdir('mytest', 'keep')
     >>> write('mytest', 'myfile', 'I am a file.')
     >>> ls('mytest')
-    d   keep
+    d  keep
     -   myfile
     >>> try_create_folder('mytest')
     >>> ls('mytest')
-    d   keep
+    d  keep
     -   myfile
     >>> try_create_folder('mytest/folder')
     >>> ls('mytest')
-    d   keep
+    d  keep
     -   myfile
     >>> try_create_folder('mytest/keep')
     >>> ls('mytest')
-    d   keep
+    d  keep
     -   myfile
     >>> try_create_folder('mytest/folder/sub')
     >>> ls('mytest')
-    d   keep
+    d  keep
     -   myfile
     >>> try_create_folder('mytest/keep/sub')
     >>> ls('mytest')
-    d   keep
+    d  keep
     -   myfile
     >>> remove('mytest')
 
