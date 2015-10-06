@@ -110,7 +110,7 @@ Now test the restore::
     INFO: Created directory /sample-buildout/var/filestorage
     INFO: Please wait while restoring database file: /sample-buildout/var/nozipbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/nozipbackup-blobstorages to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/nozipbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/nozipbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> print system('bin/nozipbackup-snapshotrestore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackup-snapshots
@@ -121,7 +121,7 @@ Now test the restore::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/nozipbackup-snapshots to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/nozipbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/nozipbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/nozipbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> print system('bin/zippedbackup-restore', input='yes\n')
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackups

@@ -252,13 +252,13 @@ easily test restoring to a specific time later.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo
     INFO: Renaming blobstorage-foo.0 to blobstorage-foo.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
     INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
@@ -305,15 +305,15 @@ Now remove an item:
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo
     INFO: Renaming blobstorage-foo.1 to blobstorage-foo.2.
     INFO: Renaming blobstorage-foo.0 to blobstorage-foo.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
     INFO: Renaming blobstorage-bar.1 to blobstorage-bar.2.
     INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
@@ -386,13 +386,13 @@ We try again with an extra 'blob':
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragebackups_foo
     INFO: Renaming blobstorage-foo.0 to blobstorage-foo.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragebackups_bar
     INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
     <BLANKLINE>
     >>> ls('var/blobstoragebackups')
     d  blobstorage.0
@@ -454,11 +454,11 @@ Now try a restore::
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_bar to /sample-buildout/var/blobstorage-bar
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var/blobstorage')
     -  blob1.txt
@@ -475,11 +475,11 @@ With the ``no-prompt`` option we avoid the question::
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_bar to /sample-buildout/var/blobstorage-bar
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var/blobstorage')
     -  blob1.txt
@@ -526,11 +526,11 @@ tests due to rounding or similar sillyness.
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.1/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.1/blobstorage-foo /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_bar to /sample-buildout/var/blobstorage-bar
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.1/blobstorage-bar /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.1/blobstorage-bar /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragebackups/blobstorage.1/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.1/blobstorage /sample-buildout/var
     <BLANKLINE>
 
 The second blob file is now no longer in the blob storage.
@@ -558,11 +558,11 @@ The snapshotrestore works too::
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots_foo to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots_bar to /sample-buildout/var/blobstorage-bar
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
 
 Check that this fits what is in the most recent snapshot::
@@ -610,11 +610,11 @@ Since release 2.3 we can also restore blob snapshots to a specific date/time.
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots_foo to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.1/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.1/blobstorage-foo /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots_bar to /sample-buildout/var/blobstorage-bar
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.1/blobstorage-bar /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.1/blobstorage-bar /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.1/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.1/blobstorage /sample-buildout/var
     <BLANKLINE>
 
 The second blob file was only in blobstorage snapshot number 1 when we
@@ -794,7 +794,7 @@ Now test the restore::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstorages to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> print system('bin/blobbackup-snapshotrestore', input='yes\n')
     <BLANKLINE>
@@ -802,7 +802,7 @@ Now test the restore::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
 
 Test extra rsync options, currently only testing --no-l -k to allow for symlinked directory dereferencing in restore. We use this to test passing of valid rsync options additional to the default -a option. Since all backup and restore variants with blobs and using rsync use the same code, we only need to test the standard backup and restore to ensure passing of extra options to rsync works:: 

@@ -142,7 +142,7 @@ Call the script::
     rsync: change_dir "/sample-buildout/alt/blobs/blobstorage.0" failed: No such file or directory...
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var')
     d  filestorage
@@ -166,7 +166,7 @@ Create the necessary sample directories and call the script again::
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var')
     d   blobstorage
@@ -190,7 +190,7 @@ normal restore script::
     INFO: Date restriction: restoring state at 2000-12-31-23-59.
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
 
 Test in combination with additional filestorage::
@@ -249,10 +249,10 @@ Test in combination with additional filestorage::
     INFO: Please wait while restoring database file: /sample-buildout/alt/bar to /sample-buildout/var/filestorage/bar/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/fooblobs to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a --delete /sample-buildout/alt/fooblobs/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/alt/fooblobs/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
     INFO: No blob dir defined for bar storage
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var')
     d   blobstorage

@@ -548,7 +548,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
                 raise Exception("%s must be a directory" % prev)
             # Hardlink against the previous directory.  Done by hand it
             # would be:
-            # rsync -a --delete --link-dest=../blobstorage.1 blobstorage/
+            # rsync -a  --delete --link-dest=../blobstorage.1 blobstorage/
             #     backups/blobstorage.0
             prev_link = os.path.join(os.pardir, base_name + '.1')
             cmd = ('rsync -a %(options)s --delete --link-dest=%(link)s %(source)s '
@@ -639,7 +639,7 @@ def restore_blobs(source, destination, use_rsync=True,
     systems that don't have rsync available.  rsync is recommended.
 
     We could remove the destination first (with
-    'shutil.rmtree(destination)'), but an 'rsync -a --delete' works
+    'shutil.rmtree(destination)'), but an 'rsync -a  --delete' works
     faster.
 
     Note that trailing slashes in source and destination do matter, so
@@ -689,7 +689,7 @@ def restore_blobs(source, destination, use_rsync=True,
         backup_source = os.path.join(source, base_name + '.0', base_name)
 
     # You should end up with something like this:
-    # rsync -a --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
+    # rsync -a  --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
     if use_rsync:
         cmd = 'rsync -a %(options)s --delete %(source)s %(dest)s' % dict(
             options=rsync_options,
