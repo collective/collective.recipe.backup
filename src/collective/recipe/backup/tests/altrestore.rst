@@ -139,7 +139,7 @@ Call the script::
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
-    rsync: change_dir "/sample-buildout/alt/blobs/blobstorage.0" failed: No such file or directory...
+    rsync: ...No such file or directory...
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
