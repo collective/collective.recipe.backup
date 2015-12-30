@@ -1,7 +1,10 @@
 2.22 (unreleased)
 =================
 
-- Nothing changed yet.
+- Find plone.recipe.zope2instance recipes also when they are not
+  completely lower case.  The zope2instance recipe itself works fine
+  when it has mixed case, so we should accept this too.
+  [maurits]
 
 
 2.21 (2015-10-06)

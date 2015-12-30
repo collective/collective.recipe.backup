@@ -149,7 +149,7 @@ class Recipe(object):
             blob_storage = ''
             for part_name in part_names:
                 part = self.buildout[part_name]
-                if part.get('recipe') in blob_recipes:
+                if part.get('recipe', '').lower() in blob_recipes:
                     blob_storage = part.get('blob-storage')
                     if blob_storage:
                         break
