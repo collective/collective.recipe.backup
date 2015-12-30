@@ -185,7 +185,7 @@ class Recipe(object):
                                  'backup_blobs', 'use_rsync', 'gzip_blob',
                                  'quick', 'enable_snapshotrestore',
                                  'enable_zipbackup', 'enable_fullbackup'])
-        if options['backup_blobs'] == 'False':
+        if not to_bool(options['backup_blobs']):
             # zipbackup is not useful in this case
             options['enable_zipbackup'] = 'False'
 
@@ -205,7 +205,7 @@ class Recipe(object):
             buildout_dir, self.options['ziplocation'])
 
         # Blob backup.
-        if self.options['backup_blobs'] == 'True':
+        if to_bool(self.options['backup_blobs']):
             blob_backup_location = construct_path(
                 buildout_dir, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(
@@ -271,7 +271,7 @@ class Recipe(object):
             storage['blob_zip_location'] = blob_zip_location
         storages.append(storage)
 
-        if self.options['only_blobs'] in ('false', 'False'):
+        if not to_bool(self.options['only_blobs']):
             for s in storages:
                 backup_location = s['backup_location']
                 snapshot_location = s['snapshot_location']
@@ -279,7 +279,7 @@ class Recipe(object):
                 utils.try_create_folder(snapshot_location)
 
         # Blob backup.
-        if self.options['backup_blobs'] in ('true', 'True'):
+        if to_bool(self.options['backup_blobs']):
             blob_storage_found = False
             for s in storages:
                 if s['blobdir']:
@@ -359,7 +359,7 @@ class Recipe(object):
                         "alternative_restore_sources is missing key %r. "
                         % key)
 
-        if self.options['debug'] == 'True':
+        if to_bool(self.options['debug']):
             loglevel = 'DEBUG'
         else:
             loglevel = 'INFO'
@@ -408,7 +408,7 @@ logging.basicConfig(level=loglevel,
         opts['loglevel'] = loglevel
         opts['storages'] = pprint.pformat(storages)
 
-        if opts['backup_blobs'] == 'False' and opts['only_blobs'] == 'True':
+        if not to_bool(opts['backup_blobs']) and to_bool(opts['only_blobs']):
             raise zc.buildout.UserError(
                 "Cannot have backup_blobs false and only_blobs true.")
 
@@ -446,7 +446,7 @@ logging.basicConfig(level=loglevel,
         generated += create_script(**creation_args)
 
         # Create full backup script
-        if self.options['enable_fullbackup'] == 'True':
+        if to_bool(self.options['enable_fullbackup']):
             reqs = [(self.options['fullbackup_name'],
                      'collective.recipe.backup.main',
                      'fullbackup_main')]
@@ -454,7 +454,7 @@ logging.basicConfig(level=loglevel,
             generated += create_script(**creation_args)
 
         # Create zip backup script.
-        if self.options['enable_zipbackup'] == 'True':
+        if to_bool(self.options['enable_zipbackup']):
             reqs = [(self.options['zipbackup_name'],
                      'collective.recipe.backup.main',
                      'zipbackup_main')]
@@ -476,7 +476,7 @@ logging.basicConfig(level=loglevel,
         generated += create_script(**creation_args)
 
         # Create zip restore script.
-        if self.options['enable_zipbackup'] == 'True':
+        if to_bool(self.options['enable_zipbackup']):
             reqs = [(self.options['ziprestore_name'],
                      'collective.recipe.backup.main',
                      'zip_restore_main')]
@@ -484,7 +484,7 @@ logging.basicConfig(level=loglevel,
             generated += create_script(**creation_args)
 
         # Create snapshot restore script
-        if self.options['enable_snapshotrestore'] == 'True':
+        if to_bool(self.options['enable_snapshotrestore']):
             reqs = [(self.options['snapshotrestore_name'],
                      'collective.recipe.backup.main',
                      'snapshot_restore_main')]
@@ -519,10 +519,19 @@ def check_for_true(options, keys):
 
     """
     for key in keys:
-        if options[key].lower() == 'true':
+        if to_bool(options[key]):
             options[key] = 'True'
         else:
             options[key] = 'False'
+
+
+def to_bool(option):
+    if option is None:
+        return False
+    if not isinstance(option, basestring):
+        return bool(option)
+    option = option.lower()
+    return option in ('true', 'yes', 'on', '1')
 
 
 def construct_path(buildout_dir, path):

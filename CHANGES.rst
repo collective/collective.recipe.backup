@@ -1,6 +1,11 @@
 2.22 (unreleased)
 =================
 
+- Accept ``true``, ``yes``, ``on``, ``1``, in lower, upper or mixed
+  case as true value.  Treat all other values in the buildout options
+  as false.
+  [maurits]
+
 - Find plone.recipe.zope2instance recipes also when they are not
   completely lower case.  The zope2instance recipe itself works fine
   when it has mixed case, so we should accept this too.
