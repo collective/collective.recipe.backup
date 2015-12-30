@@ -1,6 +1,10 @@
 2.22 (unreleased)
 =================
 
+- Do not accept ``backup_blobs`` false and ``enable_zipbackup`` true.
+  The zipbackup script is useless without blobs.
+  [maurits]
+
 - Set default ``backup_blobs`` to true on Python 2.6 (Plone 4) and
   higher.  Otherwise false.  If no ``blob_storage`` can be found, we
   quit with an error.

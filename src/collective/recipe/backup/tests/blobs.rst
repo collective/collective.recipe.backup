@@ -777,8 +777,6 @@ enable_zipbackup too::
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... backup_blobs = false
-    ... # enable_zipbackup is ignored here because we are not backing up blobs
-    ... enable_zipbackup = true
     ...
     ... [blobbackup]
     ... recipe = collective.recipe.backup

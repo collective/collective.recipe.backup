@@ -191,9 +191,11 @@ class Recipe(object):
                                  'backup_blobs', 'use_rsync', 'gzip_blob',
                                  'quick', 'enable_snapshotrestore',
                                  'enable_zipbackup', 'enable_fullbackup'])
-        if not to_bool(options['backup_blobs']):
-            # zipbackup is not useful in this case
-            options['enable_zipbackup'] = 'False'
+        if not to_bool(options['backup_blobs']) \
+                and to_bool(options['enable_zipbackup']):
+            raise zc.buildout.UserError(
+                "Cannot have backup_blobs false and enable_zipbackup true. "
+                "zipbackup is useless without blobs.")
 
         # For site_py_dest in scripts generated with buildout 1.5+:
         options['parts-directory'] = os.path.join(

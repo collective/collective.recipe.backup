@@ -292,9 +292,8 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``blob_storage`` location to be set.  If no ``blob_storage``
     location has been set and we cannot find one by looking in the
     other buildout parts, we quit with an error (since version 2.22).
-    If ``backup_blobs`` is false, we set the ``enable_zipbackup``
-    option to false as well, because the ``zipbackup`` script is not
-    useful then.
+    If ``backup_blobs`` is false, ``enable_zipbackup`` cannot be true,
+    because the ``zipbackup`` script is not useful then.
 
 ``blob_storage``
     Location of the directory where the blobs (binary large objects)

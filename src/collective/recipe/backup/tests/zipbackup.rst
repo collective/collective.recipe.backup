@@ -152,3 +152,24 @@ the default::
     -  restore
     -  snapshotbackup
     -  snapshotrestore
+
+If backup_blobs is false, it is useless to enable the zipbackup, so we
+refuse this combination::
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... backup_blobs = false
+    ... enable_zipbackup = true
+    ... """)
+    >>> print system(buildout)
+    While:
+      Installing.
+      Getting section backup.
+      Initializing section backup.
+    Error: Cannot have backup_blobs false and enable_zipbackup true. zipbackup is useless without blobs.
