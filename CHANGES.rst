@@ -1,7 +1,9 @@
 2.23 (unreleased)
 =================
 
-- Nothing changed yet.
+- Read ``zeo-var``, ``var``, ``file-storage`` from buildout sections.
+  Update default backup and Data.fs locations based on this.
+  [maurits]
 
 
 2.22 (2015-12-30)

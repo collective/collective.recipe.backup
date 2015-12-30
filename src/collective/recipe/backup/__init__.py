@@ -68,20 +68,35 @@ class Recipe(object):
             blob_snapshot_name = self.name + '-blobstoragesnapshot'
             blob_zip_name = self.name + '-blobstoragezip'
 
+        # Get var directory from instance/zeoclient/zeoserver part, if
+        # available.  p.r.zeoserver has zeo-var option.
+        var_dir = get_zope_option(self.buildout, 'zeo-var')
+        if not var_dir:
+            # p.r.zope2instance has var option
+            var_dir = get_zope_option(self.buildout, 'var')
+        if var_dir:
+            var_dir = os.path.abspath(var_dir)
+        else:
+            var_dir = os.path.abspath(os.path.join(buildout_dir, 'var'))
+
         backup_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', backup_name + 's'))
+            os.path.join(var_dir, backup_name + 's'))
         snapshot_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', snapshot_name + 's'))
+            os.path.join(var_dir, snapshot_name + 's'))
         zip_backup_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', zipbackup_name + 's'))
-        datafs = os.path.abspath(
-            os.path.join(buildout_dir, 'var', 'filestorage', 'Data.fs'))
+            os.path.join(var_dir, zipbackup_name + 's'))
         blob_backup_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', blob_backup_name + 's'))
+            os.path.join(var_dir, blob_backup_name + 's'))
         blob_snapshot_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', blob_snapshot_name + 's'))
+            os.path.join(var_dir, blob_snapshot_name + 's'))
         blob_zip_dir = os.path.abspath(
-            os.path.join(buildout_dir, 'var', blob_zip_name + 's'))
+            os.path.join(var_dir, blob_zip_name + 's'))
+
+        # file-storage may have been set in recipes
+        datafs = get_zope_option(self.buildout, 'file-storage')
+        if not datafs:
+            datafs = os.path.abspath(
+                os.path.join(var_dir, 'filestorage', 'Data.fs'))
 
         # locations, alphabetical
         options.setdefault('blobbackuplocation', blob_backup_dir)
@@ -139,7 +154,7 @@ class Recipe(object):
         if not blob_storage:
             # Try to get the blob-storage location from the
             # instance/zeoclient/zeoserver part, if it is available.
-            blob_storage = get_zope_option(buildout, 'blob-storage')
+            blob_storage = get_zope_option(self.buildout, 'blob-storage')
             if not blob_storage:
                 # 'None' would give a TypeError when setting the option.
                 blob_storage = ''
