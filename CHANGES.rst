@@ -1,4 +1,4 @@
-2.22 (unreleased)
+2.22 (2015-12-30)
 =================
 
 - Do not accept ``backup_blobs`` false and ``enable_zipbackup`` true.
