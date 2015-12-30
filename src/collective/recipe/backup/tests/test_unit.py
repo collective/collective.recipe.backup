@@ -64,3 +64,45 @@ class UtilsTestCase(unittest.TestCase):
         # Without all keys, everything is changed.
         check_for_true(options, options.keys())
         self.assertEqual(options, sanitised_options)
+
+    def test_get_zope_option(self):
+        from collective.recipe.backup import get_zope_option
+        # The buildout dictionary we pass, is quite specific.
+        buildout_info = {
+            'buildout': {'parts': 'one two four'},
+            'one': {
+                'recipe': 'unknown.recipe',
+                'wanted': 'one-wanted',
+                'one-only': 'one-only-value',
+                },
+            'two': {
+                'recipe': 'plone.recipe.zeoserver',
+                'wanted': 'two-wanted',
+                'two-only': 'two-only-value',
+                },
+            'three': {
+                'recipe': 'plone.recipe.zeoserver',
+                'wanted': 'three-wanted',
+                'three-only': 'three-only-value',
+                },
+            'four': {
+                'recipe': 'plone.recipe.zope2INSTANCE',
+                'wanted': 'four-wanted',
+                'four-only': 'four-only-value',
+                },
+            }
+        # Non existing keys are not found:
+        self.assertFalse(get_zope_option(buildout_info, 'foo'))
+        # Only keys from one of the correct recipes are found:
+        self.assertFalse(get_zope_option(buildout_info, 'one-only'))
+        self.assertEqual(
+            get_zope_option(buildout_info, 'wanted'), 'two-wanted')
+        # Keys from a non active part are not found:
+        self.assertFalse(get_zope_option(buildout_info, 'three-only'))
+        # We accept recipes with mixed case:
+        self.assertEqual(
+            get_zope_option(buildout_info, 'four-only'), 'four-only-value')
+        # The order of parts is important:
+        buildout_info['buildout'] = {'parts': 'four two one'}
+        self.assertEqual(
+            get_zope_option(buildout_info, 'wanted'), 'four-wanted')

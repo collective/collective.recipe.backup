@@ -139,20 +139,7 @@ class Recipe(object):
         if not blob_storage:
             # Try to get the blob-storage location from the
             # instance/zeoclient/zeoserver part, if it is available.
-            blob_recipes = (
-                'plone.recipe.zeoserver',
-                'plone.recipe.zope2instance',
-                'plone.recipe.zope2zeoserver',
-            )
-            parts = buildout['buildout']['parts']
-            part_names = parts.split()
-            blob_storage = ''
-            for part_name in part_names:
-                part = self.buildout[part_name]
-                if part.get('recipe', '').lower() in blob_recipes:
-                    blob_storage = part.get('blob-storage')
-                    if blob_storage:
-                        break
+            blob_storage = get_zope_option(buildout, 'blob-storage')
             if not blob_storage:
                 # 'None' would give a TypeError when setting the option.
                 blob_storage = ''
@@ -609,3 +596,28 @@ def create_script(**kwargs):
             arguments=kwargs.get('script_arguments'),
             initialization=kwargs.get('initialization'))
     return script
+
+
+def get_zope_option(buildout, option):
+    """Try to get an option from another buildout part.
+
+    For example the blob-storage location.
+
+    We look in an instance/zeoclient/zeoserver part, if it is available.
+    Well, we check specific recipes.
+    """
+    recipes = (
+        'plone.recipe.zeoserver',
+        'plone.recipe.zope2instance',
+        'plone.recipe.zope2zeoserver',
+        )
+    parts = buildout['buildout']['parts']
+    part_names = parts.split()
+    value = None
+    for part_name in part_names:
+        part = buildout[part_name]
+        if part.get('recipe', '').lower() in recipes:
+            value = part.get(option)
+            if value:
+                break
+    return value
