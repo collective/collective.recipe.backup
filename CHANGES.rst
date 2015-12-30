@@ -1,6 +1,11 @@
 2.22 (unreleased)
 =================
 
+- Set default ``backup_blobs`` to true on Python 2.6 (Plone 4) and
+  higher.  Otherwise false.  If no ``blob_storage`` can be found, we
+  quit with an error.
+  [maurits]
+
 - Accept ``true``, ``yes``, ``on``, ``1``, in lower, upper or mixed
   case as true value.  Treat all other values in the buildout options
   as false.

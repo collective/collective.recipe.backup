@@ -100,6 +100,53 @@ speed things up a bit):
     ...storage...1...
     ...zip_location.../var/zipbackups...
 
+Nowadays it is strange to not have a blob storage, at least with Plone
+4 and higher.  So we bail out when this is the case.
+
+We will only do this when we are being run with Python 2.6 or higher,
+because Python 2.4 indicates we are still on Plone 3.  Note that
+Python 2.4 / Plone 3 is not officially supported, and is not tested.
+Main reason is that is was too difficult to keep the tests passing in
+Plone 3 and Plone 4.  But the recipe should still work, so let's at
+least not break it on purpose or make it harder.  So the following
+is only for Plone 4 and higher.
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... """)
+    >>> print system(buildout) # doctest:+ELLIPSIS
+    While:
+      Installing.
+      Getting section backup.
+      Initializing section backup.
+    Error: No blob_storage found. You must specify one. To ignore this, set 'backup_blobs = false' in the [backup] section.
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... newest = false
+    ... parts = backup
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... backup_blobs = false
+    ... """)
+    >>> print system(buildout)  # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Uninstalling instance.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
+    <BLANKLINE>
+
 We can override the additional_filestorages location:
 
     >>> write('buildout.cfg',
@@ -110,12 +157,12 @@ We can override the additional_filestorages location:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... additional_filestorages =
     ...    catalog ${buildout:directory}/var/filestorage/2.fs
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
-    Uninstalling instance.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
@@ -136,6 +183,7 @@ We can override the additional_filestorages blob source location:
     ... [backup]
     ... recipe = collective.recipe.backup
     ... backup_blobs = True
+    ... blob_storage = ${buildout:directory}/var/blobstorage
     ... additional_filestorages =
     ...    withblob    ${buildout:directory}/var/filestorage/2.fs ${buildout:directory}/var/blobstorage2
     ...    withoutblob ${buildout:directory}/var/filestorage/3.fs
@@ -160,6 +208,7 @@ Wrong configurations for additional_filestorages:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... additional_filestorages =
     ...    wrong ${buildout:directory}/var/filestorage foo.fs ${buildout:directory}/var/blobstorage_foo
     ... """)
@@ -685,11 +734,11 @@ blob_storage option, otherwise buildout quits::
     ... backup_blobs = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
-    Installing backup.
     While:
-      Installing backup.
-    Error: backup_blobs is true, but no blob_storage could be found.
+      Installing.
+      Getting section backup.
+      Initializing section backup.
+    Error: No blob_storage found. You must specify one. To ignore this, set 'backup_blobs = false' in the [backup] section.
     <BLANKLINE>
 
 Combining blob_backup=false and only_blobs=true will not work::
@@ -707,6 +756,7 @@ Combining blob_backup=false and only_blobs=true will not work::
     ... only_blobs = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
     Installing backup.
     While:
       Installing backup.

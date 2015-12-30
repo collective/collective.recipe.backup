@@ -34,6 +34,7 @@ the ``alternative_restore_sources`` option::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ... """)
@@ -92,6 +93,7 @@ Add blobstorage to the alternative, but not the original::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
     ... """)
@@ -335,11 +337,13 @@ different names for the scripts::
     ...
     ... [firstbackup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ...
     ... [secondbackup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ... """)
@@ -375,6 +379,7 @@ Specifying ``1`` instead of ``Data`` is fine::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     1 ${buildout:directory}/alt/data
     ... """)
@@ -408,6 +413,7 @@ Specifying both ``1`` and ``Data`` is bad::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     1 ${buildout:directory}/alt/one
     ...     Data ${buildout:directory}/alt/data
@@ -429,6 +435,7 @@ Switching them around also fails::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ...     1 ${buildout:directory}/alt/one
@@ -449,6 +456,7 @@ Missing keys is bad::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... additional_filestorages =
     ...     foo ${buildout:directory}/var/filestorage/foo/foo.fs
     ... alternative_restore_sources =
@@ -467,6 +475,7 @@ Missing keys is bad::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... additional_filestorages =
     ...     foo ${buildout:directory}/var/filestorage/foo/foo.fs
     ... alternative_restore_sources =
@@ -488,6 +497,7 @@ Extra keys are also bad::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     foo ${buildout:directory}/alt/foo
     ... """)
@@ -507,6 +517,7 @@ A filestorage source path is required::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... alternative_restore_sources =
     ...     Data
     ... """)

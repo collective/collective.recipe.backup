@@ -24,6 +24,7 @@ We'll use most options, except the blob options for now::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... location = ${buildout:directory}/myproject
     ... keep = 2
     ... datafs = subfolder/myproject.fs
@@ -139,6 +140,7 @@ generated script).
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... enable_snapshotrestore = false
     ... """)
 
@@ -176,6 +178,7 @@ wanted.
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... quick = false
     ... """)
 
@@ -210,6 +213,7 @@ actually remove the previously generated script).
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... enable_fullbackup = false
     ... """)
 

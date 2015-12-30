@@ -31,6 +31,7 @@ option::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... additional_filestorages =
     ...     catalog
     ...     another

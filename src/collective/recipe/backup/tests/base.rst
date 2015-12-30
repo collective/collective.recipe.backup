@@ -17,6 +17,7 @@ The simplest way to use it is to add a part in ``buildout.cfg`` like this::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... """)
 
 Running the buildout adds a backup, snapshotbackup, restore and
@@ -151,6 +152,7 @@ something else,  the script names will also be different as will the created
     ...
     ... [plonebackup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
@@ -194,5 +196,6 @@ the ``var/plonebackups`` and ``var/plonebackup-snaphots`` dirs:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... backup_blobs = false
     ... """)
     >>> dont_care = system(buildout) # doctest:+ELLIPSIS

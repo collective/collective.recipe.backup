@@ -4,7 +4,7 @@ import logging
 import os
 import re
 import pprint
-
+import sys
 import zc.recipe.egg
 import zc.buildout
 
@@ -159,14 +159,20 @@ class Recipe(object):
         # Make sure the options are the same, for good measure.
         options['blob-storage'] = options['blob_storage'] = blob_storage
 
-        # We usually want backup_blobs to be true, but we should not
-        # complain when there really is no blob-storage.
-        options.setdefault('backup_blobs', '')
-        if options['backup_blobs'] == '':
-            if bool(blob_storage):
-                options['backup_blobs'] = 'True'
-            else:
-                options['backup_blobs'] = 'False'
+        # We usually want backup_blobs to be true.  If no blob_storage is
+        # found, we complain, unless backup_blobs has explicitly been disabled.
+        # Or when the Python version is lower than 2.6: we then expect Plone 3,
+        # so no blob storage.
+        if sys.version_info >= (2, 6):
+            options.setdefault('backup_blobs', 'True')
+        else:
+            options.setdefault('backup_blobs', 'False')
+        backup_blobs = to_bool(options['backup_blobs'])
+        if backup_blobs and not blob_storage:
+            raise zc.buildout.UserError(
+                "No blob_storage found. You must specify one. "
+                "To ignore this, set 'backup_blobs = false' "
+                "in the [%s] section." % self.name)
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
