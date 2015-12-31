@@ -1,5 +1,5 @@
-2.23 (unreleased)
-=================
+3.0.0 (2015-12-31)
+==================
 
 - Refactored the init and install methods of this recipe.  During the
   init phase we were reading the buildout configuration, but during
