@@ -329,8 +329,6 @@ different names for the scripts::
     ... """
     ... [buildout]
     ... newest = false
-    ... # I do not understand the order of the parts here.  The second
-    ... # listed part gets executed first.
     ... parts =
     ...     secondbackup
     ...     firstbackup
@@ -349,13 +347,6 @@ different names for the scripts::
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
     Uninstalling backup.
-    Installing firstbackup.
-    Generated script '/sample-buildout/bin/firstbackup'.
-    Generated script '/sample-buildout/bin/firstbackup-full'.
-    Generated script '/sample-buildout/bin/firstbackup-snapshot'.
-    Generated script '/sample-buildout/bin/firstbackup-restore'.
-    Generated script '/sample-buildout/bin/firstbackup-snapshotrestore'.
-    Generated script '/sample-buildout/bin/firstbackup-altrestore'.
     Installing secondbackup.
     Generated script '/sample-buildout/bin/secondbackup'.
     Generated script '/sample-buildout/bin/secondbackup-full'.
@@ -363,6 +354,13 @@ different names for the scripts::
     Generated script '/sample-buildout/bin/secondbackup-restore'.
     Generated script '/sample-buildout/bin/secondbackup-snapshotrestore'.
     Generated script '/sample-buildout/bin/secondbackup-altrestore'.
+    Installing firstbackup.
+    Generated script '/sample-buildout/bin/firstbackup'.
+    Generated script '/sample-buildout/bin/firstbackup-full'.
+    Generated script '/sample-buildout/bin/firstbackup-snapshot'.
+    Generated script '/sample-buildout/bin/firstbackup-restore'.
+    Generated script '/sample-buildout/bin/firstbackup-snapshotrestore'.
+    Generated script '/sample-buildout/bin/firstbackup-altrestore'.
     <BLANKLINE>
 
 
@@ -384,8 +382,8 @@ Specifying ``1`` instead of ``Data`` is fine::
     ...     1 ${buildout:directory}/alt/data
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling secondbackup.
     Uninstalling firstbackup.
+    Uninstalling secondbackup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.

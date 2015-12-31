@@ -39,10 +39,8 @@ You should not mix backup locations; it is confusing for the recipe
     Error: These must be distinct locations:
     blobbackuplocation = /sample-buildout/var/loc1
     blobsnapshotlocation = /sample-buildout/var/loc2
-    blobziplocation = /sample-buildout/var/blobstoragezips
     location = /sample-buildout/var/loc1
     snapshotlocation = /sample-buildout/var/loc2
-    ziplocation = /sample-buildout/var/zipbackups
     <BLANKLINE>
 
 Some of these locations might be an empty string in some cases, which

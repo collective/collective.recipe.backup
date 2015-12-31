@@ -35,6 +35,37 @@ class Recipe(object):
 
     def __init__(self, buildout, name, options):
         self.buildout, self.name, self.options = buildout, name, options
+
+        # Accept both blob-storage (used by plone.recipe.zope2instance
+        # and friends) and blob_storage (as we use underscores
+        # everywhere).  But keep only blob_storage.
+        blobs_1 = options.pop('blob-storage', '')
+        options.setdefault('blob_storage', blobs_1)
+        blobs_2 = options.get('blob_storage')
+        if blobs_1 != blobs_2:
+            if blobs_1 and blobs_2:
+                # Both options have been set explicitly, which is
+                # wrong.
+                raise zc.buildout.UserError(
+                    "Both blob_storage and blob-storage have been set. "
+                    "Please pick one.")
+
+        # We usually want backup_blobs to be true.  If no blob_storage is
+        # found, we complain, unless backup_blobs has explicitly been disabled.
+        # Or when the Python version is lower than 2.6: we then expect Plone 3,
+        # so no blob storage.
+        if sys.version_info >= (2, 6):
+            options.setdefault('backup_blobs', 'True')
+        else:
+            options.setdefault('backup_blobs', 'False')
+
+        # Validate options, checking for example that the locations are unique.
+        self.validate()
+
+    def install(self):
+        """Installer"""
+        options = self.options
+        buildout = self.buildout
         # self.buildout['buildout']['directory'] is not always the
         # main directory, but is the directory that contains the
         # config file, so if you do 'main/bin/buildout -c
@@ -106,19 +137,10 @@ class Recipe(object):
         options.setdefault('location', backup_dir)
         options.setdefault('snapshotlocation', snapshot_dir)
         options.setdefault('ziplocation', zip_backup_dir)
-        # These must be distinct locations.
-        locations = {}
-        for opt in ('location', 'snapshotlocation',
-                    'blobbackuplocation', 'blobsnapshotlocation',
-                    'ziplocation', 'blobziplocation'):
-            value = options.get(opt)
-            if value:
-                locations[opt] = value
-        if len(locations.keys()) != len(set(locations.values())):
-            raise zc.buildout.UserError(
-                "These must be distinct locations:\n",
-                '\n'.join([('%s = %s' % (k, v)) for (k, v) in
-                           sorted(locations.items())]))
+
+        # Validate options, checking that the locations are unique
+        self.validate()
+
         # more options, alphabetical
         options.setdefault('additional_filestorages', '')
         options.setdefault('alternative_restore_sources', '')
@@ -138,19 +160,9 @@ class Recipe(object):
         options.setdefault('quick', 'true')
         options.setdefault('rsync_options', '')
         options.setdefault('use_rsync', 'true')
-        # Accept both blob-storage (used by plone.recipe.zope2instance
-        # and friends) and blob_storage (as we use underscores
-        # everywhere).
-        options.setdefault('blob-storage', '')
-        options.setdefault('blob_storage', '')
-        if options['blob-storage'] != options['blob_storage']:
-            if options['blob-storage'] and options['blob_storage']:
-                # Both options have been set explicitly, which is
-                # wrong.
-                raise zc.buildout.UserError(
-                    "Both blob_storage and blob-storage have been set. "
-                    "Please pick one.")
-        blob_storage = options['blob-storage'] or options['blob_storage']
+
+        # Get the blob storage.
+        blob_storage = options['blob_storage']
         if not blob_storage:
             # Try to get the blob-storage location from the
             # instance/zeoclient/zeoserver part, if it is available.
@@ -158,17 +170,11 @@ class Recipe(object):
             if not blob_storage:
                 # 'None' would give a TypeError when setting the option.
                 blob_storage = ''
-        # Make sure the options are the same, for good measure.
-        options['blob-storage'] = options['blob_storage'] = blob_storage
+            options['blob_storage'] = blob_storage
+        # Validate again, which also makes sure the blob storage options are
+        # the same, for good measure.
+        self.validate()
 
-        # We usually want backup_blobs to be true.  If no blob_storage is
-        # found, we complain, unless backup_blobs has explicitly been disabled.
-        # Or when the Python version is lower than 2.6: we then expect Plone 3,
-        # so no blob storage.
-        if sys.version_info >= (2, 6):
-            options.setdefault('backup_blobs', 'True')
-        else:
-            options.setdefault('backup_blobs', 'False')
         backup_blobs = to_bool(options['backup_blobs'])
         if backup_blobs and not blob_storage:
             raise zc.buildout.UserError(
@@ -189,24 +195,15 @@ class Recipe(object):
         options['snapshotrestore_name'] = snapshotrestore_name
         options['ziprestore_name'] = ziprestore_name
         options['altrestore_name'] = altrestore_name
-        check_for_true(options, ['full', 'debug', 'gzip', 'only_blobs',
-                                 'backup_blobs', 'use_rsync', 'gzip_blob',
-                                 'quick', 'enable_snapshotrestore',
-                                 'enable_zipbackup', 'enable_fullbackup'])
-        if not to_bool(options['backup_blobs']) \
-                and to_bool(options['enable_zipbackup']):
-            raise zc.buildout.UserError(
-                "Cannot have backup_blobs false and enable_zipbackup true. "
-                "zipbackup is useless without blobs.")
+
+        # Validate agin, which also sets the truth values correctly.
+        self.validate()
 
         # For site_py_dest in scripts generated with buildout 1.5+:
         options['parts-directory'] = os.path.join(
             buildout['buildout']['parts-directory'], self.name)
-        self.options = options
 
-    def install(self):
-        """Installer"""
-        buildout_dir = self.options['buildout_dir']
+        # More locations.
         backup_location = construct_path(
             buildout_dir, self.options['location'])
         snapshot_location = construct_path(
@@ -418,10 +415,6 @@ logging.basicConfig(level=loglevel,
         opts['loglevel'] = loglevel
         opts['storages'] = pprint.pformat(storages)
 
-        if not to_bool(opts['backup_blobs']) and to_bool(opts['only_blobs']):
-            raise zc.buildout.UserError(
-                "Cannot have backup_blobs false and only_blobs true.")
-
         # Keep list of generated files/directories/scripts
         generated = []
         if USE_SAFE_SCRIPTS and not os.path.exists(opts['parts-directory']):
@@ -520,6 +513,38 @@ logging.basicConfig(level=loglevel,
     # changed.
     update = install
 
+    def validate(self):
+        options = self.options
+        check_for_true(
+            options,
+            ['full', 'debug', 'gzip', 'only_blobs',
+             'backup_blobs', 'use_rsync', 'gzip_blob',
+             'quick', 'enable_snapshotrestore',
+             'enable_zipbackup', 'enable_fullbackup'])
+
+        # These must be distinct locations.
+        locations = {}
+        for opt in ('location', 'snapshotlocation',
+                    'blobbackuplocation', 'blobsnapshotlocation',
+                    'ziplocation', 'blobziplocation'):
+            value = options.get(opt)
+            if value:
+                locations[opt] = value
+        if len(locations.keys()) != len(set(locations.values())):
+            raise zc.buildout.UserError(
+                "These must be distinct locations:\n",
+                '\n'.join([('%s = %s' % (k, v)) for (k, v) in
+                           sorted(locations.items())]))
+
+        if not to_bool(options.get('backup_blobs')):
+            if to_bool(options.get('only_blobs')):
+                raise zc.buildout.UserError(
+                    "Cannot have backup_blobs false and only_blobs true.")
+            if to_bool(options.get('enable_zipbackup')):
+                raise zc.buildout.UserError(
+                    "Cannot have backup_blobs false and enable_zipbackup "
+                    "true. zipbackup is useless without blobs.")
+
 
 def check_for_true(options, keys):
     """Set the truth options right.
@@ -529,6 +554,8 @@ def check_for_true(options, keys):
 
     """
     for key in keys:
+        if key not in options:
+            continue
         if to_bool(options[key]):
             options[key] = 'True'
         else:

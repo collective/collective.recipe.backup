@@ -1,6 +1,15 @@
 2.23 (unreleased)
 =================
 
+- Refactored the init and install methods of this recipe.  During the
+  init phase we were reading the buildout configuration, but during
+  this phase the configuration is still being build.  So differences
+  could occur, especially in the order of execution of parts.  This
+  was not good.  Most code is now moved from the init to the install
+  (and update) method.  This has less possible problems.  Downside:
+  some configuration errors are caught later.
+  [maurits]
+
 - Read ``zeo-var``, ``var``, ``file-storage`` from buildout sections.
   Update default backup and Data.fs locations based on this.
   [maurits]

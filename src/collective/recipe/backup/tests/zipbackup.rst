@@ -143,7 +143,13 @@ the default::
     ... keep = 42
     ... """)
     >>> print system(buildout)
-    Updating backup.
+    Uninstalling backup.
+    Installing backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'.
     >>> ls('bin')
     -  backup
     -  buildout

@@ -121,10 +121,10 @@ is only for Plone 4 and higher.
     ... recipe = collective.recipe.backup
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling instance.
+    Updating backup.
     While:
-      Installing.
-      Getting section backup.
-      Initializing section backup.
+      Updating backup.
     Error: No blob_storage found. You must specify one. To ignore this, set 'backup_blobs = false' in the [backup] section.
     >>> write('buildout.cfg',
     ... """
@@ -137,8 +137,6 @@ is only for Plone 4 and higher.
     ... backup_blobs = false
     ... """)
     >>> print system(buildout)  # doctest:+ELLIPSIS
-    Uninstalling backup.
-    Uninstalling instance.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
@@ -734,10 +732,10 @@ blob_storage option, otherwise buildout quits::
     ... backup_blobs = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
+    Uninstalling backup.
+    Installing backup.
     While:
-      Installing.
-      Getting section backup.
-      Initializing section backup.
+      Installing backup.
     Error: No blob_storage found. You must specify one. To ignore this, set 'backup_blobs = false' in the [backup] section.
     <BLANKLINE>
 
@@ -756,10 +754,10 @@ Combining blob_backup=false and only_blobs=true will not work::
     ... only_blobs = true
     ... """)
     >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
-    Installing backup.
     While:
-      Installing backup.
+      Installing.
+      Getting section backup.
+      Initializing section backup.
     Error: Cannot have backup_blobs false and only_blobs true.
     <BLANKLINE>
 
