@@ -446,7 +446,7 @@ def get_blob_backup_dirs(backup_location):
                 logger.error(
                     "Different backup prefixes found in %s (%s, %s). Are you "
                     "mixing two backups in one directory? For safety we will "
-                    "not cleanup old backups here." % (
+                    "exit, because we cannot get a correct sort order." % (
                         backup_location, prefix, parts[0]))
                 sys.exit(1)
         else:
@@ -491,7 +491,7 @@ def get_blob_backup_gzips(backup_location):
                 logger.error(
                     "Different backup prefixes found in %s (%s, %s). Are you "
                     "mixing two backups in one directory? For safety we will "
-                    "not cleanup old backups here." % (
+                    "exit, because we cannot get a correct sort order." % (
                         backup_location, prefix, parts[0]))
                 sys.exit(1)
         else:
@@ -516,7 +516,8 @@ def get_blob_backup_gzips(backup_location):
 
 
 def backup_blobs(source, destination, full=False, use_rsync=True,
-                 keep=0, keep_blob_days=0, gzip_blob=False, rsync_options=''):
+                 keep=0, keep_blob_days=0, gzip_blob=False, rsync_options='',
+                 timestamps=False):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -545,6 +546,9 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     mean we keep the last X full Data.fs backups plus the partial
     backups created by repozo; and there is no similar concept in our
     blobstorage backups.
+
+    With timestamps True, we do not make blobstorage.0, but use time stamps,
+    for example blobstorage.2017-01-02-03-04-05.
 
     Again, let's test this using the tools from zc.buildout:
 
@@ -659,6 +663,12 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     >>> stat_0.st_ino == stat_1.st_ino
     True
 
+    >>> backup_blobs('blobs', 'backups', timestamps=True)
+    >>> ls('backups')
+    d  blobs.0
+    d  blobs.1
+    d  blobs.20...
+
     Cleanup:
 
     >>> remove('blobs')
@@ -668,15 +678,23 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     base_name = os.path.basename(source)
 
     if gzip_blob:
-        backup_blobs_gzip(source, destination, keep)
+        backup_blobs_gzip(source, destination, keep, timestamps=timestamps)
         return
 
-    rotate_directories(destination, base_name)
-
-    prev = os.path.join(destination, base_name + '.1')
-    dest = os.path.join(destination, base_name + '.0')
+    if timestamps:
+        current_backups = get_blob_backup_dirs(destination)
+        if current_backups:
+            prev = current_backups[0][2]
+        else:
+            prev = None
+        dest = os.path.join(destination, base_name + '.' + gen_time_stamp())
+    else:
+        # rotation is not needed when using timestamps
+        rotate_directories(destination, base_name)
+        prev = os.path.join(destination, base_name + '.1')
+        dest = os.path.join(destination, base_name + '.0')
     if use_rsync:
-        if os.path.exists(prev):
+        if prev and os.path.exists(prev):
             # Make a 'partial' backup by reusing the previous backup.  We
             # might not want to do this for full backups, but this is a
             # lot faster and the end result really is the same, so why
@@ -715,7 +733,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     cleanup(destination, full, keep, keep_blob_days)
 
 
-def backup_blobs_gzip(source, destination, keep=0):
+def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
     """Make gzip archive from blobs in source directory.
 
     Source is usually something like var/blobstorage and destination
@@ -754,8 +772,13 @@ def backup_blobs_gzip(source, destination, keep=0):
     base_name = os.path.basename(source)
     if not os.path.exists(destination):
         os.makedirs(destination)
-    rotate_gzips(destination, base_name)
-    dest = os.path.join(destination, base_name + '.0.tar.gz')
+    if timestamps:
+        filename = base_name + '.' + gen_time_stamp() + '.tar.gz'
+        dest = os.path.join(destination, filename)
+    else:
+        # rotation is not needed when using timestamps
+        rotate_gzips(destination, base_name)
+        dest = os.path.join(destination, base_name + '.0.tar.gz')
     if os.path.exists(dest):
         raise Exception("Path already exists: %s" % dest)
     cmd = "tar czf %s -C %s ." % (dest, source)
