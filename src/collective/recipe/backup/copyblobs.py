@@ -21,6 +21,8 @@ import time
 logger = logging.getLogger('blobs')
 SOURCE = 'blobstorage'
 BACKUP_DIR = 'backups'
+# Similar to is_data_file in repozo.py:
+is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 
 
 def strict_cmp_backups(a, b):
@@ -28,6 +30,8 @@ def strict_cmp_backups(a, b):
 
     a and b MUST be something like blobstorage.0 and
     blobstorage.1, which should be sorted numerically.
+
+    New is that it may also be like blobstorage.1999-12-31-23-59-30.
 
     >>> strict_cmp_backups('foo.0', 'foo.1')
     -1
@@ -41,6 +45,8 @@ def strict_cmp_backups(a, b):
     Traceback (most recent call last):
     ...
     ValueError: Not the same start for directories: 'foo.1' vs 'bar.1'
+    >>> strict_cmp_backups('foo.0', 'foo.1999-12-31-23-59-30')
+    -1
 
     """
     a_start, a_num = a.rsplit('.', 1)
@@ -92,6 +98,33 @@ def strict_cmp_gzips(a, b):
     a_num = int(a_num)
     b_num = int(b_num)
     return cmp(a_num, b_num)
+
+
+def gen_time_stamp(now=None):
+    """Generate time stamp.
+
+    With 'now' you can set a different time for testing.
+    It should be a tuple of year, month, day, hour, minute, second.
+    """
+    if now is None:
+        now = time.gmtime()[:6]
+    t = now
+    return '%04d-%02d-%02d-%02d-%02d-%02d' % t
+
+
+def gen_blobdir_name(prefix='blobstorage', now=None):
+    """Generate directory name for blobstorage.
+
+    This is adapted from gen_filename from ZODB/scripts/repozo.py.
+
+    With 'now' you can set a different time for testing.
+    It should be a tuple of year, month, day, hour, minute, second.
+    """
+    if now is None:
+        now = time.gmtime()[:6]
+    t = now
+    ts = gen_time_stamp(t)
+    return '{0}.{1}'.format(prefix, ts)
 
 
 def get_valid_directories(container, name):

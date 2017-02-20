@@ -3,6 +3,7 @@ import unittest
 
 
 class UtilsTestCase(unittest.TestCase):
+    """Test the code in utils.py."""
 
     def test_to_bool(self):
         from collective.recipe.backup import to_bool
@@ -106,3 +107,39 @@ class UtilsTestCase(unittest.TestCase):
         buildout_info['buildout'] = {'parts': 'four two one'}
         self.assertEqual(
             get_zope_option(buildout_info, 'wanted'), 'four-wanted')
+
+
+class CopyBlobsTestCase(unittest.TestCase):
+    """Test the code in copyblobs.py."""
+
+    def test_gen_blobdir_name(self):
+        from collective.recipe.backup.copyblobs import gen_blobdir_name
+        # The name starts with blobstorage and a time.
+        # We only check that the century is okay.
+        self.assertTrue(gen_blobdir_name().startswith('blobstorage.20'))
+        # We can pass a time tuple.
+        self.assertEqual(gen_blobdir_name(now=(1999, 12, 31, 23, 59, 30)),
+                         'blobstorage.1999-12-31-23-59-30')
+        # We can pass a different prefix.
+        self.assertEqual(
+            gen_blobdir_name(prefix='foo', now=(1999, 12, 31, 23, 59, 30)),
+            'foo.1999-12-31-23-59-30')
+
+    def test_gen_time_stamp(self):
+        from collective.recipe.backup.copyblobs import gen_time_stamp
+        self.assertTrue(gen_time_stamp().startswith('20'))
+        self.assertEqual(gen_time_stamp().count('-'), 5)
+        self.assertEqual(len(gen_time_stamp()), 19)
+        # We can pass a time tuple.
+        self.assertEqual(gen_time_stamp(now=(1999, 12, 31, 23, 59, 30)),
+                         '1999-12-31-23-59-30')
+
+    def test_is_time_stamp(self):
+        from collective.recipe.backup.copyblobs import gen_time_stamp
+        from collective.recipe.backup.copyblobs import is_time_stamp
+        self.assertTrue(is_time_stamp('1999-12-31-23-59-30'))
+        self.assertFalse(is_time_stamp('1999-1-31-23-59-30'))
+        self.assertTrue(is_time_stamp('2017-01-02-03-04-05'))
+        self.assertFalse(is_time_stamp('1999-12-31'))
+        self.assertFalse(is_time_stamp('99-12-31-23-59-30'))
+        self.assertTrue(is_time_stamp(gen_time_stamp()))
