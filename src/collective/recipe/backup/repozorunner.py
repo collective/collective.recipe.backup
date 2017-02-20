@@ -40,9 +40,9 @@ def backup_main(bin_dir, storages, keep, full, verbose, gzip, quick):
         logger.info("Please wait while backing up database file: %s to %s",
                     fs, backup_location)
         result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, backup_location, full,
-                                            verbose, gzip, quick,
-                                            as_list=True)))
+                                         backup_arguments(fs, backup_location, full,
+                                                          verbose, gzip, quick,
+                                                          as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
@@ -64,9 +64,9 @@ def fullbackup_main(bin_dir, storages, keep, full, verbose, gzip):
         # main.fullbackup_main()
         full = True
         result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, backup_location, full,
-                                            verbose, gzip,
-                                            as_list=True)))
+                                         backup_arguments(fs, backup_location, full,
+                                                          verbose, gzip,
+                                                          as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
@@ -83,9 +83,9 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip):
         logger.info("Please wait while making snapshot backup: %s to %s",
                     fs, snapshot_location)
         result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, snapshot_location,
-                                            full=True, verbose=verbose,
-                                            gzip=gzip, as_list=True)))
+                                         backup_arguments(fs, snapshot_location,
+                                                          full=True, verbose=verbose,
+                                                          gzip=gzip, as_list=True)))
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
@@ -107,9 +107,9 @@ def zipbackup_main(bin_dir, storages, keep, full, verbose, gzip):
         logger.info("Please wait while backing up database file: %s to %s",
                     fs, backup_location)
         result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, backup_location, full,
-                                            verbose, gzip,
-                                            as_list=True)))
+                                         backup_arguments(fs, backup_location, full,
+                                                          verbose, gzip,
+                                                          as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
@@ -145,8 +145,8 @@ def restore_main(bin_dir, storages, verbose,
         logger.info("Please wait while restoring database file: %s to %s",
                     backup_location, fs)
         result = os.system(quote_command([repozo] +
-                           restore_arguments(fs, backup_location, date,
-                                             verbose, as_list=True)))
+                                         restore_arguments(fs, backup_location, date,
+                                                           verbose, as_list=True)))
         if result:
             logger.error("Repozo command failed. See message above.")
             return result

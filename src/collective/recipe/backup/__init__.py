@@ -652,7 +652,7 @@ def get_zope_option(buildout, option):
         'plone.recipe.zeoserver',
         'plone.recipe.zope2instance',
         'plone.recipe.zope2zeoserver',
-        )
+    )
     parts = buildout['buildout']['parts']
     part_names = parts.split()
     value = None
