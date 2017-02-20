@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """Recipe backup"""
+from collective.recipe.backup import utils
+
 import logging
 import os
-import re
 import pprint
+import re
 import sys
-import zc.recipe.egg
 import zc.buildout
+import zc.recipe.egg
 
-from collective.recipe.backup import utils
 
 logger = logging.getLogger('backup')
 
@@ -652,7 +653,7 @@ def get_zope_option(buildout, option):
         'plone.recipe.zeoserver',
         'plone.recipe.zope2instance',
         'plone.recipe.zope2zeoserver',
-        )
+    )
     parts = buildout['buildout']['parts']
     part_names = parts.split()
     value = None

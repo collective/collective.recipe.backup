@@ -55,6 +55,12 @@ cake is important!
 - ``bin/ziprestore`` restores the latest zipbackup.
 
 
+Compatibility
+=============
+
+The recipe is tested with Pyhton 2.6 and 2.7.
+In Plone terms it works fine on Plone 4 and 5.
+
 
 Development
 ===========

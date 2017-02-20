@@ -1,7 +1,9 @@
 3.0.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Only claim compatibility with Python 2.6 and 2.7.  [maurits]
+
+- Updated test buildout to use most recent versions.  [maurits]
 
 
 3.0.0 (2015-12-31)

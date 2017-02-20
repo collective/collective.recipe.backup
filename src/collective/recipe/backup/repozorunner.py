@@ -12,9 +12,11 @@ filling up the harddisk.
 
 """
 from operator import itemgetter
+
 import logging
 import os
 import sys
+
 
 logger = logging.getLogger('repozorunner')
 
@@ -39,10 +41,11 @@ def backup_main(bin_dir, storages, keep, full, verbose, gzip, quick):
         fs = storage['datafs']
         logger.info("Please wait while backing up database file: %s to %s",
                     fs, backup_location)
-        result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, backup_location, full,
-                                            verbose, gzip, quick,
-                                            as_list=True)))
+        result = os.system(quote_command(
+            [repozo] +
+            backup_arguments(
+                fs, backup_location, full, verbose, gzip, quick,
+                as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
@@ -63,10 +66,11 @@ def fullbackup_main(bin_dir, storages, keep, full, verbose, gzip):
         # in case it's called from somewhere other than
         # main.fullbackup_main()
         full = True
-        result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, backup_location, full,
-                                            verbose, gzip,
-                                            as_list=True)))
+        result = os.system(quote_command(
+            [repozo] +
+            backup_arguments(
+                fs, backup_location, full, verbose, gzip,
+                as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
@@ -82,10 +86,11 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip):
         fs = storage['datafs']
         logger.info("Please wait while making snapshot backup: %s to %s",
                     fs, snapshot_location)
-        result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, snapshot_location,
-                                            full=True, verbose=verbose,
-                                            gzip=gzip, as_list=True)))
+        result = os.system(quote_command(
+            [repozo] +
+            backup_arguments(
+                fs, snapshot_location, full=True, verbose=verbose,
+                gzip=gzip, as_list=True)))
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
@@ -106,10 +111,11 @@ def zipbackup_main(bin_dir, storages, keep, full, verbose, gzip):
         fs = storage['datafs']
         logger.info("Please wait while backing up database file: %s to %s",
                     fs, backup_location)
-        result = os.system(quote_command([repozo] +
-                           backup_arguments(fs, backup_location, full,
-                                            verbose, gzip,
-                                            as_list=True)))
+        result = os.system(quote_command(
+            [repozo] +
+            backup_arguments(
+                fs, backup_location, full, verbose, gzip,
+                as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
@@ -144,9 +150,10 @@ def restore_main(bin_dir, storages, verbose,
             logger.info('Created directory %s', fs_dir)
         logger.info("Please wait while restoring database file: %s to %s",
                     backup_location, fs)
-        result = os.system(quote_command([repozo] +
-                           restore_arguments(fs, backup_location, date,
-                                             verbose, as_list=True)))
+        result = os.system(quote_command(
+            [repozo] +
+            restore_arguments(
+                fs, backup_location, date, verbose, as_list=True)))
         if result:
             logger.error("Repozo command failed. See message above.")
             return result

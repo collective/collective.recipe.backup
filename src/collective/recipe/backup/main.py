@@ -1,11 +1,12 @@
 """Functions that invoke repozo and/or the blob backup.
 """
-import logging
-import sys
-
 from collective.recipe.backup import copyblobs
 from collective.recipe.backup import repozorunner
 from collective.recipe.backup import utils
+
+import logging
+import sys
+
 
 logger = logging.getLogger('backup')
 

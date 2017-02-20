@@ -39,7 +39,7 @@ class UtilsTestCase(unittest.TestCase):
             'f': 'false',
             'g': '',
             'h': 'unknown',
-            }
+        }
         orig_options = options.copy()
         # The result should be a unified capitalized True/False string.
         sanitised_options = {
@@ -51,7 +51,7 @@ class UtilsTestCase(unittest.TestCase):
             'f': 'False',
             'g': 'False',
             'h': 'False',
-            }
+        }
         # Without keys, nothing is changed.
         check_for_true(options, [])
         self.assertEqual(options, orig_options)
@@ -74,23 +74,23 @@ class UtilsTestCase(unittest.TestCase):
                 'recipe': 'unknown.recipe',
                 'wanted': 'one-wanted',
                 'one-only': 'one-only-value',
-                },
+            },
             'two': {
                 'recipe': 'plone.recipe.zeoserver',
                 'wanted': 'two-wanted',
                 'two-only': 'two-only-value',
-                },
+            },
             'three': {
                 'recipe': 'plone.recipe.zeoserver',
                 'wanted': 'three-wanted',
                 'three-only': 'three-only-value',
-                },
+            },
             'four': {
                 'recipe': 'plone.recipe.zope2INSTANCE',
                 'wanted': 'four-wanted',
                 'four-only': 'four-only-value',
-                },
-            }
+            },
+        }
         # Non existing keys are not found:
         self.assertFalse(get_zope_option(buildout_info, 'foo'))
         # Only keys from one of the correct recipes are found:

@@ -77,7 +77,7 @@ speed things up a bit):
     Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/snapshotrestore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'...
     <BLANKLINE>
     >>> ls('bin')
     -  backup

@@ -1,9 +1,10 @@
 # Small utility methods.
 import logging
+import os
 import shutil
 import subprocess
 import sys
-import os
+
 
 logger = logging.getLogger('utils')
 
@@ -60,8 +61,8 @@ def ask(question, default=True, exact=False):
         if not answer and default is not None:
             return default
         if exact and answer.lower() not in ('yes', 'no'):
-            print ("Please explicitly answer yes/no in full "
-                   "(or accept the default)")
+            print("Please explicitly answer yes/no in full "
+                  "(or accept the default)")
             continue
         if answer:
             answer = answer[0].lower()
@@ -70,7 +71,7 @@ def ask(question, default=True, exact=False):
             if answer == 'n':
                 return False
         # We really want an answer.
-        print 'Please explicitly answer y/n'
+        print('Please explicitly answer y/n')
         continue
 
 
@@ -80,7 +81,7 @@ def execute_or_fail(command):
     output, failed = system(command)
     logger.debug("command executed: %r", command)
     if output:
-        print output
+        print(output)
     if failed:
         logger.error("command %r failed. See message above.", command)
         sys.exit(1)
