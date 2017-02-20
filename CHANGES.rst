@@ -1,7 +1,7 @@
 3.0.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Updated test buildout to use most recent versions.  [maurits]
 
 
 3.0.0 (2015-12-31)

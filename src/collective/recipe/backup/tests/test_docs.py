@@ -4,6 +4,7 @@ Doctest runner for 'collective.recipe.backup'.
 """
 __docformat__ = 'restructuredtext'
 
+import doctest
 import re
 import unittest
 import zc.buildout.tests
@@ -12,7 +13,7 @@ import collective.recipe.backup
 from collective.recipe.backup import repozorunner
 from collective.recipe.backup import copyblobs
 from collective.recipe.backup import utils
-from zope.testing import doctest, renormalizing
+from zope.testing import renormalizing
 
 # Importing modules so that we can install their eggs in the test buildout.
 import zc.recipe.egg
