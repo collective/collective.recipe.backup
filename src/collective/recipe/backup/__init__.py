@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """Recipe backup"""
+from collective.recipe.backup import utils
+
 import logging
 import os
-import re
 import pprint
+import re
 import sys
-import zc.recipe.egg
 import zc.buildout
+import zc.recipe.egg
 
-from collective.recipe.backup import utils
 
 logger = logging.getLogger('backup')
 

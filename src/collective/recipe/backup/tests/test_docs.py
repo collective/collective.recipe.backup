@@ -2,21 +2,21 @@
 """
 Doctest runner for 'collective.recipe.backup'.
 """
-__docformat__ = 'restructuredtext'
 
-import doctest
-import re
-import unittest
-import zc.buildout.tests
-import zc.buildout.testing
-import collective.recipe.backup
-from collective.recipe.backup import repozorunner
 from collective.recipe.backup import copyblobs
+from collective.recipe.backup import repozorunner
 from collective.recipe.backup import utils
 from zope.testing import renormalizing
 
 # Importing modules so that we can install their eggs in the test buildout.
+import collective.recipe.backup
+import doctest
+import re
+import unittest
+import zc.buildout.testing
+import zc.buildout.tests
 import zc.recipe.egg
+
 
 optionflags = (doctest.ELLIPSIS |
                doctest.NORMALIZE_WHITESPACE)

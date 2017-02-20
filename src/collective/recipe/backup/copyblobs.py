@@ -6,18 +6,19 @@ It is based on this article by Mike Rubel:
 http://www.mikerubel.org/computers/rsync_snapshots/
 """
 
-from operator import itemgetter
+from collective.recipe.backup import utils
 from datetime import datetime
+from operator import itemgetter
+
 import logging
 import os
 import re
 import shutil
 import sys
 import time
+
+
 logger = logging.getLogger('blobs')
-
-from collective.recipe.backup import utils
-
 SOURCE = 'blobstorage'
 BACKUP_DIR = 'backups'
 
@@ -562,7 +563,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
         logger.info(cmd)
         output, failed = utils.system(cmd)
         if output:
-            print output
+            print(output)
         if failed:
             return
     else:
@@ -624,7 +625,7 @@ def backup_blobs_gzip(source, destination, keep=0):
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
-        print output
+        print(output)
     if failed:
         return
     # Now possibly remove old backups.
@@ -699,7 +700,7 @@ def restore_blobs(source, destination, use_rsync=True,
         logger.info(cmd)
         output, failed = utils.system(cmd)
         if output:
-            print output
+            print(output)
         if failed:
             return
     else:
@@ -789,7 +790,7 @@ def restore_blobs_gzip(source, destination, date=None):
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
-        print output
+        print(output)
     if failed:
         return
 
