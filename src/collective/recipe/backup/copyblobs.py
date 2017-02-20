@@ -31,32 +31,54 @@ def strict_cmp_backups(a, b):
     a and b MUST be something like blobstorage.0 and
     blobstorage.1, which should be sorted numerically.
 
-    New is that it may also be like blobstorage.1999-12-31-23-59-30.
+    New is that it may also be  a timestamp like
+    blobstorage.1999-12-31-23-59-30.
 
-    >>> strict_cmp_backups('foo.0', 'foo.1')
-    -1
-    >>> strict_cmp_backups('foo.0', 'foo.0')
-    0
-    >>> strict_cmp_backups('foo.1', 'foo.0')
-    1
-    >>> strict_cmp_backups('foo.9', 'foo.10')
-    -1
-    >>> strict_cmp_backups('foo.1', 'bar.1')
-    Traceback (most recent call last):
-    ...
-    ValueError: Not the same start for directories: 'foo.1' vs 'bar.1'
-    >>> strict_cmp_backups('foo.0', 'foo.1999-12-31-23-59-30')
-    -1
+    Newest must be first: x.0, x.1, x.2.
+    This means that the smallest integer in a comparison gets -1.
+    The biggest timestamp gets -1.
 
+    If integers and time stamps are compared, time stamps are always smaller:
+    x.timestamp, x.0, x.1.
     """
+    assert '.' in a
+    assert '.' in b
     a_start, a_num = a.rsplit('.', 1)
     b_start, b_num = b.rsplit('.', 1)
     if a_start != b_start:
         raise ValueError(
             "Not the same start for directories: %r vs %r" % (a, b))
-    a_num = int(a_num)
-    b_num = int(b_num)
-    return cmp(a_num, b_num)
+
+    # Check if one or both are time stamps.
+    a_time_stamp = None
+    b_time_stamp = None
+    try:
+        a_num = int(a_num)
+    except ValueError:
+        if not is_time_stamp(a_num):
+            raise ValueError('No integer and no time stamp in {0}.'.format(a))
+        a_time_stamp = a_num
+    try:
+        b_num = int(b_num)
+    except ValueError:
+        if not is_time_stamp(b_num):
+            raise ValueError('No integer and no time stamp in {0}.'.format(b))
+        b_time_stamp = b_num
+
+    # Now choose the right comparison.
+    if a_time_stamp is None and b_time_stamp is None:
+        # Both are integers.
+        return cmp(a_num, b_num)
+    if a_time_stamp is not None and b_time_stamp is not None:
+        # Both are time stamps.  The biggest must be first,
+        # so we switch the comparison around.
+        return cmp(b_time_stamp, a_time_stamp)
+    # From here on, one is an integer, the other a time stamp.
+    if a_time_stamp is None:
+        # a is an integer, so a is bigger than b.
+        return 1
+    # b is a time stamp, so a is smaller.
+    return -1
 
 
 def strict_cmp_gzips(a, b):
@@ -65,39 +87,15 @@ def strict_cmp_gzips(a, b):
     a and b MUST be something like blobstorage.0.tar.gz and
     blobstorage.1.tar.gz, which should be sorted numerically.
 
-    >>> strict_cmp_gzips('foo.0.tar.gz', 'foo.1.tar.gz')
-    -1
-    >>> strict_cmp_gzips('foo.0.tar.gz', 'foo.0.tar.gz')
-    0
-    >>> strict_cmp_gzips('foo.1.tar.gz', 'foo.0.tar.gz')
-    1
-    >>> strict_cmp_gzips('foo.9.tar.gz', 'foo.10.tar.gz')
-    -1
-    >>> strict_cmp_gzips('foo.1.tar.gz', 'bar.1.tar.gz')
-    Traceback (most recent call last):
-    ...
-    ValueError: Not the same start for files: 'foo.1.tar.gz' vs 'bar.1.tar.gz'
-
     """
-
-    a_match = re.match("^(.+)\.(\d+)\.tar\.gz$", a)
-    b_match = re.match("^(.+)\.(\d+)\.tar\.gz$", b)
-
-    if a_match is None:
-        raise ValueError("No match: %r" % a)
-
-    if b_match is None:
-        raise ValueError("No match: %r" % b)
-
-    a_start, a_num = a_match.groups()
-    b_start, b_num = b_match.groups()
-    if a_start != b_start:
-        raise ValueError(
-            "Not the same start for files: %r vs %r" % (a, b)
-        )
-    a_num = int(a_num)
-    b_num = int(b_num)
-    return cmp(a_num, b_num)
+    suffix = '.tar.gz'
+    for candidate in (a, b):
+        if not candidate.endswith(suffix):
+            raise ValueError('{0} does not end with {1}'.format(
+                candidate, suffix))
+    a = a[:-len(suffix)]
+    b = b[:-len(suffix)]
+    return strict_cmp_backups(a, b)
 
 
 def gen_time_stamp(now=None):
@@ -135,12 +133,16 @@ def get_valid_directories(container, name):
     not actually a directory as this will mess up our logic further
     on.  No one should manually add files or directories here.
 
+    Note: time stamps are not accepted here.  This function is not used
+    in scenarios that use time stamps.
+
     Using the zc.buildout tools we create some directories and files:
 
     >>> mkdir('dirtest')
     >>> get_valid_directories('dirtest', 'a')
     []
-    >>> for d in ['a', 'a.0', 'a.1', 'a.bar.2', 'a.bar']:
+    >>> for d in ['a', 'a.0', 'a.1', 'a.bar.2', 'a.bar',
+    ...         'a.2017-01-02-03-04-05']:
     ...     mkdir('dirtest', d)
     >>> sorted(get_valid_directories('dirtest', 'a'))
     ['a.0', 'a.1']
@@ -192,12 +194,16 @@ def get_valid_gzips(container, name):
     not actually a file as this will mess up our logic further
     on.  No one should manually add files or directories here.
 
+    Note: time stamps are not accepted here.  This function is not used
+    in scenarios that use time stamps.
+
     Using the zc.buildout tools we create some directories and files:
 
     >>> mkdir('dirtest')
     >>> get_valid_gzips('dirtest', 'a.tar.gz')
     []
-    >>> for gz in ['a.tar.gz', 'a.0.tar.gz', 'a.1.tar.gz', 'a.bar.2.tar.gz']:
+    >>> for gz in ['a.tar.gz', 'a.0.tar.gz', 'a.1.tar.gz', 'a.bar.2.tar.gz',
+    ...         'a.2017-01-02-03-04-05.tar.gz']:
     ...     write('dirtest', gz, "Test file.")
     >>> sorted(get_valid_gzips('dirtest', 'a'))
     ['a.0.tar.gz', 'a.1.tar.gz']
@@ -224,6 +230,11 @@ def get_valid_gzips(container, name):
         matched = re.match("^%s\.(\d+)\.tar\.gz$" % name, entry)
         if matched is None:
             continue
+        match = matched.groups()[0]
+        try:
+            int(match)
+        except (ValueError, TypeError):
+            continue
         if not os.path.isfile(os.path.join(container, entry)):
             raise Exception("Refusing to rotate %s as it is not a file." %
                             entry)
@@ -233,6 +244,9 @@ def get_valid_gzips(container, name):
 
 def rotate_directories(container, name):
     """Rotate subdirectories in container that start with 'name'.
+
+    Note: time stamps are not handled here.  This function is not used
+    in scenarios that use time stamps.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -277,6 +291,9 @@ def rotate_directories(container, name):
 
 def rotate_gzips(container, name):
     """Rotate gzip files in container that start with 'name'.
+
+    Note: time stamps are not handled here.  This function is not used
+    in scenarios that use time stamps.
 
     Using the zc.buildout tools we create some directories and files:
 
