@@ -25,6 +25,117 @@ BACKUP_DIR = 'backups'
 is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 
 
+def get_prefix_and_number(value, prefix=None, suffix=None):
+    """Get prefix and number out of value.
+
+    The number we search for is an integer or a time stamp.
+
+    value must start with prefix and end with suffix.
+    It must be prefix.number.suffix
+
+    If prefix is None, we don't care what the value starts with.
+    If it is an empty string, there must be nothing in front of the number.
+
+    For suffix it must be an explicit suffix or nothing.
+
+    We return None or a string containing the number.
+
+    This can probably be done with one regular expression,
+    but it would be hard to read.
+    """
+    if suffix is not None:
+        if not suffix.startswith('.'):
+            suffix = '.' + suffix
+        if not value.endswith(suffix):
+            return
+        value = value[:-len(suffix)]
+    if prefix is None:
+        # number or anything.number.
+        # But 'anything' should not contain dots: too tricky.
+        dots = value.count('.')
+        if dots > 1:
+            return
+        if dots == 1:
+            prefix, value = value.split('.')
+        else:
+            prefix = ''
+    else:
+        # A dot at the end would be a coding error.
+        if not prefix.endswith('.'):
+            prefix += '.'
+        if not value.startswith(prefix):
+            return
+        value = value[len(prefix):]
+    # At this point, we really should only have a number left.
+    try:
+        int(value)
+    except ValueError:
+        if not is_time_stamp(value):
+            return
+    if prefix:
+        # return prefix without dot
+        prefix = prefix.rstrip('.')
+    return prefix, value
+
+
+def get_number(value, prefix=None, suffix=None):
+    """Get number out of value."""
+    result = get_prefix_and_number(value, prefix=prefix, suffix=suffix)
+    if result is None:
+        return
+    # We got prefix and number, and only want the number.
+    return result[1]
+
+
+def strict_cmp_numbers(a, b):
+    """Compare backup numers, sorting newest first.
+
+    a and b MUST be strings with either an integer or a time stamp.
+    So '0', '1', '1999-12-31-23-59-30'.
+
+    Comparing integers:
+    The smallest integer in a comparison gets -1.
+    Example: 0, 1, 2.
+
+    Comparing time stamps:
+    The biggest timestamp gets -1.
+    Example: 2000-12-31-23-59-30, 1999-12-31-23-59-30.
+
+    If integers and time stamps are compared, time stamps are always smaller:
+    1999-12-31-23-59-30, 0, 1.
+    """
+    # Check if one or both are time stamps.
+    a_time_stamp = None
+    b_time_stamp = None
+    try:
+        a = int(a)
+    except ValueError:
+        if not is_time_stamp(a):
+            raise ValueError('No integer and no time stamp in {0}.'.format(a))
+        a_time_stamp = a
+    try:
+        b = int(b)
+    except ValueError:
+        if not is_time_stamp(b):
+            raise ValueError('No integer and no time stamp in {0}.'.format(b))
+        b_time_stamp = b
+
+    # Now choose the right comparison.
+    if a_time_stamp is None and b_time_stamp is None:
+        # Both are integers.
+        return cmp(a, b)
+    if a_time_stamp is not None and b_time_stamp is not None:
+        # Both are time stamps.  The biggest must be first,
+        # so we switch the comparison around.
+        return cmp(b_time_stamp, a_time_stamp)
+    # From here on, one is an integer, the other a time stamp.
+    if a_time_stamp is None:
+        # a is an integer, so a is bigger than b.
+        return 1
+    # b is a time stamp, so a is smaller.
+    return -1
+
+
 def strict_cmp_backups(a, b):
     """Compare backups.
 
@@ -47,38 +158,8 @@ def strict_cmp_backups(a, b):
     b_start, b_num = b.rsplit('.', 1)
     if a_start != b_start:
         raise ValueError(
-            "Not the same start for directories: %r vs %r" % (a, b))
-
-    # Check if one or both are time stamps.
-    a_time_stamp = None
-    b_time_stamp = None
-    try:
-        a_num = int(a_num)
-    except ValueError:
-        if not is_time_stamp(a_num):
-            raise ValueError('No integer and no time stamp in {0}.'.format(a))
-        a_time_stamp = a_num
-    try:
-        b_num = int(b_num)
-    except ValueError:
-        if not is_time_stamp(b_num):
-            raise ValueError('No integer and no time stamp in {0}.'.format(b))
-        b_time_stamp = b_num
-
-    # Now choose the right comparison.
-    if a_time_stamp is None and b_time_stamp is None:
-        # Both are integers.
-        return cmp(a_num, b_num)
-    if a_time_stamp is not None and b_time_stamp is not None:
-        # Both are time stamps.  The biggest must be first,
-        # so we switch the comparison around.
-        return cmp(b_time_stamp, a_time_stamp)
-    # From here on, one is an integer, the other a time stamp.
-    if a_time_stamp is None:
-        # a is an integer, so a is bigger than b.
-        return 1
-    # b is a time stamp, so a is smaller.
-    return -1
+            "Not the same start for backups: %r vs %r" % (a, b))
+    return strict_cmp_numbers(a_num, b_num)
 
 
 def strict_cmp_gzips(a, b):
@@ -347,8 +428,8 @@ def get_blob_backup_dirs(backup_location):
     prefix = ''
     for filename in filenames:
         # We only want directories of the form prefix.X, where X is an
-        # integer.  There should not be anything else, but we like to
-        # be safe.
+        # integer or a time stamp.  There should not be anything else,
+        # but we like to be safe.
         full_path = os.path.join(backup_location, filename)
         if not os.path.isdir(full_path):
             continue
@@ -356,14 +437,10 @@ def get_blob_backup_dirs(backup_location):
             # These should not be listed by os.listdir, but again: we
             # like to be safe.
             continue
-        parts = filename.split('.')
-        if len(parts) != 2:
+        parts = get_prefix_and_number(filename)
+        if parts is None:
             continue
-        try:
-            num = int(parts[1])
-        except:
-            # No number
-            continue
+        num = parts[1]
         if prefix:
             if parts[0] != prefix:
                 logger.error(
@@ -377,7 +454,8 @@ def get_blob_backup_dirs(backup_location):
         mod_time = os.path.getmtime(full_path)
         backup_dirs.append((num, mod_time, full_path))
     # We always sort by backup number:
-    backup_dirs = sorted(backup_dirs, key=itemgetter(0))
+    backup_dirs = sorted(
+        backup_dirs, key=itemgetter(0), cmp=strict_cmp_numbers)
     # Check if this is the same as reverse sorting by modification time:
     mod_times = sorted(backup_dirs, key=itemgetter(1), reverse=True)
     if backup_dirs != mod_times:
@@ -395,27 +473,36 @@ def get_blob_backup_gzips(backup_location):
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
                  len(filenames), filenames)
     backup_gzips = []
+    suffix = '.tar.gz'
+    prefix = ''
     for filename in filenames:
-        # We only want directories of the form prefix.X.tar.gz, where X is an
-        # integer. There should not be anything else, but we like to
-        # be safe.
+        # We only want files of the form prefix.X.tar.gz, where X is an
+        # integer or a time stamp.  There should not be anything else,
+        # but we like to be safe.
         full_path = os.path.join(backup_location, filename)
         if not os.path.isfile(full_path):
             continue
-
-        matched = re.match("^([^\.]+)\.(\d+)\.tar\.gz$", filename)
-
-        if matched is None:
+        parts = get_prefix_and_number(filename, suffix=suffix)
+        if parts is None:
             continue
-
-        num = int(matched.groups()[1])
+        num = parts[1]
+        if prefix:
+            if parts[0] != prefix:
+                logger.error(
+                    "Different backup prefixes found in %s (%s, %s). Are you "
+                    "mixing two backups in one directory? For safety we will "
+                    "not cleanup old backups here." % (
+                        backup_location, prefix, parts[0]))
+                sys.exit(1)
+        else:
+            prefix = parts[0]
 
         mod_time = os.path.getmtime(full_path)
-
         backup_gzips.append((num, mod_time, full_path))
 
     # We always sort by backup number:
-    backup_gzips = sorted(backup_gzips, key=itemgetter(0))
+    backup_gzips = sorted(
+        backup_gzips, key=itemgetter(0), cmp=strict_cmp_numbers)
 
     # Check if this is the same as reverse sorting by modification time:
     mod_times = sorted(backup_gzips, key=itemgetter(1), reverse=True)
