@@ -730,7 +730,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
         logger.info("Copying %s to %s", source, dest)
         shutil.copytree(source, dest)
     # Now possibly remove old backups.
-    cleanup(destination, full, keep, keep_blob_days)
+    cleanup(destination, full, keep, keep_blob_days, timestamps=timestamps)
 
 
 def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
@@ -789,11 +789,12 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
     if failed:
         return
     # Now possibly remove old backups.
-    cleanup_gzips(destination, keep=keep)
+    cleanup_gzips(destination, keep=keep, timestamps=timestamps)
 
 
 def restore_blobs(source, destination, use_rsync=True,
-                  date=None, gzip_blob=False, rsync_options=''):
+                  date=None, gzip_blob=False, rsync_options='',
+                  timestamps=False):
     """Restore blobs from source to destination.
 
     With 'use_rsync' at the default True, we use rsync to copy,
@@ -807,10 +808,12 @@ def restore_blobs(source, destination, use_rsync=True,
     Note that trailing slashes in source and destination do matter, so
     be careful with that otherwise you may end up with something like
     var/blobstorage/blobstorage
+
+    TODO: handle timestamps?
     """
 
     if gzip_blob:
-        restore_blobs_gzip(source, destination, date)
+        restore_blobs_gzip(source, destination, date, timestamps=timestamps)
         return
 
     if destination.endswith(os.sep):
@@ -871,7 +874,7 @@ def restore_blobs(source, destination, use_rsync=True,
         shutil.copytree(backup_source, destination)
 
 
-def restore_blobs_gzip(source, destination, date=None):
+def restore_blobs_gzip(source, destination, date=None, timestamps=False):
     """Restore blobs from source to destination.
 
     Prepare backup for test:
@@ -902,6 +905,8 @@ def restore_blobs_gzip(source, destination, date=None):
 
     >>> remove('blobs')
     >>> remove('backups')
+
+    TODO: handle timestamps?
     """
     if destination.endswith(os.sep):
         # strip that separator
@@ -955,8 +960,12 @@ def restore_blobs_gzip(source, destination, date=None):
         return
 
 
-def cleanup(backup_location, full=False, keep=0, keep_blob_days=0):
+def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
+            timestamps=False):
     """Clean up old blob backups.
+
+    TODO: handle timestamps.  We might not need keep_blob_days then,
+    or can be smarter about it.
 
     For the test, we create a backup dir using buildout's test support methods:
 
@@ -1150,8 +1159,10 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0):
         logger.debug("Not removing backups.")
 
 
-def cleanup_gzips(backup_location, keep=0):
+def cleanup_gzips(backup_location, keep=0, timestamps=False):
     """Clean up old blob backups.
+
+    TODO: handle timestamps.
 
     For the test, we create a backup dir using buildout's test support methods:
 
