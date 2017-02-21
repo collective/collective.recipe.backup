@@ -202,13 +202,13 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(strict_cmp_numbers('9', '10'), -1)
         self.assertEqual(strict_cmp_numbers('99', '10'), 1)
 
-        # Compare integers and time stamps.  Time stamps are smaller.
+        # Compare integers and timestamps.  Time stamps are smaller.
         self.assertEqual(
             strict_cmp_numbers('0', '1999-12-31-23-59-30'), 1)
         self.assertEqual(
             strict_cmp_numbers('1999-12-31-23-59-30', '0'), -1)
 
-        # Compare time stamps.  Newest first.
+        # Compare timestamps.  Newest first.
         self.assertEqual(
             strict_cmp_numbers('1999-12-31-23-59-30',
                                '2000-12-31-23-59-30'), 1)
@@ -270,11 +270,11 @@ class CopyBlobsTestCase(unittest.TestCase):
         # Not the same start for directories:
         self.assertRaises(ValueError, strict_cmp_backups, 'foo.1', 'bar.1')
 
-        # Compare integers and time stamps.  Time stamps are smaller.
+        # Compare integers and timestamps.  Time stamps are smaller.
         self.assertEqual(
             strict_cmp_backups('foo.0', 'foo.1999-12-31-23-59-30'), 1)
 
-        # Compare time stamps.  Newest first.
+        # Compare timestamps.  Newest first.
         self.assertEqual(
             strict_cmp_backups('foo.1999-12-31-23-59-30',
                                'foo.2000-12-31-23-59-30'), 1)

@@ -28,7 +28,7 @@ is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 def get_prefix_and_number(value, prefix=None, suffix=None):
     """Get prefix and number out of value.
 
-    The number we search for is an integer or a time stamp.
+    The number we search for is an integer or a timestamp.
 
     value must start with prefix and end with suffix.
     It must be prefix.number.suffix
@@ -90,34 +90,34 @@ def get_number(value, prefix=None, suffix=None):
 def strict_cmp_numbers(a, b):
     """Compare backup numers, sorting newest first.
 
-    a and b MUST be strings with either an integer or a time stamp.
+    a and b MUST be strings with either an integer or a timestamp.
     So '0', '1', '1999-12-31-23-59-30'.
 
     Comparing integers:
     The smallest integer in a comparison gets -1.
     Example: 0, 1, 2.
 
-    Comparing time stamps:
+    Comparing timestamps:
     The biggest timestamp gets -1.
     Example: 2000-12-31-23-59-30, 1999-12-31-23-59-30.
 
-    If integers and time stamps are compared, time stamps are always smaller:
+    If integers and timestamps are compared, timestamps are always smaller:
     1999-12-31-23-59-30, 0, 1.
     """
-    # Check if one or both are time stamps.
+    # Check if one or both are timestamps.
     a_time_stamp = None
     b_time_stamp = None
     try:
         a = int(a)
     except ValueError:
         if not is_time_stamp(a):
-            raise ValueError('No integer and no time stamp in {0}.'.format(a))
+            raise ValueError('No integer and no timestamp in {0}.'.format(a))
         a_time_stamp = a
     try:
         b = int(b)
     except ValueError:
         if not is_time_stamp(b):
-            raise ValueError('No integer and no time stamp in {0}.'.format(b))
+            raise ValueError('No integer and no timestamp in {0}.'.format(b))
         b_time_stamp = b
 
     # Now choose the right comparison.
@@ -125,14 +125,14 @@ def strict_cmp_numbers(a, b):
         # Both are integers.
         return cmp(a, b)
     if a_time_stamp is not None and b_time_stamp is not None:
-        # Both are time stamps.  The biggest must be first,
+        # Both are timestamps.  The biggest must be first,
         # so we switch the comparison around.
         return cmp(b_time_stamp, a_time_stamp)
-    # From here on, one is an integer, the other a time stamp.
+    # From here on, one is an integer, the other a timestamp.
     if a_time_stamp is None:
         # a is an integer, so a is bigger than b.
         return 1
-    # b is a time stamp, so a is smaller.
+    # b is a timestamp, so a is smaller.
     return -1
 
 
@@ -149,7 +149,7 @@ def strict_cmp_backups(a, b):
     This means that the smallest integer in a comparison gets -1.
     The biggest timestamp gets -1.
 
-    If integers and time stamps are compared, time stamps are always smaller:
+    If integers and timestamps are compared, timestamps are always smaller:
     x.timestamp, x.0, x.1.
     """
     assert '.' in a
@@ -180,7 +180,7 @@ def strict_cmp_gzips(a, b):
 
 
 def gen_time_stamp(now=None):
-    """Generate time stamp.
+    """Generate timestamp.
 
     With 'now' you can set a different time for testing.
     It should be a tuple of year, month, day, hour, minute, second.
@@ -214,8 +214,8 @@ def get_valid_directories(container, name):
     not actually a directory as this will mess up our logic further
     on.  No one should manually add files or directories here.
 
-    Note: time stamps are not accepted here.  This function is not used
-    in scenarios that use time stamps.
+    Note: timestamps are not accepted here.  This function is not used
+    in scenarios that use timestamps.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -275,8 +275,8 @@ def get_valid_gzips(container, name):
     not actually a file as this will mess up our logic further
     on.  No one should manually add files or directories here.
 
-    Note: time stamps are not accepted here.  This function is not used
-    in scenarios that use time stamps.
+    Note: timestamps are not accepted here.  This function is not used
+    in scenarios that use timestamps.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -326,8 +326,8 @@ def get_valid_gzips(container, name):
 def rotate_directories(container, name):
     """Rotate subdirectories in container that start with 'name'.
 
-    Note: time stamps are not handled here.  This function is not used
-    in scenarios that use time stamps.
+    Note: timestamps are not handled here.  This function is not used
+    in scenarios that use timestamps.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -373,8 +373,8 @@ def rotate_directories(container, name):
 def rotate_gzips(container, name):
     """Rotate gzip files in container that start with 'name'.
 
-    Note: time stamps are not handled here.  This function is not used
-    in scenarios that use time stamps.
+    Note: timestamps are not handled here.  This function is not used
+    in scenarios that use timestamps.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -428,7 +428,7 @@ def get_blob_backup_dirs(backup_location):
     prefix = ''
     for filename in filenames:
         # We only want directories of the form prefix.X, where X is an
-        # integer or a time stamp.  There should not be anything else,
+        # integer or a timestamp.  There should not be anything else,
         # but we like to be safe.
         full_path = os.path.join(backup_location, filename)
         if not os.path.isdir(full_path):
@@ -477,7 +477,7 @@ def get_blob_backup_gzips(backup_location):
     prefix = ''
     for filename in filenames:
         # We only want files of the form prefix.X.tar.gz, where X is an
-        # integer or a time stamp.  There should not be anything else,
+        # integer or a timestamp.  There should not be anything else,
         # but we like to be safe.
         full_path = os.path.join(backup_location, filename)
         if not os.path.isfile(full_path):
@@ -547,7 +547,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     backups created by repozo; and there is no similar concept in our
     blobstorage backups.
 
-    With timestamps True, we do not make blobstorage.0, but use time stamps,
+    With timestamps True, we do not make blobstorage.0, but use timestamps,
     for example blobstorage.2017-01-02-03-04-05.
 
     Again, let's test this using the tools from zc.buildout:
