@@ -1,10 +1,11 @@
 # -*-doctest-*-
 
-Blob storage
-============
+Blob storage with timestamps
+============================
 
-For tests with ``blob_timestamps = true``, see ``blob_timestamps.rst``.
-That started as a copy of the current ``blobs.rst`` file.
+These are tests with ``blob_timestamps = true``.
+This started as a copy of the ``blobs.rst`` file.
+Several corner cases are only tested in that file, not in the current one.
 
 Just to isolate some test differences, we run an empty buildout once::
 
@@ -17,222 +18,21 @@ Add mock ``bin/repozo`` script::
     ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
-New in this recipe is that we backup the blob storage.  Plone 4 uses a
-blob storage to store files on the file system.  In Plone 3 this is
-optional.  When this is used, it should be backed up of course.  You
-must specify the source blob_storage directory where Plone (or Zope)
-stores its blobs.  When we do not set it specifically, we try to get
-the location from the plone.recipe.zope2instance recipe (or a
-zeoserver recipe) when it is used::
+Write a buildout config::
 
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
     ... # For some reason this is now needed:
-    ... index = http://pypi.python.org/simple
+    ... index = https://pypi.python.org/simple
     ... # Avoid suddenly updating zc.buildout or other packages:
     ... newest = false
-    ... parts = instance backup
-    ... versions = versions
-    ...
-    ... [versions]
-    ... # A slightly older version that does not rely on the Zope2 egg
-    ... plone.recipe.zope2instance = 3.9
-    ... mailinglogger = 3.3
-    ...
-    ... [instance]
-    ... # The recipe should be all lower case, but it actually works
-    ... # when you accidentally have uppercase, so we should accept
-    ... # this too.
-    ... recipe = plone.recipe.zope2INSTANCE
-    ... user = admin:admin
-    ... blob-storage = ${buildout:directory}/var/somewhere
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... """)
-
-We need a mock mkzopeinstance script in the bin directory for the
-zope2instance recipe to work:
-
-    >>> write('bin/mkzopeinstance', """
-    ... import sys
-    ... import os
-    ... path = sys.argv[2]
-    ... os.mkdir(path)
-    ... os.mkdir(os.path.join(path, 'etc'))
-    ... """)
-
-We run the buildout (and set a timeout as we need a few new packages
-and apparently a few servers are currently down so a timeout helps
-speed things up a bit):
-
-    >>> print system('bin/buildout -t 5') # doctest:+ELLIPSIS
-    Setting socket time out to 5 seconds.
-    Getting distribution for 'plone.recipe.zope2INSTANCE==3.9'...
-    Got plone.recipe.zope2instance 3.9.
-    Getting distribution for 'mailinglogger==3.3'...
-    Got mailinglogger 3.3.0.
-    Installing instance.
-    Generated script '/sample-buildout/bin/instance'.
-    Installing backup.
-    Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/snapshotbackup'.
-    Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/snapshotrestore'...
-    <BLANKLINE>
-    >>> ls('bin')
-    -  backup
-    -  buildout
-    -  fullbackup
-    -  instance
-    -  mkzopeinstance
-    -  repozo
-    -  restore
-    -  snapshotbackup
-    -  snapshotrestore
-    >>> cat('bin/backup')
-    #!...
-    ...blob_backup_location.../var/blobstoragebackups...
-    ...blob_snapshot_location.../var/blobstoragesnapshots...
-    ...blob_zip_location.../var/blobstoragezips...
-    ...blobdir.../var/somewhere...
-    ...datafs.../var/filestorage/Data.fs...
-    ...snapshot_location.../var/snapshotbackups...
-    ...storage...1...
-    ...zip_location.../var/zipbackups...
-
-Nowadays it is strange to not have a blob storage, at least with Plone
-4 and higher.  So we bail out when this is the case.
-
-We will only do this when we are being run with Python 2.6 or higher,
-because Python 2.4 indicates we are still on Plone 3.  Note that
-Python 2.4 / Plone 3 is not officially supported, and is not tested.
-Main reason is that is was too difficult to keep the tests passing in
-Plone 3 and Plone 4.  But the recipe should still work, so let's at
-least not break it on purpose or make it harder.  So the following
-is only for Plone 4 and higher.
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling instance.
-    Updating backup.
-    While:
-      Updating backup.
-    Error: No blob_storage found. You must specify one. To ignore this, set 'backup_blobs = false' in the [backup] section.
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... backup_blobs = false
-    ... """)
-    >>> print system(buildout)  # doctest:+ELLIPSIS
-    Installing backup.
-    Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/snapshotbackup'.
-    Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/snapshotrestore'.
-    <BLANKLINE>
-
-We can override the additional_filestorages location:
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... backup_blobs = false
-    ... additional_filestorages =
-    ...    catalog ${buildout:directory}/var/filestorage/2.fs
-    ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
-    Installing backup.
-    Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/snapshotbackup'.
-    Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/snapshotrestore'.
-    <BLANKLINE>
-
-
-We can override the additional_filestorages blob source location:
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... backup_blobs = True
-    ... blob_storage = ${buildout:directory}/var/blobstorage
-    ... additional_filestorages =
-    ...    withblob    ${buildout:directory}/var/filestorage/2.fs ${buildout:directory}/var/blobstorage2
-    ...    withoutblob ${buildout:directory}/var/filestorage/3.fs
-    ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
-    Installing backup.
-    Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
-    Generated script '/sample-buildout/bin/snapshotbackup'.
-    Generated script '/sample-buildout/bin/restore'.
-    Generated script '/sample-buildout/bin/snapshotrestore'.
-    <BLANKLINE>
-
-Wrong configurations for additional_filestorages:
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... backup_blobs = false
-    ... additional_filestorages =
-    ...    wrong ${buildout:directory}/var/filestorage foo.fs ${buildout:directory}/var/blobstorage_foo
-    ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
-    Uninstalling backup.
-    Installing backup.
-    While:
-       Installing backup.
-    ...
-    AttributeError: 'NoneType' object has no attribute 'groupdict'
-    <BLANKLINE>
-
-Full cycle tests:
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
     ... parts = backup
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
+    ... blob_timestamps = true
     ... keep = 3
     ... additional_filestorages =
     ...    foo ${buildout:directory}/var/filestorage/foo.fs ${buildout:directory}/var/blobstorage-foo
@@ -250,17 +50,16 @@ Full cycle tests:
     -  backup
     -  buildout
     -  fullbackup
-    -  instance
-    -  mkzopeinstance
     -  repozo
     -  restore
     -  snapshotbackup
     -  snapshotrestore
-    >>> mkdir('var/blobstorage')
+    >>> mkdir('var')
+    >>> mkdir('var', 'blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
-    >>> mkdir('var/blobstorage-foo')
+    >>> mkdir('var', 'blobstorage-foo')
     >>> write('var', 'blobstorage-foo', 'blob-foo1.txt', "Sample blob foo 1.")
-    >>> mkdir('var/blobstorage-bar')
+    >>> mkdir('var', 'blobstorage-bar')
     >>> write('var', 'blobstorage-bar', 'blob-bar1.txt', "Sample blob bar 1.")
 
 Test the snapshotbackup first, as that should be easiest.
@@ -279,11 +78,11 @@ Test the snapshotbackup first, as that should be easiest.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo
-    INFO: rsync -a  /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.20...
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
-    INFO: rsync -a  /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.20...
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.0
