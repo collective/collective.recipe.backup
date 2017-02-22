@@ -851,7 +851,13 @@ def restore_blobs(source, destination, use_rsync=True,
 
     if not backup_source:
         # The most recent is the default:
-        backup_source = os.path.join(source, base_name + '.0', base_name)
+        if timestamps:
+            current_backups = get_blob_backup_dirs(source)
+            if current_backups:
+                backup_source = current_backups[0][2]
+                backup_source = os.path.join(backup_source, base_name)
+        if not backup_source:
+            backup_source = os.path.join(source, base_name + '.0', base_name)
 
     # You should end up with something like this:
     # rsync -a  --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
