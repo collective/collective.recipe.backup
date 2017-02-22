@@ -13,6 +13,7 @@ Just to isolate some test differences, we run an empty buildout once::
 
 Add mock ``bin/repozo`` script::
 
+    >>> import os
     >>> import sys
     >>> write('bin', 'repozo',
     ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
@@ -84,21 +85,24 @@ Test the snapshotbackup first, as that should be easiest.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
-    >>> ls('var/blobstoragesnapshots')
-    d  blobstorage.0
-    >>> ls('var/blobstoragesnapshots/blobstorage.0')
+    >>> ls('var', 'blobstoragesnapshots')
+    d  blobstorage.20...-...-...-...-...-...
+    >>> timestamp0 = os.listdir('var/blobstoragesnapshots/')[0]
+    >>> ls('var', 'blobstoragesnapshots', timestamp0)
     d  blobstorage
-    >>> ls('var/blobstoragesnapshots_foo')
-    d  blobstorage-foo.0
-    >>> ls('var/blobstoragesnapshots_foo/blobstorage-foo.0')
+    >>> ls('var', 'blobstoragesnapshots_foo')
+    d  blobstorage-foo.20...-...-...-...-...-...
+    >>> foo_timestamp0 = os.listdir('var/blobstoragesnapshots_foo/')[0]
+    >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp0)
     d  blobstorage-foo
-    >>> ls('var/blobstoragesnapshots_bar')
-    d  blobstorage-bar.0
-    >>> ls('var/blobstoragesnapshots_bar/blobstorage-bar.0')
+    >>> ls('var', 'blobstoragesnapshots_bar')
+    d  blobstorage-bar.20...-...-...-...-...-...
+    >>> bar_timestamp0 = os.listdir('var/blobstoragesnapshots_bar/')[0]
+    >>> ls('var', 'blobstoragesnapshots_bar', bar_timestamp0)
     d  blobstorage-bar
 
-Let's try that some more, with a second in between so we can more
-easily test restoring to a specific time later.
+Let's try that some more, with some time in between so we can more easily test restoring to a specific time later.
+Note that due to the timestamps no renaming takes place from blobstorage.0 to blobstorage.1.
 
     >>> import time
     >>> time.sleep(2)
@@ -113,42 +117,45 @@ easily test restoring to a specific time later.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo
-    INFO: Renaming blobstorage-foo.0 to blobstorage-foo.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.20...-...-...-...-...-... /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.20...-...-...-...-...-...
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
-    INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.20...-...-...-...-...-... /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.20...-...-...-...-...-...
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage.20...-...-...-...-...-... /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
-    d  blobstorage.0
-    d  blobstorage.1
-    >>> ls('var/blobstoragesnapshots/blobstorage.0/blobstorage')
+    d  blobstorage.20...-...-...-...-...-...
+    d  blobstorage.20...-...-...-...-...-...
+    >>> timestamp0 == os.listdir('var/blobstoragesnapshots/')[0]
+    True
+    >>> timestamp1 = os.listdir('var/blobstoragesnapshots/')[1]
+    >>> ls('var', 'blobstoragesnapshots', timestamp1, 'blobstorage')
     -  blob1.txt
     -  blob2.txt
-    >>> ls('var/blobstoragesnapshots/blobstorage.1/blobstorage')
+    >>> ls('var', 'blobstoragesnapshots', timestamp0, 'blobstorage')
     -  blob1.txt
-    >>> cat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob1.txt')
+    >>> cat('var', 'blobstoragesnapshots', timestamp1, 'blobstorage', 'blob1.txt')
     Sample blob 1.
-    >>> cat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob2.txt')
+    >>> cat('var', 'blobstoragesnapshots', timestamp1, 'blobstorage', 'blob2.txt')
     Sample blob 2.
-    >>> cat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
+    >>> cat('var', 'blobstoragesnapshots', timestamp0, 'blobstorage', 'blob1.txt')
     Sample blob 1.
-    >>> ls('var/blobstoragesnapshots_foo')
-    d  blobstorage-foo.0
-    d  blobstorage-foo.1
-    >>> ls('var/blobstoragesnapshots_foo/blobstorage-foo.0/blobstorage-foo')
+    >>> ls('var', 'blobstoragesnapshots_foo')
+    d  blobstorage-foo.20...-...-...-...-...-...
+    d  blobstorage-foo.20...-...-...-...-...-...
+    >>> foo_timestamp0 == os.listdir('var/blobstoragesnapshots_foo/')[0]
+    True
+    >>> foo_timestamp1 = os.listdir('var/blobstoragesnapshots_foo/')[1]
+    >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp1, 'blobstorage-foo')
     -  blob-foo1.txt
     -  blob-foo2.txt
-    >>> ls('var/blobstoragesnapshots_foo/blobstorage-foo.1/blobstorage-foo')
+    >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp0, 'blobstorage-foo')
     -  blob-foo1.txt
-    >>> cat('var/blobstoragesnapshots_foo/blobstorage-foo.0/blobstorage-foo/blob-foo1.txt')
+    >>> cat('var', 'blobstoragesnapshots_foo', foo_timestamp1, 'blobstorage-foo', 'blob-foo1.txt')
     Sample blob foo 1.
-    >>> cat('var/blobstoragesnapshots_foo/blobstorage-foo.0/blobstorage-foo/blob-foo2.txt')
+    >>> cat('var', 'blobstoragesnapshots_foo', foo_timestamp1, 'blobstorage-foo', 'blob-foo2.txt')
     Sample blob foo 2.
-    >>> cat('var/blobstoragesnapshots_foo/blobstorage-foo.1/blobstorage-foo/blob-foo1.txt')
+    >>> cat('var', 'blobstoragesnapshots_foo', foo_timestamp0, 'blobstorage-foo', 'blob-foo1.txt')
     Sample blob foo 1.
 
 Now remove an item:
@@ -165,39 +172,43 @@ Now remove an item:
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragesnapshots_foo
-    INFO: Renaming blobstorage-foo.1 to blobstorage-foo.2.
-    INFO: Renaming blobstorage-foo.0 to blobstorage-foo.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.20...-...-...-...-...-... /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragesnapshots_foo/blobstorage-foo.20...-...-...-...-...-...
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragesnapshots_bar
-    INFO: Renaming blobstorage-bar.1 to blobstorage-bar.2.
-    INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.20...-...-...-...-...-... /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragesnapshots_bar/blobstorage-bar.20...-...-...-...-...-...
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: Renaming blobstorage.1 to blobstorage.2.
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage.20...-...-...-...-...-... /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
     >>> ls('var/blobstoragesnapshots')
-    d  blobstorage.0
-    d  blobstorage.1
-    d  blobstorage.2
-    >>> ls('var/blobstoragesnapshots/blobstorage.0/blobstorage')
+    d  blobstorage.20...-...-...-...-...-...
+    d  blobstorage.20...-...-...-...-...-...
+    d  blobstorage.20...-...-...-...-...-...
+    >>> timestamp0 == os.listdir('var/blobstoragesnapshots/')[0]
+    True
+    >>> timestamp1 == os.listdir('var/blobstoragesnapshots/')[1]
+    True
+    >>> timestamp2 = os.listdir('var/blobstoragesnapshots/')[2]
+    >>> ls('var', 'blobstoragesnapshots', timestamp2, 'blobstorage')
     -  blob1.txt
-    >>> ls('var/blobstoragesnapshots/blobstorage.1/blobstorage')
+    >>> ls('var', 'blobstoragesnapshots', timestamp1, 'blobstorage')
     -  blob1.txt
     -  blob2.txt
-    >>> ls('var/blobstoragesnapshots/blobstorage.2/blobstorage')
+    >>> ls('var', 'blobstoragesnapshots', timestamp0, 'blobstorage')
     -  blob1.txt
-    >>> ls('var/blobstoragesnapshots_foo')
-    d  blobstorage-foo.0
-    d  blobstorage-foo.1
-    d  blobstorage-foo.2
-    >>> ls('var/blobstoragesnapshots_foo/blobstorage-foo.0/blobstorage-foo')
+    >>> ls('var', 'blobstoragesnapshots_foo')
+    d  blobstorage-foo.20...-...-...-...-...-...
+    d  blobstorage-foo.20...-...-...-...-...-...
+    d  blobstorage-foo.20...-...-...-...-...-...
+    >>> foo_timestamp0 == os.listdir('var/blobstoragesnapshots_foo/')[0]
+    True
+    >>> foo_timestamp1 == os.listdir('var/blobstoragesnapshots_foo/')[1]
+    True
+    >>> foo_timestamp2 = os.listdir('var/blobstoragesnapshots_foo/')[2]
+    >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp2, 'blobstorage-foo')
     -  blob-foo2.txt
-    >>> ls('var/blobstoragesnapshots_foo/blobstorage-foo.1/blobstorage-foo')
+    >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp1, 'blobstorage-foo')
     -  blob-foo1.txt
     -  blob-foo2.txt
-    >>> ls('var/blobstoragesnapshots_foo/blobstorage-foo.2/blobstorage-foo')
+    >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp0, 'blobstorage-foo')
     -  blob-foo1.txt
 
 Let's see how a bin/backup goes:
@@ -216,23 +227,25 @@ Let's see how a bin/backup goes:
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragebackups_foo
-    INFO: rsync -a  /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.20...-...-...-...-...-...
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragebackups_bar
-    INFO: rsync -a  /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.20...-...-...-...-...-...
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
-    >>> ls('var/blobstoragebackups')
-    d  blobstorage.0
-    >>> ls('var/blobstoragebackups/blobstorage.0')
+    >>> backup_timestamp0 = os.listdir('var/blobstoragebackups/')[0]
+    >>> ls('var', 'blobstoragebackups')
+    d  blobstorage.20...-...-...-...-...-...
+    >>> ls('var', 'blobstoragebackups', backup_timestamp0)
     d  blobstorage
-    >>> ls('var/blobstoragebackups/blobstorage.0/blobstorage')
+    >>> ls('var', 'blobstoragebackups', backup_timestamp0, 'blobstorage')
     -  blob1.txt
-    >>> ls('var/blobstoragebackups_foo')
-    d  blobstorage-foo.0
-    >>> ls('var/blobstoragebackups_foo/blobstorage-foo.0')
+    >>> foo_backup_timestamp0 = os.listdir('var/blobstoragebackups_foo/')[0]
+    >>> ls('var', 'blobstoragebackups_foo')
+    d  blobstorage-foo.20...-...-...-...-...-...
+    >>> ls('var', 'blobstoragebackups_foo', foo_backup_timestamp0)
     d  blobstorage-foo
-    >>> ls('var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo')
+    >>> ls('var', 'blobstoragebackups_foo', foo_backup_timestamp0, 'blobstorage-foo')
     -  blob-foo2.txt
 
 We try again with an extra 'blob':
@@ -247,39 +260,38 @@ We try again with an extra 'blob':
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-foo to /sample-buildout/var/blobstoragebackups_foo
-    INFO: Renaming blobstorage-foo.0 to blobstorage-foo.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.1 /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-foo.20...-...-...-...-...-... /sample-buildout/var/blobstorage-foo /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.20...-...-...-...-...-...
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage-bar to /sample-buildout/var/blobstoragebackups_bar
-    INFO: Renaming blobstorage-bar.0 to blobstorage-bar.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.1 /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage-bar.20...-...-...-...-...-... /sample-buildout/var/blobstorage-bar /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.20...-...-...-...-...-...
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.0
+    INFO: rsync -a  --delete --link-dest=../blobstorage.20...-...-...-...-...-... /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
-    >>> ls('var/blobstoragebackups')
-    d  blobstorage.0
-    d  blobstorage.1
-    >>> ls('var/blobstoragebackups/blobstorage.0/blobstorage')
+    >>> ls('var', 'blobstoragebackups')
+    d  blobstorage.20...-...-...-...-...-...
+    d  blobstorage.20...-...-...-...-...-...
+    >>> backup_timestamp0 == os.listdir('var/blobstoragebackups/')[0]
+    True
+    >>> backup_timestamp1 = os.listdir('var/blobstoragebackups/')[1]
+    >>> ls('var', 'blobstoragebackups', backup_timestamp1, 'blobstorage')
     -  blob1.txt
     -  blob2.txt
-    >>> ls('var/blobstoragebackups/blobstorage.1/blobstorage')
+    >>> ls('var', 'blobstoragebackups', backup_timestamp0, 'blobstorage')
     -  blob1.txt
 
 Let's check the inodes of two files, to see if they are the same.  Not
 sure if this works on all operating systems.
 
-    >>> import os
-    >>> stat_0 = os.stat('var/blobstoragebackups/blobstorage.0/blobstorage/blob1.txt')
-    >>> stat_1 = os.stat('var/blobstoragebackups/blobstorage.1/blobstorage/blob1.txt')
+    >>> stat_0 = os.stat('var/blobstoragebackups/{0}/blobstorage/blob1.txt'.format(backup_timestamp0))
+    >>> stat_1 = os.stat('var/blobstoragebackups/{0}/blobstorage/blob1.txt'.format(backup_timestamp1))
     >>> stat_0.st_ino == stat_1.st_ino
     True
 
-We could to things differently for the snapshot blob backups, as they
+We could do things differently for the snapshot blob backups, as they
 should be full copies, but using hard links they also really are full
 copies, so also in this case the inodes can be the same::
 
-    >>> stat_0 = os.stat('var/blobstoragesnapshots/blobstorage.0/blobstorage/blob1.txt')
-    >>> stat_1 = os.stat('var/blobstoragesnapshots/blobstorage.1/blobstorage/blob1.txt')
+    >>> stat_0 = os.stat('var/blobstoragesnapshots/{0}/blobstorage/blob1.txt'.format(timestamp0))
+    >>> stat_1 = os.stat('var/blobstoragesnapshots/{0}/blobstorage/blob1.txt'.format(timestamp1))
     >>> stat_0.st_ino == stat_1.st_ino
     True
 
@@ -316,11 +328,11 @@ Now try a restore::
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.20...-...-...-...-...-.../blobstorage-foo /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_bar to /sample-buildout/var/blobstorage-bar
-    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.20...-...-...-...-...-.../blobstorage-bar /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-.../blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var/blobstorage')
     -  blob1.txt
@@ -337,11 +349,11 @@ With the ``no-prompt`` option we avoid the question::
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_foo to /sample-buildout/var/blobstorage-foo
-    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_foo/blobstorage-foo.20...-...-...-...-...-.../blobstorage-foo /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups_bar to /sample-buildout/var/blobstorage-bar
-    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.0/blobstorage-bar /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups_bar/blobstorage-bar.20...-...-...-...-...-.../blobstorage-bar /sample-buildout/var
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-.../blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> ls('var/blobstorage')
     -  blob1.txt
