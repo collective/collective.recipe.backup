@@ -140,18 +140,13 @@ Call the script::
         /sample-buildout/var/filestorage/Data.fs
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage
-    Are you sure? (yes/No)?
-    rsync: ...No such file or directory...
+    Are you sure? (yes/No)? INFO: Created directory /sample-buildout/var/filestorage
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    ERROR: There are no backups in /sample-buildout/alt/blobs.
     <BLANKLINE>
     >>> ls('var')
     d  filestorage
-
-Note that the rsync error is printed before the line that actually
-calls rsync, but that is a strangeness in how ``stdout`` and
-``stderr`` is combined in the tests.
 
 Create the necessary sample directories and call the script again::
 
