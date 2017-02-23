@@ -179,7 +179,7 @@ def strict_cmp_gzips(a, b):
     return strict_cmp_backups(a, b)
 
 
-def gen_time_stamp(now=None):
+def gen_timestamp(now=None):
     """Generate timestamp.
 
     With 'now' you can set a different time for testing.
@@ -202,7 +202,7 @@ def gen_blobdir_name(prefix='blobstorage', now=None):
     if now is None:
         now = time.gmtime()[:6]
     t = now
-    ts = gen_time_stamp(t)
+    ts = gen_timestamp(t)
     return '{0}.{1}'.format(prefix, ts)
 
 
@@ -749,7 +749,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
                 return
         else:
             dest = os.path.join(destination,
-                                base_name + '.' + gen_time_stamp())
+                                base_name + '.' + gen_timestamp())
     else:
         # Without timestamps we need to rotate backups.
         rotate_directories(destination, base_name)
@@ -848,7 +848,7 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
                             'no database changes since last backup.', dest)
                 return
         else:
-            filename = base_name + '.' + gen_time_stamp() + '.tar.gz'
+            filename = base_name + '.' + gen_timestamp() + '.tar.gz'
             dest = os.path.join(destination, filename)
     else:
         # Without timestamps we need to rotate backups.

@@ -125,24 +125,24 @@ class CopyBlobsTestCase(unittest.TestCase):
             gen_blobdir_name(prefix='foo', now=(1999, 12, 31, 23, 59, 30)),
             'foo.1999-12-31-23-59-30')
 
-    def test_gen_time_stamp(self):
-        from collective.recipe.backup.copyblobs import gen_time_stamp
-        self.assertTrue(gen_time_stamp().startswith('20'))
-        self.assertEqual(gen_time_stamp().count('-'), 5)
-        self.assertEqual(len(gen_time_stamp()), 19)
+    def test_gen_timestamp(self):
+        from collective.recipe.backup.copyblobs import gen_timestamp
+        self.assertTrue(gen_timestamp().startswith('20'))
+        self.assertEqual(gen_timestamp().count('-'), 5)
+        self.assertEqual(len(gen_timestamp()), 19)
         # We can pass a time tuple.
-        self.assertEqual(gen_time_stamp(now=(1999, 12, 31, 23, 59, 30)),
+        self.assertEqual(gen_timestamp(now=(1999, 12, 31, 23, 59, 30)),
                          '1999-12-31-23-59-30')
 
     def test_is_time_stamp(self):
-        from collective.recipe.backup.copyblobs import gen_time_stamp
+        from collective.recipe.backup.copyblobs import gen_timestamp
         from collective.recipe.backup.copyblobs import is_time_stamp
         self.assertTrue(is_time_stamp('1999-12-31-23-59-30'))
         self.assertFalse(is_time_stamp('1999-1-31-23-59-30'))
         self.assertTrue(is_time_stamp('2017-01-02-03-04-05'))
         self.assertFalse(is_time_stamp('1999-12-31'))
         self.assertFalse(is_time_stamp('99-12-31-23-59-30'))
-        self.assertTrue(is_time_stamp(gen_time_stamp()))
+        self.assertTrue(is_time_stamp(gen_timestamp()))
 
     def test_get_number(self):
         from collective.recipe.backup.copyblobs import get_number
