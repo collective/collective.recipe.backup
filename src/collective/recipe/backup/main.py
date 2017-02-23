@@ -45,12 +45,17 @@ def backup_main(bin_dir, storages, keep, full,
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
+        if only_blobs:
+            fs_backup_location = None
+        else:
+            fs_backup_location = storage['backup_location']
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
                                gzip_blob=gzip_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
+                               fs_backup_location=fs_backup_location,
                                )
     utils.execute_or_fail(post_command)
 
@@ -95,12 +100,17 @@ def fullbackup_main(bin_dir, storages, keep, full,
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
+        if only_blobs:
+            fs_backup_location = None
+        else:
+            fs_backup_location = storage['backup_location']
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
                                gzip_blob=gzip_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
+                               fs_backup_location=fs_backup_location,
                                )
     utils.execute_or_fail(post_command)
 
@@ -139,12 +149,17 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
         blob_snapshot_location = storage['blob_snapshot_location']
         logger.info("Please wait while making snapshot of blobs from %s to %s",
                     blobdir, blob_snapshot_location)
+        if only_blobs:
+            fs_backup_location = None
+        else:
+            fs_backup_location = storage['backup_location']
         copyblobs.backup_blobs(blobdir, blob_snapshot_location,
                                full=True, use_rsync=use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
                                gzip_blob=gzip_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
+                               fs_backup_location=fs_backup_location,
                                )
     utils.execute_or_fail(post_command)
 
@@ -189,12 +204,17 @@ def zipbackup_main(bin_dir, storages, keep, full,
         blob_backup_location = storage['blob_zip_location']
         logger.info("Please wait while backing up blobs from %s to %s",
                     blobdir, blob_backup_location)
+        if only_blobs:
+            fs_backup_location = None
+        else:
+            fs_backup_location = storage['backup_location']
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
                                gzip_blob=gzip_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
+                               fs_backup_location=fs_backup_location,
                                )
     utils.execute_or_fail(post_command)
 

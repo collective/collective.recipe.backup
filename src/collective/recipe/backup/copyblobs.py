@@ -525,9 +525,48 @@ def get_blob_backup_gzips(backup_location, only_timestamps=False):
     return backup_gzips
 
 
+# Copy of is_data_filein ZODB / scripts / repozo.py.
+is_data_file = re.compile(r'\d{4}(?:-\d\d){5}\.(?:delta)?fsz?$').match
+
+
+def get_latest_filestorage_timestamp(directory):
+    """Get timestamp of latest filestorage backup file in directory.
+
+    Adapted from find_files in ZODB/scripts/repozo.py.
+
+    We can use its timestamp for our blob backup name.
+    """
+    if not directory or not os.path.isdir(directory):
+        return
+    # newest file first.
+    for fname in sorted(os.listdir(directory), reverse=True):
+        if not is_data_file(fname):
+            continue
+        root, ext = os.path.splitext(fname)
+        return root
+
+
+def get_oldest_filestorage_timestamp(directory):
+    """Get timestamp of oldest full filestorage backup file in directory.
+
+    Adapted from find_files in ZODB/scripts/repozo.py.
+
+    We can remove any older blob backups.
+    """
+    if not directory or not os.path.isdir(directory):
+        return
+    # oldest first
+    for fname in sorted(os.listdir(directory)):
+        if not is_data_file(fname):
+            continue
+        root, ext = os.path.splitext(fname)
+        if ext in ('.fs', '.fsz'):
+            return root
+
+
 def backup_blobs(source, destination, full=False, use_rsync=True,
                  keep=0, keep_blob_days=0, gzip_blob=False, rsync_options='',
-                 timestamps=False):
+                 timestamps=False, fs_backup_location=None):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -688,7 +727,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     base_name = os.path.basename(source)
 
     if gzip_blob:
-        backup_blobs_gzip(source, destination, keep, timestamps=timestamps)
+        backup_blobs_gzip(source, destination, keep, timestamps=timestamps,
+                          fs_backup_location=fs_backup_location)
         return
 
     if timestamps:
@@ -697,9 +737,21 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             prev = current_backups[0][2]
         else:
             prev = None
-        dest = os.path.join(destination, base_name + '.' + gen_time_stamp())
+        timestamp = get_latest_filestorage_timestamp(fs_backup_location)
+        if timestamp:
+            dest = os.path.join(destination, base_name + '.' + timestamp)
+            # if a backup already exists, then apparently there were no
+            # database changes since the last backup, so we don't need
+            # to do anything.
+            if os.path.exists(dest):
+                logger.info('Blob backup at %s already exists, so there were '
+                            'no database changes since last backup.', dest)
+                return
+        else:
+            dest = os.path.join(destination,
+                                base_name + '.' + gen_time_stamp())
     else:
-        # rotation is not needed when using timestamps
+        # Without timestamps we need to rotate backups.
         rotate_directories(destination, base_name)
         prev = os.path.join(destination, base_name + '.1')
         dest = os.path.join(destination, base_name + '.0')
@@ -743,7 +795,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     cleanup(destination, full, keep, keep_blob_days, timestamps=timestamps)
 
 
-def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
+def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
+                      fs_backup_location=None):
     """Make gzip archive from blobs in source directory.
 
     Source is usually something like var/blobstorage and destination
@@ -783,10 +836,22 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
     if not os.path.exists(destination):
         os.makedirs(destination)
     if timestamps:
-        filename = base_name + '.' + gen_time_stamp() + '.tar.gz'
-        dest = os.path.join(destination, filename)
+        timestamp = get_latest_filestorage_timestamp(fs_backup_location)
+        if timestamp:
+            filename = base_name + '.' + timestamp + '.tar.gz'
+            dest = os.path.join(destination, filename)
+            # if a backup already exists, then apparently there were no
+            # database changes since the last backup, so we don't need
+            # to do anything.
+            if os.path.exists(dest):
+                logger.info('Blob backup at %s already exists, so there were '
+                            'no database changes since last backup.', dest)
+                return
+        else:
+            filename = base_name + '.' + gen_time_stamp() + '.tar.gz'
+            dest = os.path.join(destination, filename)
     else:
-        # rotation is not needed when using timestamps
+        # Without timestamps we need to rotate backups.
         rotate_gzips(destination, base_name)
         dest = os.path.join(destination, base_name + '.0.tar.gz')
     if os.path.exists(dest):
@@ -846,7 +911,6 @@ def find_backup_to_restore(source, date_string='', gzip=False,
     # We should do the same.  The timestamp of the filestorage and
     # blobstorage backups may be a few seconds apart.  If the user
     # specifies a timestamp in between, this is an error of the user.
-    # TODO: try to set the same timestamp when creating a backup.
     if timestamps:
         backup_dirs = backup_getter(
             source, only_timestamps=True)

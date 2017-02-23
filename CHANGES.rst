@@ -1,6 +1,12 @@
 3.1.1 (unreleased)
 ==================
 
+- When backing up a blobstorage, use the timestamp of the latest filestorage backup.
+  If a blob backup with that name is already there, then there were no database changes,
+  so we do not make a backup.
+  This is only done when you use the new `blob_timestamps = true` option.
+  [maurits]
+
 - When restoring to a specific date, find the first blob backup at or before
   the specified date.  Otherwise fail.  The repozo script does the same.
   We used to pick the first blob backup *after* the specified date,
