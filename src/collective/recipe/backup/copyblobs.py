@@ -874,7 +874,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
         logger.info("Copying %s to %s", source, dest)
         shutil.copytree(source, dest)
     # Now possibly remove old backups.
-    cleanup(destination, full, keep, keep_blob_days, timestamps=timestamps,
+    cleanup(destination, full, keep, keep_blob_days,
             fs_backup_location=fs_backup_location)
 
 
@@ -947,7 +947,7 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
     if failed:
         return
     # Now possibly remove old backups.
-    cleanup_gzips(destination, keep=keep, timestamps=timestamps,
+    cleanup_gzips(destination, keep=keep,
                   fs_backup_location=fs_backup_location)
 
 
@@ -1184,10 +1184,8 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
 
 
 def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
-            timestamps=False, fs_backup_location=None):
+            fs_backup_location=None):
     """Clean up old blob backups.
-
-    TODO: remove timestamps option?  We don't need it.
 
     When fs_backup_location is passed and we find filestorage backups there,
     we ignore the keep and keep_blob_days options.
@@ -1390,11 +1388,9 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
         logger.debug("Not removing backups.")
 
 
-def cleanup_gzips(backup_location, keep=0, timestamps=False,
+def cleanup_gzips(backup_location, keep=0,
                   fs_backup_location=None):
     """Clean up old blob backups.
-
-    TODO: remove timestamps option?  We don't need it.
 
     When fs_backup_location is passed and we find filestorage backups there,
     we ignore the keep and keep_blob_days options.
