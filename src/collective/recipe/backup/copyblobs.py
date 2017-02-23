@@ -685,16 +685,21 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     d  dir
     -  one.txt
 
-    Now we pretend that there is a filestorage backup from the time that the most recent backup was made.
+    Now we pretend that there is a filestorage backup from the time that
+    the most recent backup was made.
     Pass that to the backup_blobs function.
-    It should not make a new blob backup, because there is one matching the most recent filestorage backup.
+    It should not make a new blob backup, because there is one matching
+    the most recent filestorage backup.
 
     >>> mkdir('fs')
     >>> write('fs', '{0}.fsz'.format(timestamp1), 'dummy fs' )
-    >>> backup_blobs('blobs', 'backups', timestamps=True, fs_backup_location='fs')
+    >>> backup_blobs('blobs', 'backups', timestamps=True,
+    ...     fs_backup_location='fs')
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
     d  blobs.20...-...-...-...-...
+    >>> len(os.listdir('backups'))
+    2
     >>> backup0 == os.listdir('backups')[0]
     True
     >>> backup1 == os.listdir('backups')[-1]
@@ -709,33 +714,23 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     -  one.txt
 
     Pretend there is a newer filestorage backup and a blob change.
+    This actually cleans up the oldest backup, because it does not belong
+    to any filestorage backup.
+    This did not happen in the previous run because no backup was made then.
 
     >>> write('blobs', 'two.txt', 'File two')
     >>> write('fs', '2100-01-01-00-00-00.fsz', 'dummy fs')
-    >>> backup_blobs('blobs', 'backups', timestamps=True, fs_backup_location='fs')
+    >>> backup_blobs('blobs', 'backups', timestamps=True,
+    ...    fs_backup_location='fs')
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
-    d  blobs.20...-...-...-...-...
     d  blobs.2100-01-01-00-00-00
-    >>> len(os.listdir('backups'))
-    3
+    >>> len(os.listdir('backups'))  # The dots could shadow a third backup
+    2
     >>> ls('backups', 'blobs.2100-01-01-00-00-00', 'blobs')
     d  dir
     -  one.txt
     -  two.txt
-
-    Backup again, but keep only 2 filestorage backups.
-    Specify 14 blob days to keep.
-    This fits one partial fs backup a day, and one zeopack a week.
-    Don't pass the filesystem backup location at first.
-
-    >>> backup_blobs('blobs', 'backups', keep=2, keep_blob_days=14, timestamps=True)
-    >>> ls('backups')
-    d  blobs.20...-...-...-...-...
-    d  blobs.20...-...-...-...-...
-    d  blobs.2100-01-01-00-00-00
-    >>> len(os.listdir('backups'))
-    3
 
 
     Cleanup:
@@ -831,6 +826,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             if os.path.exists(dest):
                 logger.info('Blob backup at %s already exists, so there were '
                             'no database changes since last backup.', dest)
+                # Note: it might still be good to run the cleanup.
+                # But that may only have an effect in hypothetical situations.
                 return
         else:
             dest = os.path.join(destination,
@@ -877,7 +874,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
         logger.info("Copying %s to %s", source, dest)
         shutil.copytree(source, dest)
     # Now possibly remove old backups.
-    cleanup(destination, full, keep, keep_blob_days, timestamps=timestamps)
+    cleanup(destination, full, keep, keep_blob_days, timestamps=timestamps,
+            fs_backup_location=fs_backup_location)
 
 
 def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
@@ -949,7 +947,8 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
     if failed:
         return
     # Now possibly remove old backups.
-    cleanup_gzips(destination, keep=keep, timestamps=timestamps)
+    cleanup_gzips(destination, keep=keep, timestamps=timestamps,
+                  fs_backup_location=fs_backup_location)
 
 
 def find_backup_to_restore(source, date_string='', gzip=False,
@@ -1141,12 +1140,59 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
         return
 
 
+def remove_orphaned_blob_backups(backup_location, fs_backup_location,
+                                 gzip=False):
+    """Remove orphaned blob backups.
+
+    This means: blob backups that have a timestamp older than the oldest
+    filestorage backup.
+
+    Returns True when nothing is left to do for any other code
+    that might want to do cleanup.
+    """
+    if not fs_backup_location:
+        return
+    oldest_timestamp = get_oldest_filestorage_timestamp(fs_backup_location)
+    if not oldest_timestamp:
+        return
+    if gzip:
+        backup_getter = get_blob_backup_gzips
+    else:
+        backup_getter = get_blob_backup_dirs
+    current_backups = backup_getter(backup_location)
+    if not current_backups:
+        # Can't remove what does not exist.
+        return True
+    deleted = 0
+    for num, mod_time, directory in current_backups:
+        if is_time_stamp(num):
+            if num >= oldest_timestamp:
+                continue
+        else:
+            # blobstorage.0/1/2
+            if gen_timestamp(mod_time) >= oldest_timestamp:
+                continue
+        shutil.rmtree(directory)
+        deleted += 1
+        logger.debug("Deleted %s.", directory)
+    if deleted:
+        logger.info("Removed %d blob backup(s), all backups "
+                    "belonging to remaining filestorage backups have "
+                    "been kept.", deleted)
+    # We are done.
+    return True
+
+
 def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
-            timestamps=False):
+            timestamps=False, fs_backup_location=None):
     """Clean up old blob backups.
 
-    TODO: handle timestamps.  We might not need keep_blob_days then,
-    or can be smarter about it.
+    TODO: remove timestamps option?  We don't need it.
+
+    When fs_backup_location is passed and we find filestorage backups there,
+    we ignore the keep and keep_blob_days options.
+    We remove any blob backups that are older than the oldest
+    filestorage backup.
 
     For the test, we create a backup dir using buildout's test support methods:
 
@@ -1286,6 +1332,10 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
       >>> remove(backup_dir)
 
     """
+    if remove_orphaned_blob_backups(backup_location, fs_backup_location):
+        # A True return value means there is nothing left to do.
+        return
+
     # Making sure we use integers.
     keep = int(keep)
     keep_blob_days = int(keep_blob_days)
@@ -1340,10 +1390,16 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
         logger.debug("Not removing backups.")
 
 
-def cleanup_gzips(backup_location, keep=0, timestamps=False):
+def cleanup_gzips(backup_location, keep=0, timestamps=False,
+                  fs_backup_location=None):
     """Clean up old blob backups.
 
-    TODO: handle timestamps.
+    TODO: remove timestamps option?  We don't need it.
+
+    When fs_backup_location is passed and we find filestorage backups there,
+    we ignore the keep and keep_blob_days options.
+    We remove any blob backups that are older than the oldest
+    filestorage backup.
 
     For the test, we create a backup dir using buildout's test support methods:
 
@@ -1432,6 +1488,11 @@ def cleanup_gzips(backup_location, keep=0, timestamps=False):
       >>> remove(backup_dir)
 
     """
+    if remove_orphaned_blob_backups(backup_location, fs_backup_location,
+                                    gzip=True):
+        # A True return value means there is nothing left to do.
+        return
+
     # Making sure we use integers.
     keep = int(keep)
     logger.debug("Trying to clean up old backups.")
