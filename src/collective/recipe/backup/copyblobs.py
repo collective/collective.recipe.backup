@@ -1176,7 +1176,11 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
             # blobstorage.0/1/2
             if gen_timestamp(mod_time) >= oldest_timestamp:
                 continue
-        shutil.rmtree(directory)
+        if gzip:
+            # It is actually a file.
+            os.remove(directory)
+        else:
+            shutil.rmtree(directory)
         deleted += 1
         logger.debug("Deleted %s.", directory)
     if deleted:
