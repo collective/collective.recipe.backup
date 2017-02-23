@@ -1,6 +1,17 @@
 3.1.1 (unreleased)
 ==================
 
+- When restoring to a specific date, find the first blob backup at or before
+  the specified date.  Otherwise fail.  The repozo script does the same.
+  We used to pick the first blob backup *after* the specified date,
+  because we assumed that the user would specify the exact date that is
+  in the filestorage backup.
+  Note that the timestamp of the filestorage and blobstorage backups may be
+  a few seconds apart.
+  In the new situation, the user should pick the date of the blob backup
+  or slightly later.
+  [maurits]
+
 - When restoring, first run checks for all filestorages and blobstorages.
   When one of the backups is missing, we quit with an error.
   This avoids restoring a filestorage and then getting into trouble

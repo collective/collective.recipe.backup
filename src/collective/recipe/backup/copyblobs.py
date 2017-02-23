@@ -88,7 +88,7 @@ def get_number(value, prefix=None, suffix=None):
 
 
 def strict_cmp_numbers(a, b):
-    """Compare backup numers, sorting newest first.
+    """Compare backup numbers, sorting newest first.
 
     a and b MUST be strings with either an integer or a timestamp.
     So '0', '1', '1999-12-31-23-59-30'.
@@ -418,8 +418,11 @@ def rotate_gzips(container, name):
                   os.path.join(container, new_name))
 
 
-def get_blob_backup_dirs(backup_location):
+def get_blob_backup_dirs(backup_location, only_timestamps=False):
     """Get blob backup dirs from this location.
+
+    If only_timestamps is True, we only return backups that have timestamps.
+    That is useful when restoring.
     """
     filenames = os.listdir(backup_location)
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
@@ -441,6 +444,8 @@ def get_blob_backup_dirs(backup_location):
         if parts is None:
             continue
         num = parts[1]
+        if only_timestamps and not is_time_stamp(num):
+            continue
         if prefix:
             if parts[0] != prefix:
                 logger.error(
@@ -466,8 +471,11 @@ def get_blob_backup_dirs(backup_location):
     return backup_dirs
 
 
-def get_blob_backup_gzips(backup_location):
+def get_blob_backup_gzips(backup_location, only_timestamps=False):
     """Get blob backup gzip files from this location.
+
+    If only_timestamps is True, we only return backups that have timestamps.
+    That is useful when restoring.
     """
     filenames = os.listdir(backup_location)
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
@@ -486,6 +494,8 @@ def get_blob_backup_gzips(backup_location):
         if parts is None:
             continue
         num = parts[1]
+        if only_timestamps and not is_time_stamp(num):
+            continue
         if prefix:
             if parts[0] != prefix:
                 logger.error(
@@ -836,8 +846,6 @@ def restore_blobs(source, destination, use_rsync=True,
         logger.error("There are no backups in %s.", source)
         # Signal error by returning a true value.
         return True
-    if only_check:
-        return
 
     # Determine the source (blob backup) that should be restored.
     backup_source = None
@@ -848,28 +856,47 @@ def restore_blobs(source, destination, use_rsync=True,
         try:
             date_args = [int(num) for num in date.split('-')]
         except:
-            logger.info("Could not parse date argument to restore blobs: %r",
-                        date)
-            logger.info("Restoring most recent backup instead.")
-        else:
-            target_datetime = datetime(*date_args)
-            backup_dirs = get_blob_backup_dirs(source)
-            # We want to find the first backup after the requested
-            # modification time, so we reverse the order.
-            backup_dirs.reverse()  # Note: this reverses in place.
+            logger.error("Could not parse date argument to restore blobs: %r",
+                         date)
+            return True
+        # Is this a valid datetime?  So not for example 99 seconds?
+        target_datetime = datetime(*date_args)
+        # repozo restore tries to find the first full backup at or before
+        # the specified date, and fails if it cannot be found.
+        # We should do the same.  The timestamp of the filestorage and
+        # blobstorage backups may be a few seconds apart.  If the user
+        # specifies a timestamp in between, this is an error of the user.
+        # TODO: try to set the same timestamp when creating a backup.
+        # TODO: port the stuff below to gzip.
+        # Maybe refactor to use one central function.
+        if timestamps:
+            backup_dirs = get_blob_backup_dirs(
+                source, only_timestamps=True)
+            # Note: the most recent timestamp is listed first.
             for num, mod_time, directory in backup_dirs:
-                backup_time = datetime.utcfromtimestamp(mod_time)
-                if backup_time >= target_datetime:
+                # Since both num and date are timestamps, we can compare them.
+                if num <= date:
                     backup_source = os.path.join(directory, base_name)
                     break
-            if not backup_source:
-                logger.warn("Could not find backup more recent than %r. Using "
-                            "most recent instead.", date)
+        if not backup_source:
+            # Compare modification times.
+            for num, mod_time, directory in current_backups:
+                backup_time = datetime.utcfromtimestamp(mod_time)
+                if backup_time <= target_datetime:
+                    backup_source = os.path.join(directory, base_name)
+                    break
+        if not backup_source:
+            logger.error("Could not find backup more recent than %r.",
+                         date)
+            return True
 
     if not backup_source:
         # The most recent is the default:
         backup_source = current_backups[0][2]
         backup_source = os.path.join(backup_source, base_name)
+
+    if only_check:
+        return
 
     # You should end up with something like this:
     # rsync -a  --delete var/blobstoragebackups/blobstorage.0/blobstorage var/

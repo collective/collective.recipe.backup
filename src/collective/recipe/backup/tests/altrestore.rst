@@ -172,10 +172,11 @@ Create the necessary sample directories and call the script again::
     Hello blob.
 
 Calling the script with a specific date is supported just like the
-normal restore script::
+normal restore script.  If the date is too early, the real repozo script would fail,
+saying 'No files in repository before <date>'.  Our mock repozo script would accept it,
+but we have added a check in the blob restore so we now fail as well.
 
     >>> print system('bin/altrestore 2000-12-31-23-59', input='yes\n')  # doctest:+ELLIPSIS
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data -D 2000-12-31-23-59
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -183,6 +184,21 @@ normal restore script::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at 2000-12-31-23-59.
+    ERROR: Could not find backup more recent than '2000-12-31-23-59'.
+    ERROR: Halting execution: restoring blobstorages would fail.
+    <BLANKLINE>
+
+So test is with a date in the future::
+
+    >>> print system('bin/altrestore 2100-12-31-23-59', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data -D 2100-12-31-23-59
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)?
+    INFO: Date restriction: restoring state at 2100-12-31-23-59.
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var

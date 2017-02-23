@@ -551,9 +551,9 @@ With the ``no-prompt`` option we avoid the question::
 Since release 2.3 we can also restore blobs to a specific date/time.
 blobstorage.0 is the newest, blobstorage.1 is the oldest.  The restore
 script will restore the first blobstorage with a modification time the
-same or higher than the time we ask for.  Here we ask for a time that
+same or earlier than the time we ask for.  Here we ask for a time that
 should be the same as the modification date of blobstorage.1.  We
-subtract half a second to avoid random errors that have plagued these
+add half a second to avoid random errors that have plagued these
 tests due to rounding or similar sillyness.
 
     >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups/blobstorage.0')
@@ -561,7 +561,7 @@ tests due to rounding or similar sillyness.
     >>> mod_time_0 > mod_time_1
     True
     >>> from datetime import datetime
-    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1 - 0.5).timetuple()[:6]])
+    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1 + 0.5).timetuple()[:6]])
     >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups_bar/blobstorage-bar.0')
     >>> mod_time_1 = os.path.getmtime('var/blobstoragebackups_bar/blobstorage-bar.1')
     >>> mod_time_0 > mod_time_1
@@ -600,6 +600,24 @@ The second blob file is now no longer in the blob storage.
 
     >>> ls('var/blobstorage')
     -  blob1.txt
+
+When passed a date for which we have no backups, the script will fail.
+
+    >>> print system('bin/restore 1972-12-25', input='yes\n')
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/foo.fs
+        /sample-buildout/var/filestorage/bar.fs
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage-foo
+        /sample-buildout/var/blobstorage-bar
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)?
+    INFO: Date restriction: restoring state at 1972-12-25.
+    ERROR: Could not find backup more recent than '1972-12-25'.
+    ERROR: Halting execution: restoring blobstorages would fail.
+    <BLANKLINE>
 
 The snapshotrestore works too::
 
@@ -653,7 +671,7 @@ Since release 2.3 we can also restore blob snapshots to a specific date/time.
     True
     >>> mod_time_1 > mod_time_2
     True
-    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1 - 0.5).timetuple()[:6]])
+    >>> time_string = '-'.join([str(t) for t in datetime.utcfromtimestamp(mod_time_1 + 0.5).timetuple()[:6]])
     >>> print system('bin/snapshotrestore %s' % time_string, input='yes\n')
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -D ...
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
@@ -687,14 +705,12 @@ started and now it is also in the main blobstorage again.
     -  blob1.txt
     -  blob2.txt
 
-When repozo cannot find a Data.fs backup with files from before the
-given date string it will quit with an error.  We should not restore
-the blobs then either.  We test that with a special bin/repozo
-script that simply quits::
+When repozo quits with an error, we should not restore the blobs then either.
+We test that with a special bin/repozo script that simply quits::
 
     >>> write('bin', 'repozo', "#!%s\nimport sys\nsys.exit(1)" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
-    >>> print system('bin/snapshotrestore 1972-12-25', input='yes\n')
+    >>> print system('bin/snapshotrestore', input='yes\n')
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/foo.fs
@@ -705,7 +721,6 @@ script that simply quits::
         /sample-buildout/var/blobstorage-bar
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
-    INFO: Date restriction: restoring state at 1972-12-25.
     INFO: Please wait while restoring database file: /sample-buildout/var/snapshotbackups_foo to /sample-buildout/var/filestorage/foo.fs
     ERROR: Repozo command failed. See message above.
     ERROR: Halting execution due to error; not restoring blobs.
