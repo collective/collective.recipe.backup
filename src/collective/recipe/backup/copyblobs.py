@@ -652,13 +652,98 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     >>> stat_0.st_ino == stat_1.st_ino
     True
 
+    Now cleanup and try with filestamps.
+
+    >>> remove('backups')
+    >>> mkdir('backups')
+    >>> backup_blobs('blobs', 'backups', timestamps=True)
+    >>> ls('backups')
+    d  blobs.20...-...-...-...-...
+    >>> backup0 = os.listdir('backups')[0]
+    >>> timestamp0 = backup0[len('blobs.'):]
+    >>> ls('backups', backup0, 'blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+
+    Wait a while, so we get a different timestamp, and then change some stuff.
+
+    >>> import time
+    >>> time.sleep(1)
+    >>> remove('blobs', 'three.txt')
+    >>> remove('blobs', 'four.txt')
+    >>> backup_blobs('blobs', 'backups', timestamps=True)
+    >>> ls('backups')
+    d  blobs.20...-...-...-...-...
+    d  blobs.20...-...-...-...-...
+    >>> backup1 = os.listdir('backups')[-1]
+    >>> timestamp1 = backup1[len('blobs.'):]
+    >>> timestamp0 < timestamp1
+    True
+    >>> ls('backups', backup1, 'blobs')
+    d  dir
+    -  one.txt
+
+    Now we pretend that there is a filestorage backup from the time that the most recent backup was made.
+    Pass that to the backup_blobs function.
+    It should not make a new blob backup, because there is one matching the most recent filestorage backup.
+
+    >>> mkdir('fs')
+    >>> write('fs', '{0}.fsz'.format(timestamp1), 'dummy fs' )
+    >>> backup_blobs('blobs', 'backups', timestamps=True, fs_backup_location='fs')
+    >>> ls('backups')
+    d  blobs.20...-...-...-...-...
+    d  blobs.20...-...-...-...-...
+    >>> backup0 == os.listdir('backups')[0]
+    True
+    >>> backup1 == os.listdir('backups')[-1]
+    True
+    >>> ls('backups', backup0, 'blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    >>> ls('backups', backup1, 'blobs')
+    d  dir
+    -  one.txt
+
+    Pretend there is a newer filestorage backup and a blob change.
+
+    >>> write('blobs', 'two.txt', 'File two')
+    >>> write('fs', '2100-01-01-00-00-00.fsz', 'dummy fs')
+    >>> backup_blobs('blobs', 'backups', timestamps=True, fs_backup_location='fs')
+    >>> ls('backups')
+    d  blobs.20...-...-...-...-...
+    d  blobs.20...-...-...-...-...
+    d  blobs.2100-01-01-00-00-00
+    >>> len(os.listdir('backups'))
+    3
+    >>> ls('backups', 'blobs.2100-01-01-00-00-00', 'blobs')
+    d  dir
+    -  one.txt
+    -  two.txt
+
+    Backup again, but keep only 2 filestorage backups.
+    Specify 14 blob days to keep.
+    This fits one partial fs backup a day, and one zeopack a week.
+    Don't pass the filesystem backup location at first.
+
+    >>> backup_blobs('blobs', 'backups', keep=2, keep_blob_days=14, timestamps=True)
+    >>> ls('backups')
+    d  blobs.20...-...-...-...-...
+    d  blobs.20...-...-...-...-...
+    d  blobs.2100-01-01-00-00-00
+    >>> len(os.listdir('backups'))
+    3
+
+
     Cleanup:
 
     >>> remove('blobs')
     >>> remove('backups')
 
-    We do exactly the same (if developers remember to copy changes
-    done above to below) but now using full backups.
+    We do mostly the same as above, but now using full backups.
 
     >>> mkdir('blobs')
     >>> write('blobs', 'one.txt', "File One")
