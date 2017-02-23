@@ -802,13 +802,36 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
     cleanup_gzips(destination, keep=keep, timestamps=timestamps)
 
 
-def find_backup_for_date(source, date_string, gzip=False, timestamps=False):
-    """Find backup for given date string.
+def find_backup_to_restore(source, date_string='', gzip=False,
+                           timestamps=False):
+    """Find backup to restore.
 
+    This determines whether blobstorage.0 or blobstorage.1 is taken, etc.
+
+    It may be for a given date string.
     From repozo: specify UTC (not local) time in this format:
     yyyy-mm-dd[-hh[-mm[-ss]]]
     Note that this matches the 2011-10-05-12-12-45.fsz that is created.
+
+    It may be gzip backups only (tar.gz really).
+    If timestamps is True, we prefer those.
+
+    We return nothing or a directory or file name.
     """
+    if gzip:
+        backup_getter = get_blob_backup_gzips
+    else:
+        backup_getter = get_blob_backup_dirs
+    current_backups = backup_getter(source)
+    if not current_backups:
+        logger.error("There are no backups in %s.", source)
+        return
+    if not date_string:
+        # The most recent is the default.
+        # We only need the directory or filename.
+        return current_backups[0][2]
+
+    # We want the backup for a specific date.
     try:
         date_args = [int(num) for num in date_string.split('-')]
     except:
@@ -817,11 +840,6 @@ def find_backup_for_date(source, date_string, gzip=False, timestamps=False):
         return
     # Is this a valid datetime?  So not for example 99 seconds?
     target_datetime = datetime(*date_args)
-
-    if gzip:
-        backup_getter = get_blob_backup_gzips
-    else:
-        backup_getter = get_blob_backup_dirs
 
     # repozo restore tries to find the first full backup at or before
     # the specified date, and fails if it cannot be found.
@@ -874,38 +892,28 @@ def restore_blobs(source, destination, use_rsync=True,
     restore_blobs.  When all is well, call it normally without only_check.
 
     """
+    if destination.endswith(os.sep):
+        # strip that separator
+        destination = destination[:-len(os.sep)]
     if gzip_blob:
         result = restore_blobs_gzip(
             source, destination, date, timestamps=timestamps,
             only_check=only_check)
         return result
 
-    if destination.endswith(os.sep):
-        # strip that separator
-        destination = destination[:-len(os.sep)]
-    base_name = os.path.basename(destination)
-    dest_dir = os.path.dirname(destination)
-
-    current_backups = get_blob_backup_dirs(source)
-    if not current_backups:
-        logger.error("There are no backups in %s.", source)
-        # Signal error by returning a true value.
-        return True
-
     # Determine the source (blob backup) that should be restored.
-    backup_source = None
-    if date is not None:
-        backup_source = find_backup_for_date(source, date, timestamps=timestamps)
-        if not backup_source:
-            return True
-    else:
-        # The most recent is the default:
-        backup_source = current_backups[0][2]
-    # We have .../blobstorage.0, but we need the base_name directory in it.
-    backup_source = os.path.join(backup_source, base_name)
-
+    backup_source = find_backup_to_restore(
+        source, date_string=date, timestamps=timestamps)
+    if not backup_source:
+        return True
     if only_check:
         return
+
+    # We have .../blobstorage.0 as backup source, but we need the destination
+    # directory name in it, so usually .../blobstorage.0/blobstorage
+    dest_dir = os.path.dirname(destination)
+    base_name = os.path.basename(destination)
+    backup_source = os.path.join(backup_source, base_name)
 
     # You should end up with something like this:
     # rsync -a  --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
@@ -962,28 +970,14 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
     >>> remove('backups')
 
     """
-    if destination.endswith(os.sep):
-        # strip that separator
-        destination = destination[:-len(os.sep)]
-    current_backups = get_blob_backup_gzips(source)
-    if not current_backups:
-        logger.error("There are no backups in %s.", source)
+    # Determine the source (blob backup) that should be restored.
+    backup_source = find_backup_to_restore(
+        source, date_string=date, gzip=True, timestamps=timestamps)
+    if not backup_source:
         # Signal error by returning a true value.
         return True
     if only_check:
         return
-
-    # Determine the source (blob backup) that should be restored.
-    backup_source = None
-    if date is not None:
-        backup_source = find_backup_for_date(
-            source, date, gzip=True, timestamps=timestamps)
-        if not backup_source:
-            return True
-    else:
-        # The most recent is the default:
-        backup_source = current_backups[0][2]
-
     if os.path.exists(destination):
         logger.info("Removing %s", destination)
         shutil.rmtree(destination)
