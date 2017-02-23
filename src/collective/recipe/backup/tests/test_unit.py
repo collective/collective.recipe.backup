@@ -133,6 +133,11 @@ class CopyBlobsTestCase(unittest.TestCase):
         # We can pass a time tuple.
         self.assertEqual(gen_timestamp(now=(1999, 12, 31, 23, 59, 30)),
                          '1999-12-31-23-59-30')
+        # We can pass an integer or float like time.time().
+        self.assertEqual(gen_timestamp(now=1487874793),
+                         '2017-02-23-18-33-13')
+        self.assertEqual(gen_timestamp(now=1487874793.90436),
+                         '2017-02-23-18-33-13')
 
     def test_is_time_stamp(self):
         from collective.recipe.backup.copyblobs import gen_timestamp

@@ -184,11 +184,11 @@ def gen_timestamp(now=None):
 
     With 'now' you can set a different time for testing.
     It should be a tuple of year, month, day, hour, minute, second.
+    A number (like time.time()) works too.
     """
-    if now is None:
-        now = time.gmtime()[:6]
-    t = now
-    return '%04d-%02d-%02d-%02d-%02d-%02d' % t
+    if now is None or isinstance(now, (int, float)):
+        now = time.gmtime(now)[:6]
+    return '%04d-%02d-%02d-%02d-%02d-%02d' % now
 
 
 def gen_blobdir_name(prefix='blobstorage', now=None):
