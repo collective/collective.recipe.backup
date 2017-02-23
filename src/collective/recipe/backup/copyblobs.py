@@ -802,6 +802,52 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
     cleanup_gzips(destination, keep=keep, timestamps=timestamps)
 
 
+def find_backup_for_date(source, date_string, gzip=False, timestamps=False):
+    """Find backup for given date string.
+
+    From repozo: specify UTC (not local) time in this format:
+    yyyy-mm-dd[-hh[-mm[-ss]]]
+    Note that this matches the 2011-10-05-12-12-45.fsz that is created.
+    """
+    try:
+        date_args = [int(num) for num in date_string.split('-')]
+    except:
+        logger.error("Could not parse date argument to restore blobs: %r",
+                     date_string)
+        return
+    # Is this a valid datetime?  So not for example 99 seconds?
+    target_datetime = datetime(*date_args)
+
+    if gzip:
+        backup_getter = get_blob_backup_gzips
+    else:
+        backup_getter = get_blob_backup_dirs
+
+    # repozo restore tries to find the first full backup at or before
+    # the specified date, and fails if it cannot be found.
+    # We should do the same.  The timestamp of the filestorage and
+    # blobstorage backups may be a few seconds apart.  If the user
+    # specifies a timestamp in between, this is an error of the user.
+    # TODO: try to set the same timestamp when creating a backup.
+    if timestamps:
+        backup_dirs = backup_getter(
+            source, only_timestamps=True)
+        # Note: the most recent timestamp is listed first.
+        for num, mod_time, directory in backup_dirs:
+            # Since both num and date are timestamps, we can compare them.
+            if num <= date_string:
+                return directory
+
+    # Compare modification times.
+    backup_dirs = backup_getter(source)
+    for num, mod_time, directory in backup_dirs:
+        backup_time = datetime.utcfromtimestamp(mod_time)
+        if backup_time <= target_datetime:
+            return directory
+
+    logger.error("Could not find backup of %r or earlier.", date_string)
+
+
 def restore_blobs(source, destination, use_rsync=True,
                   date=None, gzip_blob=False, rsync_options='',
                   timestamps=False, only_check=False):
@@ -827,7 +873,6 @@ def restore_blobs(source, destination, use_rsync=True,
     The idea is to first call this with only_check=True, and do the same for
     restore_blobs.  When all is well, call it normally without only_check.
 
-    TODO: handle timestamps?
     """
     if gzip_blob:
         result = restore_blobs_gzip(
@@ -850,50 +895,14 @@ def restore_blobs(source, destination, use_rsync=True,
     # Determine the source (blob backup) that should be restored.
     backup_source = None
     if date is not None:
-        # From repozo: specify UTC (not local) time in this format:
-        # yyyy-mm-dd[-hh[-mm[-ss]]]
-        # Note that this matches the 2011-10-05-12-12-45.fsz that is created.
-        try:
-            date_args = [int(num) for num in date.split('-')]
-        except:
-            logger.error("Could not parse date argument to restore blobs: %r",
-                         date)
-            return True
-        # Is this a valid datetime?  So not for example 99 seconds?
-        target_datetime = datetime(*date_args)
-        # repozo restore tries to find the first full backup at or before
-        # the specified date, and fails if it cannot be found.
-        # We should do the same.  The timestamp of the filestorage and
-        # blobstorage backups may be a few seconds apart.  If the user
-        # specifies a timestamp in between, this is an error of the user.
-        # TODO: try to set the same timestamp when creating a backup.
-        # TODO: port the stuff below to gzip.
-        # Maybe refactor to use one central function.
-        if timestamps:
-            backup_dirs = get_blob_backup_dirs(
-                source, only_timestamps=True)
-            # Note: the most recent timestamp is listed first.
-            for num, mod_time, directory in backup_dirs:
-                # Since both num and date are timestamps, we can compare them.
-                if num <= date:
-                    backup_source = os.path.join(directory, base_name)
-                    break
+        backup_source = find_backup_for_date(source, date, timestamps=timestamps)
         if not backup_source:
-            # Compare modification times.
-            for num, mod_time, directory in current_backups:
-                backup_time = datetime.utcfromtimestamp(mod_time)
-                if backup_time <= target_datetime:
-                    backup_source = os.path.join(directory, base_name)
-                    break
-        if not backup_source:
-            logger.error("Could not find backup more recent than %r.",
-                         date)
             return True
-
-    if not backup_source:
+    else:
         # The most recent is the default:
         backup_source = current_backups[0][2]
-        backup_source = os.path.join(backup_source, base_name)
+    # We have .../blobstorage.0, but we need the base_name directory in it.
+    backup_source = os.path.join(backup_source, base_name)
 
     if only_check:
         return
@@ -956,7 +965,6 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
     if destination.endswith(os.sep):
         # strip that separator
         destination = destination[:-len(os.sep)]
-    base_name = os.path.basename(destination)
     current_backups = get_blob_backup_gzips(source)
     if not current_backups:
         logger.error("There are no backups in %s.", source)
@@ -968,31 +976,11 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
     # Determine the source (blob backup) that should be restored.
     backup_source = None
     if date is not None:
-        # From repozo: specify UTC (not local) time in this format:
-        # yyyy-mm-dd[-hh[-mm[-ss]]]
-        # Note that this matches the 2011-10-05-12-12-45.fsz that is created.
-        try:
-            date_args = [int(num) for num in date.split('-')]
-        except:
-            logger.info("Could not parse date argument to restore blobs: %r",
-                        date)
-            logger.info("Restoring most recent backup instead.")
-        else:
-            target_datetime = datetime(*date_args)
-            backup_gzips = get_blob_backup_gzips(source)
-            # We want to find the first backup after the requested
-            # modification time, so we reverse the order.
-            backup_gzips.reverse()  # Note: this reverses in place.
-            for num, mod_time, gzip_file in backup_gzips:
-                backup_time = datetime.utcfromtimestamp(mod_time)
-                if backup_time >= target_datetime:
-                    backup_source = gzip_file
-                    break
-            if not backup_source:
-                logger.warn("Could not find backup more recent than %r. Using "
-                            "most recent instead.", date)
-
-    if not backup_source:
+        backup_source = find_backup_for_date(
+            source, date, gzip=True, timestamps=timestamps)
+        if not backup_source:
+            return True
+    else:
         # The most recent is the default:
         backup_source = current_backups[0][2]
 

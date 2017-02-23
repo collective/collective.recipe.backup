@@ -615,7 +615,7 @@ When passed a date for which we have no backups, the script will fail.
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at 1972-12-25.
-    ERROR: Could not find backup more recent than '1972-12-25'.
+    ERROR: Could not find backup of '1972-12-25' or earlier.
     ERROR: Halting execution: restoring blobstorages would fail.
     <BLANKLINE>
 

@@ -184,7 +184,7 @@ but we have added a check in the blob restore so we now fail as well.
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at 2000-12-31-23-59.
-    ERROR: Could not find backup more recent than '2000-12-31-23-59'.
+    ERROR: Could not find backup of '2000-12-31-23-59' or earlier.
     ERROR: Halting execution: restoring blobstorages would fail.
     <BLANKLINE>
 
