@@ -1,7 +1,10 @@
 3.1.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- When restoring, first run checks for all filestorages and blobstorages.
+  When one of the backups is missing, we quit with an error.
+  This avoids restoring a filestorage and then getting into trouble
+  due to a missing blobstorage backup.  [maurits]
 
 
 3.1 (2017-02-24)

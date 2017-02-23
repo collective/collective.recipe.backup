@@ -125,8 +125,17 @@ def zipbackup_main(bin_dir, storages, keep, full, verbose, gzip):
 
 def restore_main(bin_dir, storages, verbose,
                  date=None, restore_snapshot=False, alt_restore=False,
-                 zip_restore=False):
-    """Main method, gets called by generated bin/restore."""
+                 zip_restore=False, only_check=False):
+    """Main method, gets called by generated bin/restore.
+
+    If only_check is True, we only perform checks.
+    Most importantly: check if the backup exists.
+    It is not meant as a dry run: we might create a missing directory,
+    which serves as a check that the user is allowed to do this.
+
+    The idea is to first call this with only_check=True, and do the same for
+    restore_blobs.  When all is well, call it normally without only_check.
+    """
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
     if sum([1 for opt in explicit_restore_opts if opt]) > 1:
         logger.error("Must use at most one option of restore_snapshot, "
@@ -148,12 +157,13 @@ def restore_main(bin_dir, storages, verbose,
         if not os.path.exists(fs_dir):
             os.makedirs(fs_dir)
             logger.info('Created directory %s', fs_dir)
+        arguments = restore_arguments(
+            fs, backup_location, date, verbose, as_list=True)
+        if only_check:
+            continue
         logger.info("Please wait while restoring database file: %s to %s",
                     backup_location, fs)
-        result = os.system(quote_command(
-            [repozo] +
-            restore_arguments(
-                fs, backup_location, date, verbose, as_list=True)))
+        result = os.system(quote_command([repozo] + arguments))
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
@@ -243,8 +253,6 @@ def restore_arguments(datafs=None,
         arguments.append(date)
     if verbose:
         arguments.append('--verbose')
-    if as_list:
-        return arguments
     logger.debug("Repozo arguments used: %s", ' '.join(arguments))
     if as_list:
         return arguments

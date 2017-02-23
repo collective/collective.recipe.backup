@@ -134,16 +134,14 @@ Call the script::
     d  filestorage
     >>> remove('var', 'filestorage')
     >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)? INFO: Created directory /sample-buildout/var/filestorage
-    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
-    INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     ERROR: There are no backups in /sample-buildout/alt/blobs.
+    ERROR: Halting execution: restoring blobstorages would fail.
     <BLANKLINE>
     >>> ls('var')
     d  filestorage
@@ -241,13 +239,13 @@ Test in combination with additional filestorage::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Created directory /sample-buildout/var/filestorage/foo
-    INFO: Please wait while restoring database file: /sample-buildout/alt/foo to /sample-buildout/var/filestorage/foo/foo.fs
     INFO: Created directory /sample-buildout/var/filestorage/bar
+    INFO: No blob dir defined for bar storage
+    INFO: Please wait while restoring database file: /sample-buildout/alt/foo to /sample-buildout/var/filestorage/foo/foo.fs
     INFO: Please wait while restoring database file: /sample-buildout/alt/bar to /sample-buildout/var/filestorage/bar/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/fooblobs to /sample-buildout/var/blobstorage-foo
     INFO: rsync -a  --delete /sample-buildout/alt/fooblobs/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
-    INFO: No blob dir defined for bar storage
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>

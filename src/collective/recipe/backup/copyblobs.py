@@ -794,7 +794,7 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False):
 
 def restore_blobs(source, destination, use_rsync=True,
                   date=None, gzip_blob=False, rsync_options='',
-                  timestamps=False):
+                  timestamps=False, only_check=False):
     """Restore blobs from source to destination.
 
     With 'use_rsync' at the default True, we use rsync to copy,
@@ -809,12 +809,21 @@ def restore_blobs(source, destination, use_rsync=True,
     be careful with that otherwise you may end up with something like
     var/blobstorage/blobstorage
 
+    If only_check is True, we only perform checks.
+    Most importantly: check if the backup exists.
+    It is not meant as a dry run: we might create a missing directory,
+    which serves as a check that the user is allowed to do this.
+
+    The idea is to first call this with only_check=True, and do the same for
+    restore_blobs.  When all is well, call it normally without only_check.
+
     TODO: handle timestamps?
     """
-
     if gzip_blob:
-        restore_blobs_gzip(source, destination, date, timestamps=timestamps)
-        return
+        result = restore_blobs_gzip(
+            source, destination, date, timestamps=timestamps,
+            only_check=only_check)
+        return result
 
     if destination.endswith(os.sep):
         # strip that separator
@@ -825,7 +834,9 @@ def restore_blobs(source, destination, use_rsync=True,
     current_backups = get_blob_backup_dirs(source)
     if not current_backups:
         logger.error("There are no backups in %s.", source)
-        # XXX Should we exit with an error?
+        # Signal error by returning a true value.
+        return True
+    if only_check:
         return
 
     # Determine the source (blob backup) that should be restored.
@@ -881,7 +892,8 @@ def restore_blobs(source, destination, use_rsync=True,
         shutil.copytree(backup_source, destination)
 
 
-def restore_blobs_gzip(source, destination, date=None, timestamps=False):
+def restore_blobs_gzip(source, destination, date=None, timestamps=False,
+                       only_check=False):
     """Restore blobs from source to destination.
 
     Prepare backup for test:
@@ -921,7 +933,9 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False):
     current_backups = get_blob_backup_gzips(source)
     if not current_backups:
         logger.error("There are no backups in %s.", source)
-        # XXX Should we exit with an error?
+        # Signal error by returning a true value.
+        return True
+    if only_check:
         return
 
     # Determine the source (blob backup) that should be restored.
