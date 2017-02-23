@@ -690,6 +690,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     Pass that to the backup_blobs function.
     It should not make a new blob backup, because there is one matching
     the most recent filestorage backup.
+    This actually cleans up the oldest backup, because it does not belong
+    to any filestorage backup.
 
     >>> mkdir('fs')
     >>> write('fs', '{0}.fsz'.format(timestamp1), 'dummy fs' )
@@ -697,26 +699,15 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     ...     fs_backup_location='fs')
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
-    d  blobs.20...-...-...-...-...
-    >>> len(os.listdir('backups'))
-    2
-    >>> backup0 == os.listdir('backups')[0]
+    >>> len(os.listdir('backups'))  # The dots could shadow other backups.
+    1
+    >>> backup1 == os.listdir('backups')[0]
     True
-    >>> backup1 == os.listdir('backups')[-1]
-    True
-    >>> ls('backups', backup0, 'blobs')
-    d  dir
-    -  four.txt
-    -  one.txt
-    -  three.txt
     >>> ls('backups', backup1, 'blobs')
     d  dir
     -  one.txt
 
     Pretend there is a newer filestorage backup and a blob change.
-    This actually cleans up the oldest backup, because it does not belong
-    to any filestorage backup.
-    This did not happen in the previous run because no backup was made then.
 
     >>> write('blobs', 'two.txt', 'File two')
     >>> write('fs', '2100-01-01-00-00-00.fsz', 'dummy fs')
@@ -732,6 +723,15 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     -  one.txt
     -  two.txt
 
+    Remove the oldest filestorage backup.
+
+    >>> remove('fs', '{0}.fsz'.format(timestamp1))
+    >>> backup_blobs('blobs', 'backups', timestamps=True,
+    ...    fs_backup_location='fs')
+    >>> ls('backups')
+    d  blobs.2100-01-01-00-00-00
+    >>> len(os.listdir('backups'))
+    1
 
     Cleanup:
 
@@ -826,8 +826,9 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             if os.path.exists(dest):
                 logger.info('Blob backup at %s already exists, so there were '
                             'no database changes since last backup.', dest)
-                # Note: it might still be good to run the cleanup.
-                # But that may only have an effect in hypothetical situations.
+                # Now possibly remove old backups.
+                cleanup(destination, full, keep, keep_blob_days,
+                        fs_backup_location=fs_backup_location)
                 return
         else:
             dest = os.path.join(destination,
@@ -929,6 +930,9 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
             if os.path.exists(dest):
                 logger.info('Blob backup at %s already exists, so there were '
                             'no database changes since last backup.', dest)
+                # Now possibly remove old backups.
+                cleanup_gzips(destination, keep=keep,
+                              fs_backup_location=fs_backup_location)
                 return
         else:
             filename = base_name + '.' + gen_timestamp() + '.tar.gz'
