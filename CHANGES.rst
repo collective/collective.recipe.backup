@@ -1,5 +1,5 @@
-3.0.1 (unreleased)
-==================
+3.1 (unreleased)
+================
 
 - Add a ``locationprefix`` option to configure a folder where all other
   backup and snapshot folders will be created [erral]
