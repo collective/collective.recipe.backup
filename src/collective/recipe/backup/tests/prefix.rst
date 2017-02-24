@@ -27,6 +27,11 @@ Let's run the buildout::
 
     >>> ignore = system(buildout)
 
+Untested in this file, as it would create directories in your root or your
+home dir, are absolute links (starting with a '/') or directories in your home
+dir or relative (``../``) path. They do work, of course. Also ``~`` and
+``$BACKUP``-style environment variables are expanded.
+
 
 Backup
 ------

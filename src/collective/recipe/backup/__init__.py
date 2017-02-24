@@ -111,7 +111,11 @@ class Recipe(object):
         else:
             var_dir = os.path.abspath(os.path.join(buildout_dir, 'var'))
 
-        prefix = options.setdefault('locationprefix', var_dir)
+        prefix = options.get('locationprefix')
+        if prefix is not None:
+            prefix = construct_path(buildout_dir, prefix)
+        else:
+            prefix = var_dir
 
         backup_dir = os.path.abspath(
             os.path.join(prefix, backup_name + 's'))
