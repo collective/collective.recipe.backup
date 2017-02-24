@@ -1,5 +1,5 @@
-3.1.1 (unreleased)
-==================
+4.0 (unreleased)
+================
 
 - Automatically remove old blobs backups that have no corresponding filestorage backup.
   We compare the timestamp of the oldest filestorage backup with the timestamps of the
