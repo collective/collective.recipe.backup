@@ -70,6 +70,7 @@ def test_suite():
         'no_rsync.rst',
         'options.rst',
         'zipbackup.rst',
+        'prefix.rst',
     ]
     for docfile in docfiles:
         suite.addTest(doctest.DocFileSuite(
