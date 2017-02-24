@@ -1,4 +1,4 @@
-3.1 (unreleased)
+3.1 (2017-02-24)
 ================
 
 - Add a ``locationprefix`` option to configure a folder where all other
