@@ -397,6 +397,10 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Location where backups are stored. Defaults to ``var/backups`` inside the
     buildout directory.
 
+``locationprefix``
+    Location of the folder where all other backup and snapshot folders will 
+    be created. Defaults to ``var/``.
+
 ``only_blobs``
     Only backup the blobstorage, not the ``Data.fs`` filestorage.  False
     by default.  May be a useful option if for example you want to

@@ -111,18 +111,20 @@ class Recipe(object):
         else:
             var_dir = os.path.abspath(os.path.join(buildout_dir, 'var'))
 
+        prefix = options.setdefault('locationprefix', var_dir)
+
         backup_dir = os.path.abspath(
-            os.path.join(var_dir, backup_name + 's'))
+            os.path.join(prefix, backup_name + 's'))
         snapshot_dir = os.path.abspath(
-            os.path.join(var_dir, snapshot_name + 's'))
+            os.path.join(prefix, snapshot_name + 's'))
         zip_backup_dir = os.path.abspath(
-            os.path.join(var_dir, zipbackup_name + 's'))
+            os.path.join(prefix, zipbackup_name + 's'))
         blob_backup_dir = os.path.abspath(
-            os.path.join(var_dir, blob_backup_name + 's'))
+            os.path.join(prefix, blob_backup_name + 's'))
         blob_snapshot_dir = os.path.abspath(
-            os.path.join(var_dir, blob_snapshot_name + 's'))
+            os.path.join(prefix, blob_snapshot_name + 's'))
         blob_zip_dir = os.path.abspath(
-            os.path.join(var_dir, blob_zip_name + 's'))
+            os.path.join(prefix, blob_zip_name + 's'))
 
         # file-storage may have been set in recipes
         datafs = get_zope_option(self.buildout, 'file-storage')
