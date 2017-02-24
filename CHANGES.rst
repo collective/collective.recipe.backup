@@ -20,16 +20,23 @@
   because we assumed that the user would specify the exact date that is
   in the filestorage backup.
   Note that the timestamp of the filestorage and blobstorage backups may be
-  a few seconds apart.
+  a few seconds apart, unless you use the ``blob_timestamps == true`` option.
   In the new situation, the user should pick the date of the blob backup
   or slightly later.
+  [maurits]
+
+- Added ``blob_timestamps`` option.  Default is false.
+  By default we create ``blobstorage.0``.
+  The next time, we rotate this to ``blobstorage.1`` and create a new ``blobstorage.0``.
+  With ``blob_timestamps = true``, we create stable directories that we do not rotate.
+  They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
+  For example: ``blobstorage.1972-12-25-01-02-03``.
   [maurits]
 
 - When restoring, first run checks for all filestorages and blobstorages.
   When one of the backups is missing, we quit with an error.
   This avoids restoring a filestorage and then getting into trouble
   due to a missing blobstorage backup.  [maurits]
-
 
 3.1 (2017-02-24)
 ================
