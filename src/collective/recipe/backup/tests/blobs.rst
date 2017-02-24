@@ -553,7 +553,7 @@ blobstorage.0 is the newest, blobstorage.1 is the oldest.  The restore
 script will restore the first blobstorage with a modification time the
 same or earlier than the time we ask for.  Here we ask for a time that
 should be the same as the modification date of blobstorage.1.  We
-add half a second to avoid random errors that have plagued these
+add a second to avoid random errors that have plagued these
 tests due to rounding or similar sillyness.
 
     >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups/blobstorage.0')
@@ -561,7 +561,7 @@ tests due to rounding or similar sillyness.
     >>> mod_time_0 > mod_time_1
     True
     >>> from datetime import datetime
-    >>> time_string = '-'.join(['{0:02d}'.format(t) for t in datetime.utcfromtimestamp(mod_time_1 + 0.5).timetuple()[:6]])
+    >>> time_string = '-'.join(['{0:02d}'.format(t) for t in datetime.utcfromtimestamp(mod_time_1 + 1).timetuple()[:6]])
     >>> mod_time_0 = os.path.getmtime('var/blobstoragebackups_bar/blobstorage-bar.0')
     >>> mod_time_1 = os.path.getmtime('var/blobstoragebackups_bar/blobstorage-bar.1')
     >>> mod_time_0 > mod_time_1
@@ -671,7 +671,7 @@ Since release 2.3 we can also restore blob snapshots to a specific date/time.
     True
     >>> mod_time_1 > mod_time_2
     True
-    >>> time_string = '-'.join(['{0:02d}'.format(t) for t in datetime.utcfromtimestamp(mod_time_1 + 0.5).timetuple()[:6]])
+    >>> time_string = '-'.join(['{0:02d}'.format(t) for t in datetime.utcfromtimestamp(mod_time_1 + 1).timetuple()[:6]])
     >>> print system('bin/snapshotrestore %s' % time_string, input='yes\n')
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -D ...
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
