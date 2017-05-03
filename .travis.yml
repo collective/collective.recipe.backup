@@ -10,7 +10,8 @@ matrix:
   fast_finish: true
 before_install:
 install:
-  - python bootstrap.py
+  - virtualenv .
+  - bin/pip install -r requirements.txt
   - bin/buildout -c travis.cfg -q
 script:
   - bin/test
