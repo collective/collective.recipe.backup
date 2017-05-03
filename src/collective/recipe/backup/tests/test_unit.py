@@ -149,41 +149,6 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertFalse(is_time_stamp('99-12-31-23-59-30'))
         self.assertTrue(is_time_stamp(gen_timestamp()))
 
-    def test_get_number(self):
-        from collective.recipe.backup.copyblobs import get_number
-        self.assertEqual(get_number('1'), '1')
-        self.assertEqual(get_number('1999-12-31-23-59-30'),
-                         '1999-12-31-23-59-30')
-
-        # prefixes
-        self.assertFalse(get_number('1', prefix='a'))
-        self.assertFalse(get_number('a1', prefix='a'))
-        self.assertEqual(get_number('a.1', prefix='a'), '1')
-        self.assertEqual(get_number('a.1', prefix='a.'), '1')
-        self.assertEqual(get_number('a.1'), '1')
-        self.assertEqual(get_number('foo.1'), '1')
-        self.assertFalse(get_number('aaaa.1', prefix='a'))
-
-        # Without explicit prefix,anything in front is fine,
-        # except for more than one dot.
-        self.assertEqual(get_number('montypython.123'), '123')
-        self.assertFalse(get_number('foo.bar.1'))
-
-        # suffixes
-        self.assertEqual(get_number('a.1.tar.gz', suffixes='tar.gz'), '1')
-        self.assertFalse(get_number('a.1.tar', suffixes='tar.gz'))
-        self.assertEqual(get_number('a.1.tar.gz', suffixes='tar.gz'), '1')
-        self.assertFalse(get_number('1.tar'))
-
-        # prefix plus suffix
-        self.assertEqual(get_number(
-            'a.123.tar.gz', prefix='a', suffixes='tar.gz'), '123')
-        self.assertFalse(get_number(
-            'b.123.tar.gz', prefix='a', suffixes='tar.gz'))
-        self.assertEqual(get_number(
-            'a.1999-12-31-23-59-30.tar.gz', prefix='a', suffixes='tar.gz'),
-            '1999-12-31-23-59-30')
-
     def test_get_prefix_and_number(self):
         from collective.recipe.backup.copyblobs import get_prefix_and_number \
             as gpn

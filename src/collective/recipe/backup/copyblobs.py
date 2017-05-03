@@ -87,15 +87,6 @@ def get_prefix_and_number(value, prefix=None, suffixes=None):
     return prefix, value
 
 
-def get_number(value, prefix=None, suffixes=None):
-    """Get number out of value."""
-    result = get_prefix_and_number(value, prefix=prefix, suffixes=suffixes)
-    if result is None:
-        return
-    # We got prefix and number, and only want the number.
-    return result[1]
-
-
 def strict_cmp_numbers(a, b):
     """Compare backup numbers, sorting newest first.
 
