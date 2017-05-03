@@ -338,7 +338,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     With ``blob_timestamps = true``, we create stable directories that we do not rotate.
     They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
     For example: ``blobstorage.1972-12-25-01-02-03``.
-    Or with ``gzip_blobs = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
+    Or with ``gzip_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
 
 ``blobbackuplocation``
     Directory where the blob storage will be backed up to.  Defaults
@@ -421,7 +421,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     buildout directory.
 
 ``locationprefix``
-    Location of the folder where all other backup and snapshot folders will 
+    Location of the folder where all other backup and snapshot folders will
     be created. Defaults to ``var/``.
 
 ``only_blobs``
