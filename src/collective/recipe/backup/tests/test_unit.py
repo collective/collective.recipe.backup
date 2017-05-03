@@ -170,18 +170,18 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertFalse(get_number('foo.bar.1'))
 
         # suffixes
-        self.assertEqual(get_number('a.1.tar.gz', suffix='tar.gz'), '1')
-        self.assertFalse(get_number('a.1.tar', suffix='tar.gz'))
-        self.assertEqual(get_number('a.1.tar.gz', suffix='tar.gz'), '1')
+        self.assertEqual(get_number('a.1.tar.gz', suffixes='tar.gz'), '1')
+        self.assertFalse(get_number('a.1.tar', suffixes='tar.gz'))
+        self.assertEqual(get_number('a.1.tar.gz', suffixes='tar.gz'), '1')
         self.assertFalse(get_number('1.tar'))
 
         # prefix plus suffix
         self.assertEqual(get_number(
-            'a.123.tar.gz', prefix='a', suffix='tar.gz'), '123')
+            'a.123.tar.gz', prefix='a', suffixes='tar.gz'), '123')
         self.assertFalse(get_number(
-            'b.123.tar.gz', prefix='a', suffix='tar.gz'))
+            'b.123.tar.gz', prefix='a', suffixes='tar.gz'))
         self.assertEqual(get_number(
-            'a.1999-12-31-23-59-30.tar.gz', prefix='a', suffix='tar.gz'),
+            'a.1999-12-31-23-59-30.tar.gz', prefix='a', suffixes='tar.gz'),
             '1999-12-31-23-59-30')
 
     def test_get_prefix_and_number(self):
@@ -194,10 +194,17 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(gpn('a.1', prefix='a'), ('a', '1'))
         self.assertEqual(gpn('a.1', prefix='a.'), ('a', '1'))
         self.assertEqual(gpn('montypython.123'), ('montypython', '123'))
-        self.assertEqual(gpn('a.1.tar.gz', suffix='tar.gz'), ('a', '1'))
+        self.assertEqual(gpn('a.1.tar.gz', suffixes='tar.gz'), ('a', '1'))
+        self.assertEqual(gpn('a.1.tar.gz', suffixes=['tar', 'tar.gz']), ('a', '1'))
+        self.assertFalse(gpn('a.1.tar.gz', suffixes=['tar', 'tgz']))
         self.assertEqual(gpn(
-            'a.1999-12-31-23-59-30.tar.gz', prefix='a', suffix='tar.gz'),
+            'a.1999-12-31-23-59-30.tar.gz', prefix='a', suffixes='tar.gz'),
             ('a', '1999-12-31-23-59-30'))
+        self.assertEqual(gpn('a.1.tar.gz', suffixes=['tar', 'tar.gz']),
+                         ('a', '1'))
+        self.assertEqual(gpn('a.1.tar', suffixes=['tar', 'tar.gz']),
+                         ('a', '1'))
+        self.assertFalse(gpn('a.1.tar.gz', suffixes=['tar', 'tgz']))
 
     def test_strict_cmp_numbers(self):
         from collective.recipe.backup.copyblobs import strict_cmp_numbers

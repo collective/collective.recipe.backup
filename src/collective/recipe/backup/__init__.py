@@ -154,6 +154,7 @@ class Recipe(object):
         # archive_blob used to be called gzip_blob.
         options.setdefault('archive_blob', options.get('gzip_blob', 'false'))
         options.setdefault('blob_timestamps', 'false')
+        options.setdefault('compress_blob', 'false')
         options.setdefault('datafs', datafs)
         options.setdefault('debug', 'false')
         options.setdefault('enable_fullbackup', 'true')
@@ -415,6 +416,7 @@ logging.basicConfig(level=loglevel,
         use_rsync=%(use_rsync)s,
         rsync_options=%(rsync_options)r,
         archive_blob=%(archive_blob)s,
+        compress_blob=%(compress_blob)s,
         pre_command=%(pre_command)r,
         post_command=%(post_command)r,
         no_prompt=options.no_prompt,
@@ -531,6 +533,7 @@ logging.basicConfig(level=loglevel,
              'backup_blobs', 'use_rsync', 'archive_blob',
              'quick', 'enable_snapshotrestore',
              'enable_zipbackup', 'enable_fullbackup',
+             'compress_blob',
              'blob_timestamps'])
 
         # These must be distinct locations.

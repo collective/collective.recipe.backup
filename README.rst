@@ -304,6 +304,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     command must be available on machine if this option is set to ``true``.
     This option also works with snapshot backup/restore commands. As this
     counts as a full backup ``keep_blob_days`` is ignored.
+    See the ``compress_blob`` option if you want to compress the archive.
 
 ``alternative_restore_sources``
     You can restore from an alternative source.  Use case: first make
@@ -360,6 +361,17 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Directory where the blob storage zipbackups will be created.
     Defaults to ``var/blobstoragezips`` inside the buildout
     directory.
+
+``compress_blob``
+    New in version 4.0.  Default is false.
+    This is only used when the ``archive_blob`` option is true.
+    When switched on, it will compress the archive,
+    resulting in a ``.tar.gz`` instead of a ``tar`` file.
+    When restoring, we always look for both compressed and normal archives.
+    We used to always compress them, but in most cases it hardly decreases the size
+    and it takes a long time anyway.  I have seen archiving take 15 seconds,
+    and compressing take an additional 45 seconds.
+    The result was an archive of 5.0 GB instead of 5.1 GB.
 
 ``datafs``
     In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``

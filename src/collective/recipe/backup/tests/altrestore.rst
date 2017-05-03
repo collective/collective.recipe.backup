@@ -309,7 +309,7 @@ When archive_blob is true, we use it::
     INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: tar czf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     >>> remove('alt', 'data')
     >>> remove('alt', 'blobs')
     >>> print system('mv var/backups alt/data')
@@ -326,8 +326,8 @@ When archive_blob is true, we use it::
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/alt/blobs/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/alt/blobs/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/alt/blobs/blobstorage.0.tar to /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/alt/blobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
 

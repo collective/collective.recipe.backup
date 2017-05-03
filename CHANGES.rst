@@ -1,6 +1,17 @@
 4.0 (unreleased)
 ================
 
+- Added ``compress_blob`` option.  Default is false.
+  This is only used when the ``archive_blob`` option is true.
+  When switched on, it will compress the archive,
+  resulting in a ``.tar.gz`` instead of a ``tar`` file.
+  When restoring, we always look for both compressed and normal archives.
+  We used to always compress them, but in most cases it hardly decreases the size
+  and it takes a long time anyway.  I have seen archiving take 15 seconds,
+  and compressing take an additional 45 seconds.
+  The result was an archive of 5.0 GB instead of 5.1 GB.
+  [maurits]
+
 - Renamed ``gzip_blob`` option to ``archive_blob``.
   Kept the old name as alias for backwards compatibility.
   This makes room for letting this create an archive without zipping it.

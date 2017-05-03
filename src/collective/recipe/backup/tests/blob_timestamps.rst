@@ -580,10 +580,10 @@ Now we test it::
     INFO: Created /sample-buildout/var/blobstoragezips
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
-    INFO: tar czf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
     >>> ls('var', 'blobstoragezips')
-    -   blobstorage.20...-...-...-...-...-....tar.gz
+    -   blobstorage.20...-...-...-...-...-....tar
     >>> zip_timestamp0 = os.listdir('var/blobstoragezips')[0]
 
 Keep is ignored by zipbackup, always using 1 as value.
@@ -594,11 +594,11 @@ Pause a short time to avoid getting an error for overwriting the previous file::
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
-    INFO: tar czf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage .
     INFO: Removed 1 blob backup(s), the latest 1 backup(s) have been kept.
     <BLANKLINE>
     >>> ls('var', 'blobstoragezips')
-    -   blobstorage.20...-...-...-...-...-....tar.gz
+    -   blobstorage.20...-...-...-...-...-....tar
     >>> zip_timestamp1 = os.listdir('var/blobstoragezips')[0]
     >>> zip_timestamp0 == zip_timestamp1
     False
@@ -616,6 +616,6 @@ Now test the ziprestore script::
     INFO: Please wait while restoring database file: /sample-buildout/var/zipbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragezips to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar.gz -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar to /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage
     <BLANKLINE>

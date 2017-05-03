@@ -25,10 +25,12 @@ BACKUP_DIR = 'backups'
 is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 
 
-def get_prefix_and_number(value, prefix=None, suffix=None):
+def get_prefix_and_number(value, prefix=None, suffixes=None):
     """Get prefix and number out of value.
 
     The number we search for is an integer or a timestamp.
+
+    suffixes may be one suffix, or a list of possible suffixes.
 
     value must start with prefix and end with suffix.
     It must be prefix.number.suffix
@@ -43,10 +45,17 @@ def get_prefix_and_number(value, prefix=None, suffix=None):
     This can probably be done with one regular expression,
     but it would be hard to read.
     """
-    if suffix is not None:
-        if not suffix.startswith('.'):
-            suffix = '.' + suffix
-        if not value.endswith(suffix):
+    if suffixes is not None:
+        if isinstance(suffixes, basestring):
+            suffixes = [suffixes]
+        found = False
+        for suffix in suffixes:
+            if not suffix.startswith('.'):
+                suffix = '.' + suffix
+            if value.endswith(suffix):
+                found = True
+                break
+        if not found:
             return
         value = value[:-len(suffix)]
     if prefix is None:
@@ -78,9 +87,9 @@ def get_prefix_and_number(value, prefix=None, suffix=None):
     return prefix, value
 
 
-def get_number(value, prefix=None, suffix=None):
+def get_number(value, prefix=None, suffixes=None):
     """Get number out of value."""
-    result = get_prefix_and_number(value, prefix=prefix, suffix=suffix)
+    result = get_prefix_and_number(value, prefix=prefix, suffixes=suffixes)
     if result is None:
         return
     # We got prefix and number, and only want the number.
@@ -169,14 +178,19 @@ def strict_cmp_gzips(a, b):
     blobstorage.1.tar.gz, which should be sorted numerically.
 
     """
-    suffix = '.tar.gz'
+    suffixes = ['.tar', '.tar.gz']
+    cleaned = []
     for candidate in (a, b):
-        if not candidate.endswith(suffix):
+        correct = False
+        for suffix in suffixes:
+            if candidate.endswith(suffix):
+                correct = True
+                cleaned.append(candidate[:-len(suffix)])
+                break
+        if not correct:
             raise ValueError('{0} does not end with {1}'.format(
                 candidate, suffix))
-    a = a[:-len(suffix)]
-    b = b[:-len(suffix)]
-    return strict_cmp_backups(a, b)
+    return strict_cmp_backups(*cleaned)
 
 
 def gen_timestamp(now=None):
@@ -267,13 +281,15 @@ def get_valid_directories(container, name):
     return valid_entries
 
 
-def get_valid_gzips(container, name):
+def get_valid_archives(container, name):
     """Get gzip files in container that start with 'name'.
 
-    Gzip files are expected to be something like blobstorage.0.tar.gz,
+    Gzip files are expected to be something like blobstorage.0.tar,
     blobstorage.1.tar.gz, etc.  We refuse to work when an accepted name is
     not actually a file as this will mess up our logic further
     on.  No one should manually add files or directories here.
+
+    Both tar and tar.gz are accepted.
 
     Note: timestamps are not accepted here.  This function is not used
     in scenarios that use timestamps.
@@ -281,25 +297,25 @@ def get_valid_gzips(container, name):
     Using the zc.buildout tools we create some directories and files:
 
     >>> mkdir('dirtest')
-    >>> get_valid_gzips('dirtest', 'a.tar.gz')
+    >>> get_valid_archives('dirtest', 'a.tar.gz')
     []
-    >>> for gz in ['a.tar.gz', 'a.0.tar.gz', 'a.1.tar.gz', 'a.bar.2.tar.gz',
+    >>> for gz in ['a.tar.gz', 'a.0.tar.gz', 'a.1.tar', 'a.bar.2.tar.gz',
     ...         'a.2017-01-02-03-04-05.tar.gz']:
     ...     write('dirtest', gz, "Test file.")
-    >>> sorted(get_valid_gzips('dirtest', 'a'))
-    ['a.0.tar.gz', 'a.1.tar.gz']
-    >>> get_valid_gzips('dirtest', 'bar')
+    >>> sorted(get_valid_archives('dirtest', 'a'))
+    ['a.0.tar.gz', 'a.1.tar']
+    >>> get_valid_archives('dirtest', 'bar')
     []
 
     We break when encountering a correct name that is a directory where we
     expect a file.
 
-    >>> mkdir('dirtest', 'a.3.tar.gz')
-    >>> get_valid_gzips('dirtest', 'a')
+    >>> mkdir('dirtest', 'a.3.tar')
+    >>> get_valid_archives('dirtest', 'a')
     Traceback (most recent call last):
     ...
-    Exception: Refusing to rotate a.3.tar.gz as it is not a file.
-    >>> get_valid_gzips('dirtest', 'bar')
+    Exception: Refusing to rotate a.3.tar as it is not a file.
+    >>> get_valid_archives('dirtest', 'bar')
     []
 
     Cleanup:
@@ -308,7 +324,7 @@ def get_valid_gzips(container, name):
     """
     valid_entries = []
     for entry in os.listdir(container):
-        matched = re.match("^%s\.(\d+)\.tar\.gz$" % name, entry)
+        matched = re.match("^%s\.(\d+)\.tar(\.gz)?$" % name, entry)
         if matched is None:
             continue
         match = matched.groups()[0]
@@ -370,8 +386,10 @@ def rotate_directories(container, name):
                   os.path.join(container, new_name))
 
 
-def rotate_gzips(container, name):
-    """Rotate gzip files in container that start with 'name'.
+def rotate_archives(container, name):
+    """Rotate archive files in container that start with 'name'.
+
+    Both tar and tar.gz are accepted.
 
     Note: timestamps are not handled here.  This function is not used
     in scenarios that use timestamps.
@@ -379,40 +397,43 @@ def rotate_gzips(container, name):
     Using the zc.buildout tools we create some directories and files:
 
     >>> mkdir('dirtest')
-    >>> rotate_gzips('dirtest', 'a')
-    >>> for gz in ['a.0.tar.gz', 'a.1.tar.gz', 'a.2.tar.gz', 'a.9.tar.gz']:
+    >>> rotate_archives('dirtest', 'a')
+    >>> for gz in ['a.0.tar', 'a.1.tar.gz', 'a.2.tar', 'a.9.tar.gz']:
     ...     write('dirtest', gz, "File content.")
     >>> ls('dirtest')
-    -  a.0.tar.gz
+    -  a.0.tar
     -  a.1.tar.gz
-    -  a.2.tar.gz
+    -  a.2.tar
     -  a.9.tar.gz
-    >>> rotate_gzips('dirtest', 'a')
+    >>> rotate_archives('dirtest', 'a')
     >>> ls('dirtest')
-    -  a.1.tar.gz
+    -  a.1.tar
     -  a.10.tar.gz
     -  a.2.tar.gz
-    -  a.3.tar.gz
-    >>> rotate_gzips('dirtest', 'a')
+    -  a.3.tar
+    >>> rotate_archives('dirtest', 'a')
     >>> ls('dirtest')
     -  a.11.tar.gz
-    -  a.2.tar.gz
+    -  a.2.tar
     -  a.3.tar.gz
-    -  a.4.tar.gz
+    -  a.4.tar
 
     Cleanup:
 
     >>> remove('dirtest')
 
     """
-    previous_backups = get_valid_gzips(container, name)
+    previous_backups = get_valid_archives(container, name)
     sorted_backups = sorted(previous_backups, cmp=strict_cmp_gzips,
                             reverse=True)
     # Rotate the directories.
     for entry in sorted_backups:
-        matched = re.match("^%s\.(\d+)\.tar\.gz$" % name, entry)
-        new_num = int(matched.groups()[0]) + 1
-        new_name = "%s.%s.tar.gz" % (name, new_num)
+        matched = re.match("^%s\.(\d+)\.tar(\.gz)?$" % name, entry)
+        old_num, gz = matched.groups()
+        new_num = int(old_num) + 1
+        if gz is None:
+            gz = ""
+        new_name = "%s.%s.tar%s" % (name, new_num, gz)
         logger.info("Renaming %s to %s.", entry, new_name)
         os.rename(os.path.join(container, entry),
                   os.path.join(container, new_name))
@@ -471,8 +492,10 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
     return backup_dirs
 
 
-def get_blob_backup_gzips(backup_location, only_timestamps=False):
-    """Get blob backup gzip files from this location.
+def get_blob_backup_archives(backup_location, only_timestamps=False):
+    """Get blob backup archive files from this location.
+
+    Archives may be .tar or .tar.gz files.  We return both.
 
     If only_timestamps is True, we only return backups that have timestamps.
     That is useful when restoring.
@@ -480,8 +503,8 @@ def get_blob_backup_gzips(backup_location, only_timestamps=False):
     filenames = os.listdir(backup_location)
     logger.debug("Looked up filenames in the target dir: %s found. %r.",
                  len(filenames), filenames)
-    backup_gzips = []
-    suffix = '.tar.gz'
+    backup_archives = []
+    suffixes = ['tar', '.tar.gz']
     prefix = ''
     for filename in filenames:
         # We only want files of the form prefix.X.tar.gz, where X is an
@@ -490,7 +513,7 @@ def get_blob_backup_gzips(backup_location, only_timestamps=False):
         full_path = os.path.join(backup_location, filename)
         if not os.path.isfile(full_path):
             continue
-        parts = get_prefix_and_number(filename, suffix=suffix)
+        parts = get_prefix_and_number(filename, suffixes=suffixes)
         if parts is None:
             continue
         num = parts[1]
@@ -508,21 +531,21 @@ def get_blob_backup_gzips(backup_location, only_timestamps=False):
             prefix = parts[0]
 
         mod_time = os.path.getmtime(full_path)
-        backup_gzips.append((num, mod_time, full_path))
+        backup_archives.append((num, mod_time, full_path))
 
     # We always sort by backup number:
-    backup_gzips = sorted(
-        backup_gzips, key=itemgetter(0), cmp=strict_cmp_numbers)
+    backup_archives = sorted(
+        backup_archives, key=itemgetter(0), cmp=strict_cmp_numbers)
 
     # Check if this is the same as reverse sorting by modification time:
-    mod_times = sorted(backup_gzips, key=itemgetter(1), reverse=True)
+    mod_times = sorted(backup_archives, key=itemgetter(1), reverse=True)
 
-    if backup_gzips != mod_times:
+    if backup_archives != mod_times:
         logger.warn("Sorting blob backups by number gives other result than "
                     "reverse sorting by last modification time.")
-    logger.debug("Found %d blob backups: %r.", len(backup_gzips),
-                 [d[1] for d in backup_gzips])
-    return backup_gzips
+    logger.debug("Found %d blob backups: %r.", len(backup_archives),
+                 [d[1] for d in backup_archives])
+    return backup_archives
 
 
 # Copy of is_data_filein ZODB / scripts / repozo.py.
@@ -566,7 +589,8 @@ def get_oldest_filestorage_timestamp(directory):
 
 def backup_blobs(source, destination, full=False, use_rsync=True,
                  keep=0, keep_blob_days=0, archive_blob=False, rsync_options='',
-                 timestamps=False, fs_backup_location=None):
+                 timestamps=False, fs_backup_location=None,
+                 compress_blob=False):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -807,8 +831,10 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     base_name = os.path.basename(source)
 
     if archive_blob:
-        backup_blobs_gzip(source, destination, keep, timestamps=timestamps,
-                          fs_backup_location=fs_backup_location)
+        backup_blobs_archive(
+            source, destination, keep, timestamps=timestamps,
+            fs_backup_location=fs_backup_location,
+            compress_blob=compress_blob)
         return
 
     if timestamps:
@@ -879,13 +905,16 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             fs_backup_location=fs_backup_location)
 
 
-def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
-                      fs_backup_location=None):
-    """Make gzip archive from blobs in source directory.
+def backup_blobs_archive(
+    source, destination, keep=0, timestamps=False,
+    fs_backup_location=None,
+    compress_blob=False,
+):
+    """Make archive from blobs in source directory.
 
     Source is usually something like var/blobstorage and destination
     would be var/blobstoragebackups.  Within that destination we
-    create a gzip file with a fresh blob backup from the source.
+    create an archive file with a fresh blob backup from the source.
 
     We use 'keep' to simply keep the last X backups.
 
@@ -897,19 +926,28 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
     >>> write('blobs', 'three.txt', "File Three")
     >>> mkdir('blobs', 'dir')
     >>> mkdir('backups')
-    >>> backup_blobs_gzip('blobs', 'backups', keep=0)
+    >>> backup_blobs_archive('blobs', 'backups', keep=0)
     >>> ls('backups')
-    -  blobs.0.tar.gz
+    -  blobs.0.tar
 
-    Change some stuff.
+    Change some stuff and compress.
 
     >>> write('blobs', 'one.txt', "Changed File One")
     >>> write('blobs', 'four.txt', "File Four")
     >>> remove('blobs', 'two.txt')
-    >>> backup_blobs_gzip('blobs', 'backups')
+    >>> backup_blobs_archive('blobs', 'backups', compress_blob=True)
     >>> ls('backups')
     -  blobs.0.tar.gz
+    -  blobs.1.tar
+
+    Change some stuff and no longer compress.
+
+    >>> write('blobs', 'one.txt', "Changed File One Again")
+    >>> backup_blobs_archive('blobs', 'backups')
+    >>> ls('backups')
+    -  blobs.0.tar
     -  blobs.1.tar.gz
+    -  blobs.2.tar
 
     Cleanup:
 
@@ -922,28 +960,38 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
     if timestamps:
         timestamp = get_latest_filestorage_timestamp(fs_backup_location)
         if timestamp:
-            filename = base_name + '.' + timestamp + '.tar.gz'
-            dest = os.path.join(destination, filename)
-            # if a backup already exists, then apparently there were no
-            # database changes since the last backup, so we don't need
-            # to do anything.
-            if os.path.exists(dest):
-                logger.info('Blob backup at %s already exists, so there were '
-                            'no database changes since last backup.', dest)
-                # Now possibly remove old backups.
-                cleanup_gzips(destination, keep=keep,
-                              fs_backup_location=fs_backup_location)
-                return
+            filename = base_name + '.' + timestamp + '.tar'
+            # compress_blob may be on now, or may have been on in the past.
+            # Look for both.
+            for fname in (filename, filename + '.gz'):
+                dest = os.path.join(destination, filename)
+                # If a backup already exists, then apparently there were no
+                # database changes since the last backup, so we don't need
+                # to do anything.
+                if os.path.exists(dest):
+                    logger.info(
+                        'Blob backup at %s already exists, so there were '
+                        'no database changes since last backup.', dest)
+                    # Now possibly remove old backups.
+                    cleanup_archives(
+                        destination, keep=keep,
+                        fs_backup_location=fs_backup_location)
+                    return
         else:
-            filename = base_name + '.' + gen_timestamp() + '.tar.gz'
+            filename = base_name + '.' + gen_timestamp() + '.tar'
             dest = os.path.join(destination, filename)
     else:
         # Without timestamps we need to rotate backups.
-        rotate_gzips(destination, base_name)
-        dest = os.path.join(destination, base_name + '.0.tar.gz')
+        rotate_archives(destination, base_name)
+        dest = os.path.join(destination, base_name + '.0.tar')
+    if compress_blob:
+        dest += '.gz'
+        tar_command = "tar czf"
+    else:
+        tar_command = "tar cf"
     if os.path.exists(dest):
         raise Exception("Path already exists: %s" % dest)
-    cmd = "tar czf %s -C %s ." % (dest, source)
+    cmd = "%s %s -C %s ." % (tar_command, dest, source)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -951,11 +999,12 @@ def backup_blobs_gzip(source, destination, keep=0, timestamps=False,
     if failed:
         return
     # Now possibly remove old backups.
-    cleanup_gzips(destination, keep=keep,
-                  fs_backup_location=fs_backup_location)
+    cleanup_archives(
+        destination, keep=keep,
+        fs_backup_location=fs_backup_location)
 
 
-def find_backup_to_restore(source, date_string='', gzip=False,
+def find_backup_to_restore(source, date_string='', archive=False,
                            timestamps=False):
     """Find backup to restore.
 
@@ -966,13 +1015,13 @@ def find_backup_to_restore(source, date_string='', gzip=False,
     yyyy-mm-dd[-hh[-mm[-ss]]]
     Note that this matches the 2011-10-05-12-12-45.fsz that is created.
 
-    It may be gzip backups only (tar.gz really).
+    It may be archive backups only (tar or tar.gz).
     If timestamps is True, we prefer those.
 
     We return nothing or a directory or file name.
     """
-    if gzip:
-        backup_getter = get_blob_backup_gzips
+    if archive:
+        backup_getter = get_blob_backup_archives
     else:
         backup_getter = get_blob_backup_dirs
     current_backups = backup_getter(source)
@@ -1048,7 +1097,7 @@ def restore_blobs(source, destination, use_rsync=True,
         # strip that separator
         destination = destination[:-len(os.sep)]
     if archive_blob:
-        result = restore_blobs_gzip(
+        result = restore_blobs_archive(
             source, destination, date, timestamps=timestamps,
             only_check=only_check)
         return result
@@ -1088,7 +1137,7 @@ def restore_blobs(source, destination, use_rsync=True,
         shutil.copytree(backup_source, destination)
 
 
-def restore_blobs_gzip(source, destination, date=None, timestamps=False,
+def restore_blobs_archive(source, destination, date=None, timestamps=False,
                        only_check=False):
     """Restore blobs from source to destination.
 
@@ -1100,21 +1149,36 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
     >>> write('blobs', 'three.txt', "File Three")
     >>> mkdir('blobs', 'dir')
     >>> mkdir('backups')
-    >>> backup_blobs_gzip('blobs', 'backups', keep=0)
+    >>> backup_blobs_archive('blobs', 'backups', keep=2)
     >>> ls('backups')
-    -  blobs.0.tar.gz
+    -  blobs.0.tar
 
 
     Test restore:
 
     >>> remove('blobs')
-    >>> restore_blobs_gzip('backups', 'blobs')
+    >>> restore_blobs_archive('backups', 'blobs')
     >>> ls('blobs')
     d  dir
     -  one.txt
     -  three.txt
     -  two.txt
 
+    Test restore of compressed archive.
+
+    >>> write('blobs', 'four.txt', "File Four")
+    >>> backup_blobs_archive('blobs', 'backups', keep=2, compress_blob=True)
+    >>> ls('backups')
+    -  blobs.0.tar.gz
+    -  blobs.1.tar
+    >>> remove('blobs')
+    >>> restore_blobs_archive('backups', 'blobs')
+    >>> ls('blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    -  two.txt
 
     Cleanup:
 
@@ -1124,7 +1188,7 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
     """
     # Determine the source (blob backup) that should be restored.
     backup_source = find_backup_to_restore(
-        source, date_string=date, gzip=True, timestamps=timestamps)
+        source, date_string=date, archive=True, timestamps=timestamps)
     if not backup_source:
         # Signal error by returning a true value.
         return True
@@ -1135,7 +1199,11 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
         shutil.rmtree(destination)
     os.mkdir(destination)
     logger.info("Extracting %s to %s", backup_source, destination)
-    cmd = "tar xzf %s -C %s" % (backup_source, destination)
+    if backup_source.endswith('gz'):
+        tar_command = "tar xzf"
+    else:
+        tar_command = "tar xf"
+    cmd = "%s %s -C %s" % (tar_command, backup_source, destination)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -1145,7 +1213,7 @@ def restore_blobs_gzip(source, destination, date=None, timestamps=False,
 
 
 def remove_orphaned_blob_backups(backup_location, fs_backup_location,
-                                 gzip=False):
+                                 archive=False):
     """Remove orphaned blob backups.
 
     This means: blob backups that have a timestamp older than the oldest
@@ -1159,8 +1227,8 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
     oldest_timestamp = get_oldest_filestorage_timestamp(fs_backup_location)
     if not oldest_timestamp:
         return
-    if gzip:
-        backup_getter = get_blob_backup_gzips
+    if archive:
+        backup_getter = get_blob_backup_archives
     else:
         backup_getter = get_blob_backup_dirs
     current_backups = backup_getter(backup_location)
@@ -1176,7 +1244,7 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
             # blobstorage.0/1/2
             if gen_timestamp(mod_time) >= oldest_timestamp:
                 continue
-        if gzip:
+        if archive:
             # It is actually a file.
             os.remove(directory)
         else:
@@ -1396,8 +1464,11 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
         logger.debug("Not removing backups.")
 
 
-def cleanup_gzips(backup_location, keep=0,
-                  fs_backup_location=None):
+def cleanup_archives(
+    backup_location,
+    keep=0,
+    fs_backup_location=None
+):
     """Clean up old blob backups.
 
     When fs_backup_location is passed and we find filestorage backups there,
@@ -1423,27 +1494,27 @@ def cleanup_gzips(backup_location, keep=0,
       ...     mod_time = time.time() - (86400 * days)
       ...     os.utime(join(backup_dir, name), (mod_time, mod_time))
 
-    Calling 'cleanup_gzips' without a keep arguments will just return without
+    Calling 'cleanup_archives' without a keep arguments will just return without
     doing anything.
 
-      >>> cleanup_gzips(backup_dir)
+      >>> cleanup_archives(backup_dir)
 
     Cleaning an empty directory won't do a thing.
 
-      >>> cleanup_gzips(backup_dir, keep=1)
+      >>> cleanup_archives(backup_dir, keep=1)
 
     Adding one backup file and cleaning the directory won't remove it either:
 
-      >>> add_backup('blob.1.tar.gz', days=1)
-      >>> cleanup_gzips(backup_dir, keep=1)
+      >>> add_backup('blob.1.tar', days=1)
+      >>> cleanup_archives(backup_dir, keep=1)
       >>> ls(backup_dir)
-      -  blob.1.tar.gz
+      -  blob.1.tar
 
     When we add a second backup directory and we keep only one then
     this means the first one gets removed.
 
       >>> add_backup('blob.0.tar.gz', days=0)
-      >>> cleanup_gzips(backup_dir, keep=1)
+      >>> cleanup_archives(backup_dir, keep=1)
       >>> ls(backup_dir)
       -  blob.0.tar.gz
 
@@ -1456,36 +1527,46 @@ def cleanup_gzips(backup_location, keep=0,
     prefix.X get ignored:
 
       >>> add_backup('myblob.tar.gz')
-      >>> add_backup('blob.some.3.tar.gz')
-      >>> mkdir(backup_dir, 'blob.4.tar.gz')
+      >>> add_backup('blob.some.3.tar')
+      >>> mkdir(backup_dir, 'blob.4.tar')
       >>> write(backup_dir, 'blob5.txt', 'just a file')
-      >>> cleanup_gzips(backup_dir, keep=1)
+      >>> cleanup_archives(backup_dir, keep=1)
       >>> ls(backup_dir)
       -  blob.0.tar.gz
-      d  blob.4.tar.gz
-      -  blob.some.3.tar.gz
+      d  blob.4.tar
+      -  blob.some.3.tar
       -  blob5.txt
       -  myblob.tar.gz
 
     We create a helper function that gives us a fresh directory with
     some blob backup directories, where backups are made twice a day:
 
-      >>> def fresh_backups(num):
+      >>> def fresh_backups(num, compress=False):
       ...     remove(backup_dir)
       ...     mkdir(backup_dir)
       ...     for b in range(num):
-      ...         name = 'blob.%d.tar.gz' % b
+      ...         name = 'blob.%d.tar' % b
+      ...         if compress:
+      ...             name += '.gz'
       ...         add_backup(name, days=b / 2.0)
 
     We keep the last 4 backups:
 
-      >>> fresh_backups(10)
-      >>> cleanup_gzips(backup_dir, keep=4)
+      >>> fresh_backups(10, compress=True)
+      >>> cleanup_archives(backup_dir, keep=4)
       >>> ls(backup_dir)
       -  blob.0.tar.gz
       -  blob.1.tar.gz
       -  blob.2.tar.gz
       -  blob.3.tar.gz
+
+      >>> fresh_backups(10)
+      >>> cleanup_archives(backup_dir, keep=4)
+      >>> ls(backup_dir)
+      -  blob.0.tar
+      -  blob.1.tar
+      -  blob.2.tar
+      -  blob.3.tar
 
     Cleanup after the test.
 
@@ -1493,25 +1574,25 @@ def cleanup_gzips(backup_location, keep=0,
 
     """
     if remove_orphaned_blob_backups(backup_location, fs_backup_location,
-                                    gzip=True):
+                                    archive=True):
         # A True return value means there is nothing left to do.
         return
 
     # Making sure we use integers.
     keep = int(keep)
     logger.debug("Trying to clean up old backups.")
-    backup_gzips = get_blob_backup_gzips(backup_location)
+    backup_archives = get_blob_backup_archives(backup_location)
     logger.debug("This is a full backup.")
     logger.debug("Max number of backups: %d.", keep)
-    if len(backup_gzips) > keep and keep != 0:
+    if len(backup_archives) > keep and keep != 0:
         logger.debug("There are older backups that we can remove.")
-        possibly_remove = backup_gzips[keep:]
+        possibly_remove = backup_archives[keep:]
         logger.debug("Will possibly remove: %r", possibly_remove)
         deleted = 0
-        for num, mod_time, gzip_file in possibly_remove:
-            os.remove(gzip_file)
+        for num, mod_time, archive_file in possibly_remove:
+            os.remove(archive_file)
             deleted += 1
-            logger.debug("Deleted %s.", gzip_file)
+            logger.debug("Deleted %s.", archive_file)
         if deleted:
             logger.info("Removed %d blob backup(s), the latest "
                         "%d backup(s) have been kept.", deleted, keep)
