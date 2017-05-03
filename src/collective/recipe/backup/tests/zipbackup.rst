@@ -5,7 +5,7 @@ zipbackup and ziprestore
 
 Since version 2.20, we can create a zipbackup and ziprestore
 script.  These use a different backup location and have a few options
-hardcoded: gzip and gzip_blob are True, keep is 1, regardless of what
+hardcoded: gzip and archive_blob are True, keep is 1, regardless of what
 the options in the buildout recipe section are.  You can always create
 a separate buildout section where you explicitly change this using
 options for the standard bin/backup script.

@@ -33,14 +33,14 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... backup_blobs = true
     ... gzip = false
-    ... gzip_blob = false
+    ... archive_blob = false
     ...
     ... [zippedbackup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... backup_blobs = true
     ... gzip = true
-    ... gzip_blob = true
+    ... archive_blob = true
     ... """)
     >>> print system(buildout)
     Installing nozipbackup.

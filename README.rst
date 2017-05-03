@@ -205,7 +205,7 @@ config section:
 - ``gzip`` is explicitly turned on for the filestorage (this is
   already the default, but we make sure).
 
-- ``gzip_blob`` is turned on.
+- ``archive_blob`` is turned on.
 
 - ``keep`` is set to 1 to avoid keeping lots of needless backups.
 
@@ -298,6 +298,13 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Use it to specify the extra filestorages.
     (See `Advanced usage: multiple Data.fs files`_).
 
+``archive_blob``
+    Use ``tar`` archiving functionality. ``false`` by default. Set it to ``true``
+    and backup/restore will be done with ``tar`` command. Note that ``tar``
+    command must be available on machine if this option is set to ``true``.
+    This option also works with snapshot backup/restore commands. As this
+    counts as a full backup ``keep_blob_days`` is ignored.
+
 ``alternative_restore_sources``
     You can restore from an alternative source.  Use case: first make
     a backup of your production site, then go to the testing or
@@ -338,7 +345,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     With ``blob_timestamps = true``, we create stable directories that we do not rotate.
     They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
     For example: ``blobstorage.1972-12-25-01-02-03``.
-    Or with ``gzip_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
+    Or with ``archive_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
 
 ``blobbackuplocation``
     Directory where the blob storage will be backed up to.  Defaults
@@ -392,11 +399,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     the default.
 
 ``gzip_blob``
-    Use `tar` archiving functionality. ``false`` by default. Set it to ``true``
-    and backup/restore will be done with `tar` command. Note that `tar`
-    commmand must be available on machine if this option is set to `true`.
-    This option also works with snapshot backup/restore commands. As this
-    counts as a full backup `keep_blob_days` is ignored.
+    Backwards compatibility alias for ``archive_blob`` option.
 
 ``keep``
     Number of full backups to keep. Defaults to ``2``, which means that the
@@ -724,7 +727,7 @@ does not check if the sources exist: you might have the production
 backups on a different server and need to setup a remote shared
 directory, or you copy the data over manually.
 
-Note that the script takes the ``gzip_blob`` and ``use_rsync`` options
+Note that the script takes the ``archive_blob`` and ``use_rsync`` options
 into account.  So if the alternative restore source contains a blob
-backup that was made with ``gzip_blob = true``, you need an
+backup that was made with ``archive_blob = true``, you need an
 ``altrestore`` script that also uses this setting.

@@ -278,7 +278,7 @@ Test in combination with additional filestorage::
     >>> cat('var', 'blobstorage-foo', 'fooblobfile.txt')
     Hello fooblob.
 
-When gzip_blob is true, we use it::
+When archive_blob is true, we use it::
 
     >>> write('buildout.cfg',
     ... """
@@ -289,7 +289,7 @@ When gzip_blob is true, we use it::
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
-    ... gzip_blob = true
+    ... archive_blob = true
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
     ... """)

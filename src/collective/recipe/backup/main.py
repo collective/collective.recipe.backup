@@ -14,7 +14,7 @@ logger = logging.getLogger('backup')
 def backup_main(bin_dir, storages, keep, full,
                 verbose, gzip, backup_blobs, only_blobs, use_rsync,
                 keep_blob_days=0, pre_command='', post_command='',
-                gzip_blob=False, rsync_options='', quick=True,
+                archive_blob=False, rsync_options='', quick=True,
                 blob_timestamps=False,
                 **kwargs):
     """Main method, gets called by generated bin/backup."""
@@ -52,7 +52,7 @@ def backup_main(bin_dir, storages, keep, full,
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob,
+                               archive_blob=archive_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
                                fs_backup_location=fs_backup_location,
@@ -63,7 +63,7 @@ def backup_main(bin_dir, storages, keep, full,
 def fullbackup_main(bin_dir, storages, keep, full,
                     verbose, gzip, backup_blobs, only_blobs, use_rsync,
                     keep_blob_days=0, pre_command='',
-                    post_command='', gzip_blob=False,
+                    post_command='', archive_blob=False,
                     rsync_options='', quick=True,
                     blob_timestamps=False,
                     **kwargs):
@@ -107,7 +107,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob,
+                               archive_blob=archive_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
                                fs_backup_location=fs_backup_location,
@@ -118,7 +118,7 @@ def fullbackup_main(bin_dir, storages, keep, full,
 def snapshot_main(bin_dir, storages, keep, verbose, gzip,
                   backup_blobs, only_blobs, use_rsync,
                   keep_blob_days=0, pre_command='', post_command='',
-                  gzip_blob=False, rsync_options='', quick=True,
+                  archive_blob=False, rsync_options='', quick=True,
                   blob_timestamps=False,
                   **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
@@ -156,7 +156,7 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
         copyblobs.backup_blobs(blobdir, blob_snapshot_location,
                                full=True, use_rsync=use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob,
+                               archive_blob=archive_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
                                fs_backup_location=fs_backup_location,
@@ -167,7 +167,7 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
 def zipbackup_main(bin_dir, storages, keep, full,
                    verbose, gzip, backup_blobs, only_blobs, use_rsync,
                    keep_blob_days=0, pre_command='',
-                   post_command='', gzip_blob=True,
+                   post_command='', archive_blob=True,
                    rsync_options='', quick=True,
                    blob_timestamps=False,
                    **kwargs):
@@ -179,7 +179,7 @@ def zipbackup_main(bin_dir, storages, keep, full,
     # Force some options.
     full = True
     gzip = True
-    gzip_blob = True
+    archive_blob = True
     keep = 1
     if not only_blobs:
         result = repozorunner.zipbackup_main(
@@ -211,7 +211,7 @@ def zipbackup_main(bin_dir, storages, keep, full,
         copyblobs.backup_blobs(blobdir, blob_backup_location, full,
                                use_rsync, keep=keep,
                                keep_blob_days=keep_blob_days,
-                               gzip_blob=gzip_blob,
+                               archive_blob=archive_blob,
                                rsync_options=rsync_options,
                                timestamps=blob_timestamps,
                                fs_backup_location=fs_backup_location,
@@ -221,7 +221,7 @@ def zipbackup_main(bin_dir, storages, keep, full,
 
 def restore_main(bin_dir, storages, verbose, backup_blobs,
                  only_blobs, use_rsync, restore_snapshot=False, pre_command='',
-                 post_command='', gzip_blob=False, alt_restore=False,
+                 post_command='', archive_blob=False, alt_restore=False,
                  rsync_options='', quick=True, zip_restore=False,
                  blob_timestamps=False,
                  **kwargs):
@@ -300,7 +300,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
                 blobdir,
                 use_rsync=use_rsync,
                 date=date,
-                gzip_blob=gzip_blob,
+                archive_blob=archive_blob,
                 rsync_options=rsync_options,
                 timestamps=blob_timestamps,
                 only_check=True,
@@ -338,7 +338,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
             blobdir,
             use_rsync=use_rsync,
             date=date,
-            gzip_blob=gzip_blob,
+            archive_blob=archive_blob,
             rsync_options=rsync_options,
             timestamps=blob_timestamps,
         )
@@ -376,5 +376,5 @@ def zip_restore_main(*args, **kwargs):
     # Override the locations:
     kwargs['zip_restore'] = True
     # Override another option.
-    kwargs['gzip_blob'] = True
+    kwargs['archive_blob'] = True
     return restore_main(*args, **kwargs)

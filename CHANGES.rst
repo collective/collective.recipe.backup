@@ -1,6 +1,11 @@
 4.0 (unreleased)
 ================
 
+- Renamed ``gzip_blob`` option to ``archive_blob``.
+  Kept the old name as alias for backwards compatibility.
+  This makes room for letting this create an archive without zipping it.
+  [maurits]
+
 - Automatically remove old blobs backups that have no corresponding filestorage backup.
   We compare the timestamp of the oldest filestorage backup with the timestamps of the
   blob backups.  This can be the name, if you use ``blob_timestamps = true``,

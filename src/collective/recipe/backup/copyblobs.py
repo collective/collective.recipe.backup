@@ -565,7 +565,7 @@ def get_oldest_filestorage_timestamp(directory):
 
 
 def backup_blobs(source, destination, full=False, use_rsync=True,
-                 keep=0, keep_blob_days=0, gzip_blob=False, rsync_options='',
+                 keep=0, keep_blob_days=0, archive_blob=False, rsync_options='',
                  timestamps=False, fs_backup_location=None):
     """Copy blobs from source to destination.
 
@@ -806,7 +806,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     """
     base_name = os.path.basename(source)
 
-    if gzip_blob:
+    if archive_blob:
         backup_blobs_gzip(source, destination, keep, timestamps=timestamps,
                           fs_backup_location=fs_backup_location)
         return
@@ -1019,7 +1019,7 @@ def find_backup_to_restore(source, date_string='', gzip=False,
 
 
 def restore_blobs(source, destination, use_rsync=True,
-                  date=None, gzip_blob=False, rsync_options='',
+                  date=None, archive_blob=False, rsync_options='',
                   timestamps=False, only_check=False):
     """Restore blobs from source to destination.
 
@@ -1047,7 +1047,7 @@ def restore_blobs(source, destination, use_rsync=True,
     if destination.endswith(os.sep):
         # strip that separator
         destination = destination[:-len(os.sep)]
-    if gzip_blob:
+    if archive_blob:
         result = restore_blobs_gzip(
             source, destination, date, timestamps=timestamps,
             only_check=only_check)

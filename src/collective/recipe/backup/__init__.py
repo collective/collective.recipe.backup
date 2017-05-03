@@ -151,6 +151,8 @@ class Recipe(object):
         # more options, alphabetical
         options.setdefault('additional_filestorages', '')
         options.setdefault('alternative_restore_sources', '')
+        # archive_blob used to be called gzip_blob.
+        options.setdefault('archive_blob', options.get('gzip_blob', 'false'))
         options.setdefault('blob_timestamps', 'false')
         options.setdefault('datafs', datafs)
         options.setdefault('debug', 'false')
@@ -159,7 +161,6 @@ class Recipe(object):
         options.setdefault('enable_zipbackup', 'false')
         options.setdefault('full', 'false')
         options.setdefault('gzip', 'true')
-        options.setdefault('gzip_blob', 'false')
         options.setdefault('keep', '2')
         options.setdefault('keep_blob_days', '14')  # two weeks
         options.setdefault('only_blobs', 'false')
@@ -413,7 +414,7 @@ logging.basicConfig(level=loglevel,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
         rsync_options=%(rsync_options)r,
-        gzip_blob=%(gzip_blob)s,
+        archive_blob=%(archive_blob)s,
         pre_command=%(pre_command)r,
         post_command=%(post_command)r,
         no_prompt=options.no_prompt,
@@ -527,7 +528,7 @@ logging.basicConfig(level=loglevel,
         check_for_true(
             options,
             ['full', 'debug', 'gzip', 'only_blobs',
-             'backup_blobs', 'use_rsync', 'gzip_blob',
+             'backup_blobs', 'use_rsync', 'archive_blob',
              'quick', 'enable_snapshotrestore',
              'enable_zipbackup', 'enable_fullbackup',
              'blob_timestamps'])
