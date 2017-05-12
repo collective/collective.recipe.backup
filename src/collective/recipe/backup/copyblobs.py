@@ -551,13 +551,17 @@ def get_latest_filestorage_timestamp(directory):
     We can use its timestamp for our blob backup name.
     """
     if not directory or not os.path.isdir(directory):
+        logger.debug('Not a directory: %s', directory)
         return
     # newest file first.
     for fname in sorted(os.listdir(directory), reverse=True):
         if not is_data_file(fname):
             continue
         root, ext = os.path.splitext(fname)
+        logger.debug('Most recent backup in directory %s is from %s.',
+                     directory, root)
         return root
+    logger.debug('No data files found in directory: %s', directory)
 
 
 def get_oldest_filestorage_timestamp(directory):
@@ -1220,6 +1224,8 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
     oldest_timestamp = get_oldest_filestorage_timestamp(fs_backup_location)
     if not oldest_timestamp:
         return
+    logger.debug('Removing blob backups with timestamp before %s from %s',
+                 oldest_timestamp, backup_location)
     if archive:
         backup_getter = get_blob_backup_archives
     else:
@@ -1399,6 +1405,7 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
       >>> remove(backup_dir)
 
     """
+    logger.debug('Starting cleanup of blob backups from %s', backup_location)
     if remove_orphaned_blob_backups(backup_location, fs_backup_location):
         # A True return value means there is nothing left to do.
         return
@@ -1566,6 +1573,7 @@ def cleanup_archives(
       >>> remove(backup_dir)
 
     """
+    logger.debug('Starting cleanup of blob archives from %s', backup_location)
     if remove_orphaned_blob_backups(backup_location, fs_backup_location,
                                     archive=True):
         # A True return value means there is nothing left to do.
