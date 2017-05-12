@@ -1,6 +1,8 @@
 4.0 (unreleased)
 ================
 
+- When log level is DEBUG, show time stamps in the log.  [maurits]
+
 - Added ``compress_blob`` option.  Default is false.
   This is only used when the ``archive_blob`` option is true.
   When switched on, it will compress the archive,

@@ -399,8 +399,11 @@ parser.add_option("-n", "--no-prompt",
 # Allow the user to make the script more quiet (say in a cronjob):
 if not options.verbose:
     loglevel = logging.WARN
+log_format = '%%(levelname)s: %%(message)s'
+if loglevel < logging.INFO:
+    log_format = '%%(asctime)s ' + log_format
 logging.basicConfig(level=loglevel,
-    format='%%(levelname)s: %%(message)s')
+    format=log_format)
 """
         arguments_template = """
         bin_dir=%(bin-directory)r,
