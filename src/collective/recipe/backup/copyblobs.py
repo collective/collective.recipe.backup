@@ -968,6 +968,8 @@ def backup_blobs_archive(
                         destination, keep=keep,
                         fs_backup_location=fs_backup_location)
                     return
+            # Use the .tar filename as initial destination.
+            dest = os.path.join(destination, filename)
         else:
             filename = base_name + '.' + gen_timestamp() + '.tar'
             dest = os.path.join(destination, filename)
