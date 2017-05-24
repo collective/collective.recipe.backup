@@ -531,7 +531,8 @@ Cron job integration
 ``bin/backup`` is of course ideal to put in your cronjob instead of a whole
 ``bin/repozo ....`` line. But you don't want the "INFO" level logging that you
 get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
-``--quiet`` and ``bin/backup`` will shut up unless there's a problem.
+``--quiet``, and ``bin/backup`` will shut up unless there's a problem.
+This option ignores the debug variable, if set to true in buildout.
 
 Speaking of cron jobs?  Take a look at `zc.recipe.usercrontab
 <http://pypi.python.org/pypi/z3c.recipe.usercrontab>`_ if you want to handle
