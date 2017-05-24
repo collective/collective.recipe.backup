@@ -73,12 +73,12 @@ The same is true for the snapshot backup.
 
     >>> output = system('bin/snapshotbackup')
     >>> print output
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
     We are done.
-    20...-...-... INFO: Created /sample-buildout/snap/my
-    20...-...-... INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/snap/my
+    20...-...-... INFO: Created /sample-buildout/var/snap/my
+    20...-...-... INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/var/snap/my
     20...-...-...
     >>> if 'ERROR' in output: print output
 

@@ -215,20 +215,20 @@ class Recipe(object):
 
         # More locations.
         backup_location = construct_path(
-            buildout_dir, self.options['location'])
+            prefix, self.options['location'])
         snapshot_location = construct_path(
-            buildout_dir, self.options['snapshotlocation'])
+            prefix, self.options['snapshotlocation'])
         zip_location = construct_path(
-            buildout_dir, self.options['ziplocation'])
+            prefix, self.options['ziplocation'])
 
         # Blob backup.
         if to_bool(self.options['backup_blobs']):
             blob_backup_location = construct_path(
-                buildout_dir, self.options['blobbackuplocation'])
+                prefix, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(
-                buildout_dir, self.options['blobsnapshotlocation'])
+                prefix, self.options['blobsnapshotlocation'])
             blob_zip_location = construct_path(
-                buildout_dir, self.options['blobziplocation'])
+                prefix, self.options['blobziplocation'])
         else:
             blob_backup_location = ''
             blob_snapshot_location = ''

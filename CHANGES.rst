@@ -1,6 +1,14 @@
 4.0 (unreleased)
 ================
 
+- Make custom backup locations relative to the ``locationprefix`` option or the ``var`` directory.
+  Until now, the ``locationprefix`` option was only used if you did not set custom locations.
+  Custom location would be relative to the buildout directory.
+  Now they are relative to the ``locationprefix`` option, with the ``var`` directory as default.
+  So if you used a relative path, your backups may end up in a different path.
+  Absolute paths are not affected: they ignore the locationprefix.
+  [maurits]
+
 - When log level is DEBUG, show time stamps in the log.  [maurits]
 
 - Added ``compress_blob`` option.  Default is false.
