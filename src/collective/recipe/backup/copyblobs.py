@@ -944,10 +944,51 @@ def backup_blobs_archive(
     -  blobs.1.tar.gz
     -  blobs.2.tar
 
+    Use timestamps with a fs_backup_location.
+
+    >>> mkdir('fs')
+    >>> write('fs', '2017-05-24-11-54-39.fsz', "Dummy filestorage backup")
+    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+
+    And again with the same settings, as I saw something go wrong once.
+
+    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+
+    Same without compressing, which accepts previous compressed tarballs too.
+
+    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=False)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+
+    Same settings, now with a newer filestorage backup.
+
+    >>> write('fs', '2017-05-24-12-00-00.fsz', "Dummy filestorage backup 2")
+    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=False)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+    -  blobs.2017-05-24-12-00-00.tar
+
     Cleanup:
 
     >>> remove('blobs')
     >>> remove('backups')
+    >>> remove('fs')
     """
     base_name = os.path.basename(source)
     if not os.path.exists(destination):
@@ -959,7 +1000,7 @@ def backup_blobs_archive(
             # compress_blob may be on now, or may have been on in the past.
             # Look for both.
             for fname in (filename, filename + '.gz'):
-                dest = os.path.join(destination, filename)
+                dest = os.path.join(destination, fname)
                 # If a backup already exists, then apparently there were no
                 # database changes since the last backup, so we don't need
                 # to do anything.
