@@ -1,7 +1,68 @@
-3.1.1 (unreleased)
-==================
+4.0 (unreleased)
+================
 
-- Nothing changed yet.
+- Make custom backup locations relative to the ``locationprefix`` option or the ``var`` directory.
+  Until now, the ``locationprefix`` option was only used if you did not set custom locations.
+  Custom location would be relative to the buildout directory.
+  Now they are relative to the ``locationprefix`` option, with the ``var`` directory as default.
+  So if you used a relative path, your backups may end up in a different path.
+  Absolute paths are not affected: they ignore the locationprefix.
+  [maurits]
+
+- When log level is DEBUG, show time stamps in the log.  [maurits]
+
+- Added ``compress_blob`` option.  Default is false.
+  This is only used when the ``archive_blob`` option is true.
+  When switched on, it will compress the archive,
+  resulting in a ``.tar.gz`` instead of a ``tar`` file.
+  When restoring, we always look for both compressed and normal archives.
+  We used to always compress them, but in most cases it hardly decreases the size
+  and it takes a long time anyway.  I have seen archiving take 15 seconds,
+  and compressing take an additional 45 seconds.
+  The result was an archive of 5.0 GB instead of 5.1 GB.
+  [maurits]
+
+- Renamed ``gzip_blob`` option to ``archive_blob``.
+  Kept the old name as alias for backwards compatibility.
+  This makes room for letting this create an archive without zipping it.
+  [maurits]
+
+- Automatically remove old blobs backups that have no corresponding filestorage backup.
+  We compare the timestamp of the oldest filestorage backup with the timestamps of the
+  blob backups.  This can be the name, if you use ``blob_timestamps = true``,
+  or the modification date of the blob backup.
+  This means that the ``keep_blob_days`` option is ignored, unless you use ``only_blobs = true``.
+  [maurits]
+
+- When backing up a blobstorage, use the timestamp of the latest filestorage backup.
+  If a blob backup with that name is already there, then there were no database changes,
+  so we do not make a backup.
+  This is only done when you use the new ``blob_timestamps = true`` option.
+  [maurits]
+
+- When restoring to a specific date, find the first blob backup at or before
+  the specified date.  Otherwise fail.  The repozo script does the same.
+  We used to pick the first blob backup *after* the specified date,
+  because we assumed that the user would specify the exact date that is
+  in the filestorage backup.
+  Note that the timestamp of the filestorage and blobstorage backups may be
+  a few seconds apart, unless you use the ``blob_timestamps == true`` option.
+  In the new situation, the user should pick the date of the blob backup
+  or slightly later.
+  [maurits]
+
+- Added ``blob_timestamps`` option.  Default is false.
+  By default we create ``blobstorage.0``.
+  The next time, we rotate this to ``blobstorage.1`` and create a new ``blobstorage.0``.
+  With ``blob_timestamps = true``, we create stable directories that we do not rotate.
+  They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
+  For example: ``blobstorage.1972-12-25-01-02-03``.
+  [maurits]
+
+- When restoring, first run checks for all filestorages and blobstorages.
+  When one of the backups is missing, we quit with an error.
+  This avoids restoring a filestorage and then getting into trouble
+  due to a missing blobstorage backup.  [maurits]
 
 
 3.1 (2017-02-24)

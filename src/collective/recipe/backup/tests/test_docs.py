@@ -64,6 +64,7 @@ def test_suite():
         'altrestore.rst',
         'base.rst',
         'blobs.rst',
+        'blob_timestamps.rst',
         'gzip.rst',
         'location.rst',
         'multiple.rst',

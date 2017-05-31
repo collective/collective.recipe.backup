@@ -151,6 +151,10 @@ class Recipe(object):
         # more options, alphabetical
         options.setdefault('additional_filestorages', '')
         options.setdefault('alternative_restore_sources', '')
+        # archive_blob used to be called gzip_blob.
+        options.setdefault('archive_blob', options.get('gzip_blob', 'false'))
+        options.setdefault('blob_timestamps', 'false')
+        options.setdefault('compress_blob', 'false')
         options.setdefault('datafs', datafs)
         options.setdefault('debug', 'false')
         options.setdefault('enable_fullbackup', 'true')
@@ -158,7 +162,6 @@ class Recipe(object):
         options.setdefault('enable_zipbackup', 'false')
         options.setdefault('full', 'false')
         options.setdefault('gzip', 'true')
-        options.setdefault('gzip_blob', 'false')
         options.setdefault('keep', '2')
         options.setdefault('keep_blob_days', '14')  # two weeks
         options.setdefault('only_blobs', 'false')
@@ -212,20 +215,20 @@ class Recipe(object):
 
         # More locations.
         backup_location = construct_path(
-            buildout_dir, self.options['location'])
+            prefix, self.options['location'])
         snapshot_location = construct_path(
-            buildout_dir, self.options['snapshotlocation'])
+            prefix, self.options['snapshotlocation'])
         zip_location = construct_path(
-            buildout_dir, self.options['ziplocation'])
+            prefix, self.options['ziplocation'])
 
         # Blob backup.
         if to_bool(self.options['backup_blobs']):
             blob_backup_location = construct_path(
-                buildout_dir, self.options['blobbackuplocation'])
+                prefix, self.options['blobbackuplocation'])
             blob_snapshot_location = construct_path(
-                buildout_dir, self.options['blobsnapshotlocation'])
+                prefix, self.options['blobsnapshotlocation'])
             blob_zip_location = construct_path(
-                buildout_dir, self.options['blobziplocation'])
+                prefix, self.options['blobziplocation'])
         else:
             blob_backup_location = ''
             blob_snapshot_location = ''
@@ -396,8 +399,11 @@ parser.add_option("-n", "--no-prompt",
 # Allow the user to make the script more quiet (say in a cronjob):
 if not options.verbose:
     loglevel = logging.WARN
+log_format = '%%(levelname)s: %%(message)s'
+if loglevel < logging.INFO:
+    log_format = '%%(asctime)s ' + log_format
 logging.basicConfig(level=loglevel,
-    format='%%(levelname)s: %%(message)s')
+    format=log_format)
 """
         arguments_template = """
         bin_dir=%(bin-directory)r,
@@ -412,10 +418,12 @@ logging.basicConfig(level=loglevel,
         backup_blobs=%(backup_blobs)s,
         use_rsync=%(use_rsync)s,
         rsync_options=%(rsync_options)r,
-        gzip_blob=%(gzip_blob)s,
+        archive_blob=%(archive_blob)s,
+        compress_blob=%(compress_blob)s,
         pre_command=%(pre_command)r,
         post_command=%(post_command)r,
         no_prompt=options.no_prompt,
+        blob_timestamps=%(blob_timestamps)s,
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -525,9 +533,11 @@ logging.basicConfig(level=loglevel,
         check_for_true(
             options,
             ['full', 'debug', 'gzip', 'only_blobs',
-             'backup_blobs', 'use_rsync', 'gzip_blob',
+             'backup_blobs', 'use_rsync', 'archive_blob',
              'quick', 'enable_snapshotrestore',
-             'enable_zipbackup', 'enable_fullbackup'])
+             'enable_zipbackup', 'enable_fullbackup',
+             'compress_blob',
+             'blob_timestamps'])
 
         # These must be distinct locations.
         locations = {}

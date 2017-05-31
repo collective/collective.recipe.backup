@@ -5,7 +5,7 @@ zipbackup and ziprestore
 
 Since version 2.20, we can create a zipbackup and ziprestore
 script.  These use a different backup location and have a few options
-hardcoded: gzip and gzip_blobs are True, keep is 1, regardless of what
+hardcoded: gzip and archive_blob are True, keep is 1, regardless of what
 the options in the buildout recipe section are.  You can always create
 a separate buildout section where you explicitly change this using
 options for the standard bin/backup script.
@@ -64,7 +64,7 @@ Now we test it::
     INFO: Created /sample-buildout/var/blobstoragezips
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
-    INFO: tar czf /sample-buildout/var/blobstoragezips/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
 
 Keep is ignored by zipbackup, always using 1 as value::
@@ -73,8 +73,8 @@ Keep is ignored by zipbackup, always using 1 as value::
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
-    INFO: Renaming blobstorage.0.tar.gz to blobstorage.1.tar.gz.
-    INFO: tar czf /sample-buildout/var/blobstoragezips/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: Renaming blobstorage.0.tar to blobstorage.1.tar.
+    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     INFO: Removed 1 blob backup(s), the latest 1 backup(s) have been kept.
     <BLANKLINE>
 
@@ -92,8 +92,8 @@ Now test the ziprestore script::
     INFO: Please wait while restoring database file: /sample-buildout/var/zipbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/blobstoragezips to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/var/blobstoragezips/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.0.tar to /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/var/blobstoragezips/blobstorage.0.tar -C /sample-buildout/var/blobstorage
     <BLANKLINE>
 
 You can choose not to enable the zip scripts::

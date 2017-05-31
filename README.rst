@@ -67,8 +67,10 @@ Development
 
 - Code repository: https://github.com/collective/collective.recipe.backup
 
-- Small fixes are fine on master, for larger changes or if you are
-  unsure, please create a branch or a pull request.
+- Issue tracker: https://github.com/collective/collective.recipe.backup/issues
+
+- Obvious fixes, like fixing typos, are fine on master.
+  For larger changes or if you are unsure, please create a branch or a pull request.
 
 - The code comes with a ``buildout.cfg``.  Please bootstrap the
   buildout and run the created ``bin/test`` to see if the tests still
@@ -83,8 +85,8 @@ Development
 - We are tested on Travis:
   https://travis-ci.org/collective/collective.recipe.backup
 
-- Questions and comments to the Plone product-developers list or to
-  mailto:maurits@vanrees.org.
+- Questions and comments to https://community.plone.org or to
+  `Maurits van Rees <mailto:maurits@vanrees.org>`_.
 
 
 Example usage
@@ -158,6 +160,10 @@ that creates a backup of the ``Data.fs`` in ``var/backups``.  When you
 have a blob storage it is by default backed up to
 ``var/blobstoragebackups``.
 
+
+Full backup
+===========
+
 Calling ``bin/fullbackup`` results in a normal FULL repozo backup
 that creates a backup of the ``Data.fs`` in ``var/backups``.  When you
 have a blob storage it is by default backed up to
@@ -199,7 +205,7 @@ config section:
 - ``gzip`` is explicitly turned on for the filestorage (this is
   already the default, but we make sure).
 
-- ``gzip_blob`` is turned on.
+- ``archive_blob`` is turned on.
 
 - ``keep`` is set to 1 to avoid keeping lots of needless backups.
 
@@ -208,10 +214,9 @@ config section:
 The script places a full backup in, by default, ``var/zipbackups`` and
 it puts a tarball of the blobstorage in ``var/blobstoragezips``.
 
-These scripts are not created by default.  You can enable them by
-setting the ``enable_zipbackup`` option to true.  Also, if
-``backup_blobs`` is false, the scripts are useless, so we do not
-create them, even when you have enabled them explicitly.
+This script is not created by default.
+You can enable it by setting the ``enable_zipbackup`` option to true.
+Also, if ``backup_blobs`` is false, the scripts are useless, so we do not create them, even when you have enabled them explicitly.
 
 
 Restore
@@ -224,15 +229,21 @@ You can restore the very latest snapshotbackup with ``bin/snapshotrestore``.
 
 You can restore the zipbackup with ``bin/ziprestore``.
 
-You can also restore the backup as of a certain date. Just pass a date
-argument. According to ``repozo``: specify UTC (not local) time.
-The format is
-``yyyy-mm-dd[-hh[-mm[-ss]]]``.  So as a simple example::
+You can also restore the backup as of a certain date. Just pass a date argument.
+According to ``repozo``: specify UTC (not local) time.
+The format is ``yyyy-mm-dd[-hh[-mm[-ss]]]``.
+So as a simple example, restore to 25 december 1972::
 
     bin/restore 1972-12-25
 
-Since version 2.3 this also works for restoring blobs.  We simply
-restore the directory from the first backup after the specified date.
+or to that same date, at 2,03 seconds past 1::
+
+    bin/restore 1972-12-25-01-02-03
+
+Since version 2.3 this also works for restoring blobs.
+We restore the directory from the first backup at or before the specified date.
+(Note that before version 4.0 we restored the directory from the first backup after the specified date,
+which should be fine as long as you did not do a database pack in between.)
 
 Since version 2.0, the restore scripts ask for confirmation before
 starting the restore, as this is a potentially dangerous command.
@@ -257,6 +268,7 @@ something else,  the script names will also be different, as will the created
 
     [plonebackup]
     recipe = collective.recipe.backup
+    enable_zipbackup = true
 
 That buildout snippet will create these scripts::
 
@@ -285,6 +297,14 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``catalog.fs`` out of the regular ``Data.fs``.
     Use it to specify the extra filestorages.
     (See `Advanced usage: multiple Data.fs files`_).
+
+``archive_blob``
+    Use ``tar`` archiving functionality. ``false`` by default. Set it to ``true``
+    and backup/restore will be done with ``tar`` command. Note that ``tar``
+    command must be available on machine if this option is set to ``true``.
+    This option also works with snapshot backup/restore commands. As this
+    counts as a full backup ``keep_blob_days`` is ignored.
+    See the ``compress_blob`` option if you want to compress the archive.
 
 ``alternative_restore_sources``
     You can restore from an alternative source.  Use case: first make
@@ -319,6 +339,15 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``plone.recipe.zope2instance`` spells it as ``blob-storage`` and we are
     using underscores in all the other options.  Pick one.
 
+``blob_timestamps``
+    New in version 4.0.  Default is false.
+    By default we create ``blobstorage.0``.
+    The next time, we rotate this to ``blobstorage.1`` and create a new ``blobstorage.0``.
+    With ``blob_timestamps = true``, we create stable directories that we do not rotate.
+    They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
+    For example: ``blobstorage.1972-12-25-01-02-03``.
+    Or with ``archive_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
+
 ``blobbackuplocation``
     Directory where the blob storage will be backed up to.  Defaults
     to ``var/blobstoragebackups`` inside the buildout directory.
@@ -332,6 +361,17 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     Directory where the blob storage zipbackups will be created.
     Defaults to ``var/blobstoragezips`` inside the buildout
     directory.
+
+``compress_blob``
+    New in version 4.0.  Default is false.
+    This is only used when the ``archive_blob`` option is true.
+    When switched on, it will compress the archive,
+    resulting in a ``.tar.gz`` instead of a ``tar`` file.
+    When restoring, we always look for both compressed and normal archives.
+    We used to always compress them, but in most cases it hardly decreases the size
+    and it takes a long time anyway.  I have seen archiving take 15 seconds,
+    and compressing take an additional 45 seconds.
+    The result was an archive of 5.0 GB instead of 5.1 GB.
 
 ``datafs``
     In case the ``Data.fs`` isn't in the default ``var/filestorage/Data.fs``
@@ -371,11 +411,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     the default.
 
 ``gzip_blob``
-    Use `tar` archiving functionality. ``false`` by default. Set it to ``true``
-    and backup/restore will be done with `tar` command. Note that `tar`
-    commmand must be available on machine if this option is set to `true`.
-    This option also works with snapshot backup/restore commands. As this
-    counts as a full backup `keep_blob_days` is ignored.
+    Backwards compatibility alias for ``archive_blob`` option.
 
 ``keep``
     Number of full backups to keep. Defaults to ``2``, which means that the
@@ -392,14 +428,17 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     the ``Data.fs``, according to the formula ``keep *
     days_between_zeopacks = keep_blob_days``.  The default matches one
     zeopack per seven days (``2*7=14``).
+    Since version 4.0, this option is ignored unless ``only_blobs`` is true.
+    Instead, we remove the blob backups that have no matching filestorage backup.
 
 ``location``
     Location where backups are stored. Defaults to ``var/backups`` inside the
     buildout directory.
 
 ``locationprefix``
-    Location of the folder where all other backup and snapshot folders will 
+    Location of the folder where all other backup and snapshot folders will
     be created. Defaults to ``var/``.
+    Note that this does not influence where we look for a source filestorage or blobstorage.
 
 ``only_blobs``
     Only backup the blobstorage, not the ``Data.fs`` filestorage.  False
@@ -493,7 +532,8 @@ Cron job integration
 ``bin/backup`` is of course ideal to put in your cronjob instead of a whole
 ``bin/repozo ....`` line. But you don't want the "INFO" level logging that you
 get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
-``--quiet`` and ``bin/backup`` will shut up unless there's a problem.
+``--quiet``, and ``bin/backup`` will shut up unless there's a problem.
+This option ignores the debug variable, if set to true in buildout.
 
 Speaking of cron jobs?  Take a look at `zc.recipe.usercrontab
 <http://pypi.python.org/pypi/z3c.recipe.usercrontab>`_ if you want to handle
@@ -615,6 +655,10 @@ case you want to separate this into several scripts::
 With this setup ``bin/filebackup`` now only backs up the filestorage
 and ``bin/blobbackup`` only backs up the blobstorage.
 
+New in version 4.0: you may want to specify ``blob_timestamps = true``.
+Then we create stable directories that we do not rotate.
+For example: ``blobstorage.1972-12-25-01-02-03`` instead of ``blobstorage.0``.
+
 
 rsync
 =====
@@ -697,7 +741,7 @@ does not check if the sources exist: you might have the production
 backups on a different server and need to setup a remote shared
 directory, or you copy the data over manually.
 
-Note that the script takes the ``gzip_blob`` and ``use_rsync`` options
+Note that the script takes the ``archive_blob`` and ``use_rsync`` options
 into account.  So if the alternative restore source contains a blob
-backup that was made with ``gzip_blob = true``, you need an
+backup that was made with ``archive_blob = true``, you need an
 ``altrestore`` script that also uses this setting.

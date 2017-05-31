@@ -134,24 +134,17 @@ Call the script::
     d  filestorage
     >>> remove('var', 'filestorage')
     >>> print system('bin/altrestore', input='yes\n')  # doctest:+ELLIPSIS
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage
-    Are you sure? (yes/No)?
-    rsync: ...No such file or directory...
-    INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
-    INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    Are you sure? (yes/No)? INFO: Created directory /sample-buildout/var/filestorage
+    ERROR: There are no backups in /sample-buildout/alt/blobs.
+    ERROR: Halting execution: restoring blobstorages would fail.
     <BLANKLINE>
     >>> ls('var')
     d  filestorage
-
-Note that the rsync error is printed before the line that actually
-calls rsync, but that is a strangeness in how ``stdout`` and
-``stderr`` is combined in the tests.
 
 Create the necessary sample directories and call the script again::
 
@@ -179,10 +172,11 @@ Create the necessary sample directories and call the script again::
     Hello blob.
 
 Calling the script with a specific date is supported just like the
-normal restore script::
+normal restore script.  If the date is too early, the real repozo script would fail,
+saying 'No files in repository before <date>'.  Our mock repozo script would accept it,
+but we have added a check in the blob restore so we now fail as well.
 
     >>> print system('bin/altrestore 2000-12-31-23-59', input='yes\n')  # doctest:+ELLIPSIS
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data -D 2000-12-31-23-59
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -190,6 +184,21 @@ normal restore script::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Date restriction: restoring state at 2000-12-31-23-59.
+    ERROR: Could not find backup of '2000-12-31-23-59' or earlier.
+    ERROR: Halting execution: restoring blobstorages would fail.
+    <BLANKLINE>
+
+So test is with a date in the future::
+
+    >>> print system('bin/altrestore 2100-12-31-23-59', input='yes\n')  # doctest:+ELLIPSIS
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data -D 2100-12-31-23-59
+    <BLANKLINE>
+    This will replace the filestorage:
+        /sample-buildout/var/filestorage/Data.fs
+    This will replace the blobstorage:
+        /sample-buildout/var/blobstorage
+    Are you sure? (yes/No)?
+    INFO: Date restriction: restoring state at 2100-12-31-23-59.
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
@@ -246,13 +255,13 @@ Test in combination with additional filestorage::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)?
     INFO: Created directory /sample-buildout/var/filestorage/foo
-    INFO: Please wait while restoring database file: /sample-buildout/alt/foo to /sample-buildout/var/filestorage/foo/foo.fs
     INFO: Created directory /sample-buildout/var/filestorage/bar
+    INFO: No blob dir defined for bar storage
+    INFO: Please wait while restoring database file: /sample-buildout/alt/foo to /sample-buildout/var/filestorage/foo/foo.fs
     INFO: Please wait while restoring database file: /sample-buildout/alt/bar to /sample-buildout/var/filestorage/bar/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/fooblobs to /sample-buildout/var/blobstorage-foo
     INFO: rsync -a  --delete /sample-buildout/alt/fooblobs/blobstorage-foo.0/blobstorage-foo /sample-buildout/var
-    INFO: No blob dir defined for bar storage
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
@@ -269,7 +278,7 @@ Test in combination with additional filestorage::
     >>> cat('var', 'blobstorage-foo', 'fooblobfile.txt')
     Hello fooblob.
 
-When gzip_blob is true, we use it::
+When archive_blob is true, we use it::
 
     >>> write('buildout.cfg',
     ... """
@@ -280,7 +289,7 @@ When gzip_blob is true, we use it::
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
-    ... gzip_blob = true
+    ... archive_blob = true
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
     ... """)
@@ -300,7 +309,7 @@ When gzip_blob is true, we use it::
     INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: tar czf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     >>> remove('alt', 'data')
     >>> remove('alt', 'blobs')
     >>> print system('mv var/backups alt/data')
@@ -317,8 +326,8 @@ When gzip_blob is true, we use it::
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/alt/blobs/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/alt/blobs/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/alt/blobs/blobstorage.0.tar to /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/alt/blobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
 

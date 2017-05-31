@@ -109,9 +109,9 @@ And a restore restores all three backups::
         /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Created directory /sample-buildout/var/filestorage
+    INFO: Created directory /sample-buildout/var/filestorage/foo
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_catalog to /sample-buildout/var/filestorage/catalog.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_another to /sample-buildout/var/filestorage/another.fs
-    INFO: Created directory /sample-buildout/var/filestorage/foo
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo/bar to /sample-buildout/var/filestorage/foo/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     <BLANKLINE>

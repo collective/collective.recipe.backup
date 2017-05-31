@@ -61,10 +61,9 @@ stderr.  Anyway::
     <BLANKLINE>
     Thanks a lot for the backup.
     We are done.
-    <BLANKLINE>
-    <BLANKLINE>
-    INFO: Created /sample-buildout/myproject
-    INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
+    20...-...-... INFO: Created /sample-buildout/myproject
+    20...-...-... INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
+    20...-...-...
 
 We explicitly look for errors here::
 
@@ -74,12 +73,13 @@ The same is true for the snapshot backup.
 
     >>> output = system('bin/snapshotbackup')
     >>> print output
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/snap/my -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
     We are done.
-    INFO: Created /sample-buildout/snap/my
-    INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/snap/my
+    20...-...-... INFO: Created /sample-buildout/var/snap/my
+    20...-...-... INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/var/snap/my
+    20...-...-...
     >>> if 'ERROR' in output: print output
 
 Untested in this file, as it would create directories in your root or your
