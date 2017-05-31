@@ -1,5 +1,5 @@
-4.0 (unreleased)
-================
+4.0b1 (2017-05-31)
+==================
 
 - Make custom backup locations relative to the ``locationprefix`` option or the ``var`` directory.
   Until now, the ``locationprefix`` option was only used if you did not set custom locations.
