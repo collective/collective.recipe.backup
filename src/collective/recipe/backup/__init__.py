@@ -41,7 +41,7 @@ class Recipe(object):
         # and friends) and blob_storage (as we use underscores
         # everywhere).  But keep only blob_storage.
         blobs_1 = options.pop('blob-storage', '')
-        options.setdefault('blob_storage', blobs_1)
+        options.setdefault('blob_storage', blobs_1).rstrip(os.sep)
         blobs_2 = options.get('blob_storage')
         if blobs_1 != blobs_2:
             if blobs_1 and blobs_2:
@@ -300,6 +300,7 @@ class Recipe(object):
             blob_storage_found = False
             for s in storages:
                 if s['blobdir']:
+                    s['blobdir'] = s['blobdir'].rstrip(os.sep)
                     blob_storage_found = True
                     blob_backup_location = s['blob_backup_location']
                     blob_snapshot_location = s['blob_snapshot_location']

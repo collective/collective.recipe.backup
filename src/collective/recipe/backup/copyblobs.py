@@ -642,7 +642,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     >>> write('blobs', 'one.txt', "Changed File One")
     >>> write('blobs', 'four.txt', "File Four")
     >>> remove('blobs', 'two.txt')
-    >>> backup_blobs('blobs', 'backups')
+    >>> backup_blobs('blobs/', 'backups')
     >>> ls('backups')
     d  blobs.0
     d  blobs.1
@@ -823,6 +823,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     >>> remove('backups')
 
     """
+    source = source.rstrip(os.sep)
     base_name = os.path.basename(source)
 
     if archive_blob:
@@ -930,7 +931,7 @@ def backup_blobs_archive(
     >>> write('blobs', 'one.txt', "Changed File One")
     >>> write('blobs', 'four.txt', "File Four")
     >>> remove('blobs', 'two.txt')
-    >>> backup_blobs_archive('blobs', 'backups', compress_blob=True)
+    >>> backup_blobs_archive('blobs/', 'backups', compress_blob=True)
     >>> ls('backups')
     -  blobs.0.tar.gz
     -  blobs.1.tar
@@ -990,6 +991,7 @@ def backup_blobs_archive(
     >>> remove('backups')
     >>> remove('fs')
     """
+    source = source.rstrip(os.sep)
     base_name = os.path.basename(source)
     if not os.path.exists(destination):
         os.makedirs(destination)
@@ -1131,9 +1133,7 @@ def restore_blobs(source, destination, use_rsync=True,
     restore_blobs.  When all is well, call it normally without only_check.
 
     """
-    if destination.endswith(os.sep):
-        # strip that separator
-        destination = destination[:-len(os.sep)]
+    destination = destination.rstrip(os.sep)
     if archive_blob:
         result = restore_blobs_archive(
             source, destination, date, timestamps=timestamps,

@@ -152,7 +152,7 @@ def restore_main(bin_dir, storages, verbose,
             backup_location = storage['zip_location']
         else:
             backup_location = storage['backup_location']
-        fs = storage['datafs']
+        fs = storage['datafs'].rstrip(os.sep)
         fs_dir = os.path.dirname(fs)
         if not os.path.exists(fs_dir):
             os.makedirs(fs_dir)
