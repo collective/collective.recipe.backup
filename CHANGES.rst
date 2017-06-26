@@ -1,6 +1,11 @@
 4.0b2 (unreleased)
 ==================
 
+- Without explicit ``blob-storage`` option, default to ``var/blobstorage``.
+  Take the ``var`` option from zeoserver/client recipes into account.
+  Fixes `issue #27 <https://github.com/collective/collective.recipe.backup/issues/27>`_.
+  [maurits]
+
 - Do not create hidden backup ``.0`` when blob_storage ends with a slash.
   Fixes `issue #26 <https://github.com/collective/collective.recipe.backup/issues/26>`_.
   [maurits]

@@ -103,6 +103,61 @@ speed things up a bit):
     ...storage...1...
     ...zip_location.../var/zipbackups...
 
+Without explicit blob-storage option, it defaults to ``blobstorage`` in the var directory, which might be somewhere else.
+
+    >>> write('buildout.cfg',
+    ... """
+    ... [buildout]
+    ... index = http://pypi.python.org/simple
+    ... # Avoid suddenly updating zc.buildout or other packages:
+    ... newest = false
+    ... parts = instance backup
+    ... versions = versions
+    ...
+    ... [versions]
+    ... # A slightly older version that does not rely on the Zope2 egg
+    ... plone.recipe.zope2instance = 3.9
+    ... mailinglogger = 3.3
+    ...
+    ... [instance]
+    ... recipe = plone.recipe.zope2instance
+    ... user = admin:admin
+    ... var = ${buildout:directory}/var/another/
+    ...
+    ... [backup]
+    ... recipe = collective.recipe.backup
+    ... """)
+    >>> print system('bin/buildout') # doctest:+ELLIPSIS
+    Uninstalling instance.
+    Installing instance.
+    Updating backup.
+    Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
+    Generated script '/sample-buildout/bin/snapshotbackup'.
+    Generated script '/sample-buildout/bin/restore'.
+    Generated script '/sample-buildout/bin/snapshotrestore'...
+    <BLANKLINE>
+    >>> ls('bin')
+    -  backup
+    -  buildout
+    -  fullbackup
+    -  instance
+    -  mkzopeinstance
+    -  repozo
+    -  restore
+    -  snapshotbackup
+    -  snapshotrestore
+    >>> cat('bin/backup')
+    #!...
+    ...blob_backup_location.../var/another/blobstoragebackups...
+    ...blob_snapshot_location.../var/another/blobstoragesnapshots...
+    ...blob_zip_location.../var/another/blobstoragezips...
+    ...blobdir.../var/another/blobstorage...
+    ...datafs.../var/another/filestorage/Data.fs...
+    ...snapshot_location.../var/another/snapshotbackups...
+    ...storage...1...
+    ...zip_location.../var/another/zipbackups...
+
 Nowadays it is strange to not have a blob storage, at least with Plone
 4 and higher.  So we bail out when this is the case.
 
