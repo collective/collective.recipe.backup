@@ -42,7 +42,7 @@ The additional backups have to be stored separate from the ``Data.fs``
 backup. That's done by appending the file's name and creating extra backup
 directories named that way::
 
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.

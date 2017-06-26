@@ -67,7 +67,7 @@ We run the buildout (and set a timeout as we need a few new packages
 and apparently a few servers are currently down so a timeout helps
 speed things up a bit):
 
-    >>> print system('bin/buildout -t 5') # doctest:+ELLIPSIS
+    >>> print system('bin/buildout -t 5')
     Setting socket time out to 5 seconds.
     Getting distribution for 'plone.recipe.zope2INSTANCE==3.9'...
     Got plone.recipe.zope2instance 3.9.
@@ -127,7 +127,7 @@ Without explicit blob-storage option, it defaults to ``blobstorage`` in the var 
     ... [backup]
     ... recipe = collective.recipe.backup
     ... """)
-    >>> print system('bin/buildout') # doctest:+ELLIPSIS
+    >>> print system('bin/buildout')
     Uninstalling instance.
     Installing instance.
     Updating backup.
@@ -178,7 +178,7 @@ is only for Plone 4 and higher.
     ... [backup]
     ... recipe = collective.recipe.backup
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling instance.
     Updating backup.
     While:
@@ -194,7 +194,7 @@ is only for Plone 4 and higher.
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
     ... """)
-    >>> print system(buildout)  # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
@@ -217,7 +217,7 @@ We can override the additional_filestorages location:
     ... additional_filestorages =
     ...    catalog ${buildout:directory}/var/filestorage/2.fs
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -244,7 +244,7 @@ We can override the additional_filestorages blob source location:
     ...    withblob    ${buildout:directory}/var/filestorage/2.fs ${buildout:directory}/var/blobstorage2
     ...    withoutblob ${buildout:directory}/var/filestorage/3.fs
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -268,7 +268,7 @@ Wrong configurations for additional_filestorages:
     ... additional_filestorages =
     ...    wrong ${buildout:directory}/var/filestorage foo.fs ${buildout:directory}/var/blobstorage_foo
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     While:
@@ -293,7 +293,7 @@ Full cycle tests:
     ...    foo ${buildout:directory}/var/filestorage/foo.fs ${buildout:directory}/var/blobstorage-foo
     ...    bar ${buildout:directory}/var/filestorage/bar.fs ${buildout:directory}/var/blobstorage-bar/
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
@@ -804,7 +804,7 @@ blob_storage option, otherwise buildout quits::
     ... recipe = collective.recipe.backup
     ... backup_blobs = true
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     While:
@@ -826,7 +826,7 @@ Combining blob_backup=false and only_blobs=true will not work::
     ... backup_blobs = false
     ... only_blobs = true
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     While:
       Installing.
       Getting section backup.
@@ -855,7 +855,7 @@ enable_zipbackup too::
     ... only_blobs = true
     ... enable_zipbackup = true
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing filebackup.
     Generated script '/sample-buildout/bin/filebackup'.
     Generated script '/sample-buildout/bin/filebackup-full'.
@@ -959,7 +959,7 @@ restore to ensure passing of extra options to rsync works::
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... rsync_options = --no-l -k
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling blobbackup.
     Uninstalling filebackup.
     Installing backup.
@@ -1016,7 +1016,7 @@ So backup still works, now test restore that uses a symlinked directory as the b
     ... pre_command = ln -s ${buildout:directory}/var/blobstoragebackups/blobstorage.0/blobstorage ${backup:blobbackuplocation}/blobstorage.0/blobstorage
     ... post_command = unlink ${backup:blobbackuplocation}/blobstorage.0/blobstorage
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -1059,7 +1059,7 @@ See issue #26. So test what happens:
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage/
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.

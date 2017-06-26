@@ -39,7 +39,7 @@ Write a buildout config::
     ...    foo ${buildout:directory}/var/filestorage/foo.fs ${buildout:directory}/var/blobstorage-foo
     ...    bar ${buildout:directory}/var/filestorage/bar.fs ${buildout:directory}/var/blobstorage-bar
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.

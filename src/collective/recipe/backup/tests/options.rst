@@ -38,7 +38,7 @@ We'll use most options, except the blob options for now::
     ...     echo 'Thanks a lot for the backup.'
     ...     echo 'We are done.'
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
@@ -144,7 +144,7 @@ generated script).
     ... enable_snapshotrestore = false
     ... """)
 
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -182,7 +182,7 @@ wanted.
     ... quick = false
     ... """)
 
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -217,7 +217,7 @@ actually remove the previously generated script).
     ... enable_fullbackup = false
     ... """)
 
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
