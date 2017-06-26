@@ -1,7 +1,9 @@
 4.0b2 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Do not create hidden backup ``.0`` when blob_storage ends with a slash.
+  Fixes `issue #26 <https://github.com/collective/collective.recipe.backup/issues/26>`_.
+  [maurits]
 
 
 4.0b1 (2017-05-31)

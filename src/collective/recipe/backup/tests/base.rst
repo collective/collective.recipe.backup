@@ -184,18 +184,3 @@ The different part name *did* result in two directories named after the part:
     d  backups
     d  filestorage
     d  snapshotbackups
-
-For the rest of the tests we use the ``[backup]`` name again.  And we clean up
-the ``var/plonebackups`` and ``var/plonebackup-snaphots`` dirs:
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... backup_blobs = false
-    ... """)
-    >>> dont_care = system(buildout) # doctest:+ELLIPSIS
