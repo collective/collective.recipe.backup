@@ -18,6 +18,7 @@ The simplest way to use it is to add a part in ``buildout.cfg`` like this::
     ... [backup]
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
+    ... enable_fullbackup = true
     ... """)
 
 Running the buildout adds a backup, snapshotbackup, restore and
@@ -158,7 +159,6 @@ something else,  the script names will also be different as will the created
     Uninstalling backup.
     Installing plonebackup.
     Generated script '/sample-buildout/bin/plonebackup'.
-    Generated script '/sample-buildout/bin/plonebackup-full'.
     Generated script '/sample-buildout/bin/plonebackup-snapshot'.
     Generated script '/sample-buildout/bin/plonebackup-restore'.
     Generated script '/sample-buildout/bin/plonebackup-snapshotrestore'.
@@ -170,7 +170,6 @@ name is ``[backup]`` is now prefixed with the part name:
     >>> ls('bin')
     -  buildout
     -  plonebackup
-    -  plonebackup-full
     -  plonebackup-restore
     -  plonebackup-snapshot
     -  plonebackup-snapshotrestore

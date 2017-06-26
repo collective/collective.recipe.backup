@@ -48,7 +48,6 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
@@ -114,7 +113,6 @@ You can choose not to enable the zip scripts::
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -122,7 +120,6 @@ You can choose not to enable the zip scripts::
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  repozo
     -  restore
     -  snapshotbackup
@@ -146,14 +143,12 @@ the default::
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  repozo
     -  restore
     -  snapshotbackup

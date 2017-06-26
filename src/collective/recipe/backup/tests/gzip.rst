@@ -53,19 +53,16 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     >>> print system(buildout)
     Installing nozipbackup.
     Generated script '/sample-buildout/bin/nozipbackup'.
-    Generated script '/sample-buildout/bin/nozipbackup-full'.
     Generated script '/sample-buildout/bin/nozipbackup-snapshot'.
     Generated script '/sample-buildout/bin/nozipbackup-restore'.
     Generated script '/sample-buildout/bin/nozipbackup-snapshotrestore'.
     Installing zippedbackup.
     Generated script '/sample-buildout/bin/zippedbackup'.
-    Generated script '/sample-buildout/bin/zippedbackup-full'.
     Generated script '/sample-buildout/bin/zippedbackup-snapshot'.
     Generated script '/sample-buildout/bin/zippedbackup-restore'.
     Generated script '/sample-buildout/bin/zippedbackup-snapshotrestore'.
     Installing compressedbackup.
     Generated script '/sample-buildout/bin/compressedbackup'.
-    Generated script '/sample-buildout/bin/compressedbackup-full'.
     Generated script '/sample-buildout/bin/compressedbackup-snapshot'.
     Generated script '/sample-buildout/bin/compressedbackup-restore'.
     Generated script '/sample-buildout/bin/compressedbackup-snapshotrestore'.

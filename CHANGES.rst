@@ -1,6 +1,10 @@
 4.0b2 (unreleased)
 ==================
 
+- No longer create the ``fullbackup`` script by default.
+  You can still enable it by setting ``enable_fullbackup`` to ``true``.
+  [maurits]
+
 - Without explicit ``blob-storage`` option, default to ``var/blobstorage``.
   Take the ``var`` option from zeoserver/client recipes into account.
   Fixes `issue #27 <https://github.com/collective/collective.recipe.backup/issues/27>`_.

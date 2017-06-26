@@ -41,7 +41,6 @@ the ``alternative_restore_sources`` option::
     >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -121,7 +120,6 @@ Add blobstorage to original and alternative::
     >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -235,7 +233,6 @@ Test in combination with additional filestorage::
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -297,7 +294,6 @@ When archive_blob is true, we use it::
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -358,14 +354,12 @@ different names for the scripts::
     Uninstalling backup.
     Installing secondbackup.
     Generated script '/sample-buildout/bin/secondbackup'.
-    Generated script '/sample-buildout/bin/secondbackup-full'.
     Generated script '/sample-buildout/bin/secondbackup-snapshot'.
     Generated script '/sample-buildout/bin/secondbackup-restore'.
     Generated script '/sample-buildout/bin/secondbackup-snapshotrestore'.
     Generated script '/sample-buildout/bin/secondbackup-altrestore'.
     Installing firstbackup.
     Generated script '/sample-buildout/bin/firstbackup'.
-    Generated script '/sample-buildout/bin/firstbackup-full'.
     Generated script '/sample-buildout/bin/firstbackup-snapshot'.
     Generated script '/sample-buildout/bin/firstbackup-restore'.
     Generated script '/sample-buildout/bin/firstbackup-snapshotrestore'.
@@ -395,7 +389,6 @@ Specifying ``1`` instead of ``Data`` is fine::
     Uninstalling secondbackup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
