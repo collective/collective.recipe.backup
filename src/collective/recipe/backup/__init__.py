@@ -178,8 +178,14 @@ class Recipe(object):
             # instance/zeoclient/zeoserver part, if it is available.
             blob_storage = get_zope_option(self.buildout, 'blob-storage')
             if not blob_storage:
-                # 'None' would give a TypeError when setting the option.
-                blob_storage = ''
+                # The recipes put it in var/blobstorage by default.
+                # But if there is no recipe, then we don't set this.
+                if get_zope_option(self.buildout, 'recipe'):
+                    blob_storage = os.path.abspath(
+                        os.path.join(var_dir, 'blobstorage'))
+                else:
+                    # 'None' would give a TypeError when setting the option.
+                    blob_storage = ''
             options['blob_storage'] = blob_storage
         # Validate again, which also makes sure the blob storage options are
         # the same, for good measure.
