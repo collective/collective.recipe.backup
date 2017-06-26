@@ -1,4 +1,4 @@
-4.0b2 (unreleased)
+4.0b2 (2017-06-26)
 ==================
 
 - No longer create the ``fullbackup`` script by default.
