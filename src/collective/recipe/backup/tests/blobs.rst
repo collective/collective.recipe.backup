@@ -77,7 +77,6 @@ speed things up a bit):
     Generated script '/sample-buildout/bin/instance'.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'...
@@ -85,7 +84,6 @@ speed things up a bit):
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  instance
     -  mkzopeinstance
     -  repozo
@@ -132,7 +130,6 @@ Without explicit blob-storage option, it defaults to ``blobstorage`` in the var 
     Installing instance.
     Updating backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'...
@@ -140,7 +137,6 @@ Without explicit blob-storage option, it defaults to ``blobstorage`` in the var 
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  instance
     -  mkzopeinstance
     -  repozo
@@ -197,7 +193,6 @@ is only for Plone 4 and higher.
     >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -221,7 +216,6 @@ We can override the additional_filestorages location:
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -248,7 +242,6 @@ We can override the additional_filestorages blob source location:
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -296,7 +289,6 @@ Full cycle tests:
     >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -304,7 +296,6 @@ Full cycle tests:
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  instance
     -  mkzopeinstance
     -  repozo
@@ -858,13 +849,11 @@ enable_zipbackup too::
     >>> print system(buildout)
     Installing filebackup.
     Generated script '/sample-buildout/bin/filebackup'.
-    Generated script '/sample-buildout/bin/filebackup-full'.
     Generated script '/sample-buildout/bin/filebackup-snapshot'.
     Generated script '/sample-buildout/bin/filebackup-restore'.
     Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
     Installing blobbackup.
     Generated script '/sample-buildout/bin/blobbackup'.
-    Generated script '/sample-buildout/bin/blobbackup-full'.
     Generated script '/sample-buildout/bin/blobbackup-zip'.
     Generated script '/sample-buildout/bin/blobbackup-snapshot'.
     Generated script '/sample-buildout/bin/blobbackup-restore'.
@@ -964,7 +953,6 @@ restore to ensure passing of extra options to rsync works::
     Uninstalling filebackup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -972,7 +960,6 @@ restore to ensure passing of extra options to rsync works::
     >>> ls('bin')
     - backup
     - buildout
-    - fullbackup
     - instance
     - mkzopeinstance
     - repozo
@@ -1020,7 +1007,6 @@ So backup still works, now test restore that uses a symlinked directory as the b
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -1028,7 +1014,6 @@ So backup still works, now test restore that uses a symlinked directory as the b
     >>> ls('bin')
     - backup
     - buildout
-    - fullbackup
     - instance
     - mkzopeinstance
     - repozo
@@ -1063,7 +1048,6 @@ See issue #26. So test what happens:
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.

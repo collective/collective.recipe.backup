@@ -42,7 +42,6 @@ Write a buildout config::
     >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -50,7 +49,6 @@ Write a buildout config::
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  repozo
     -  restore
     -  snapshotbackup
@@ -564,7 +562,6 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.

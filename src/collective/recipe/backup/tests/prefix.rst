@@ -21,6 +21,7 @@ The simplest way to use it is to add a part in ``buildout.cfg`` like this::
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
     ... locationprefix = ${buildout:directory}/backuplocation
+    ... enable_fullbackup = true
     ... """)
 
 Let's run the buildout::
@@ -161,7 +162,6 @@ Let's run the buildout::
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
@@ -183,13 +183,6 @@ And run the scripts::
     d  blobstorage
     >>> ls('backuplocation', 'std', 'blobs', 'blobstorage.0', 'blobstorage')
     -  blob.txt
-    >>> print system('bin/fullbackup')
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/std/datafs -F --gzip
-    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/std/datafs
-    INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/backuplocation/std/blobs
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: rsync -a  --delete --link-dest=../blobstorage.1 /sample-buildout/var/blobstorage /sample-buildout/backuplocation/std/blobs/blobstorage.0
-    <BLANKLINE>
     >>> print system('bin/zipbackup')
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/zip -F --gzip
     INFO: Created /sample-buildout/backuplocation/snapshots/zip
@@ -272,7 +265,6 @@ Let's run the buildout::
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -308,6 +300,7 @@ something else,  the script names will also be different as will the created
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
     ... locationprefix = ${buildout:directory}/backuplocation
+    ... enable_fullbackup = true
     ... """)
     >>> print system(buildout)
     Uninstalling backup.
@@ -340,19 +333,3 @@ The different part name *did* result in two directories named after the part:
     d  snapshotbackups
     d  snapshots
     d  std
-
-For the rest of the tests we use the ``[backup]`` name again.  And we clean up
-the ``backuplocation/plonebackups`` and ``backuplocation/plonebackup-snaphots`` dirs:
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... backup_blobs = false
-    ... locationprefix = ${buildout:directory}/backuplocation
-    ... """)
-    >>> dont_care = system(buildout)

@@ -41,7 +41,6 @@ We'll use most options, except the blob options for now::
     >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -148,14 +147,12 @@ generated script).
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     <BLANKLINE>
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  repozo
     -  restore
     -  snapshotbackup
@@ -186,7 +183,6 @@ wanted.
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -198,12 +194,12 @@ wanted.
     <BLANKLINE>
 
 
-Disable the fullbackup script
------------------------------
+Enable the fullbackup script
+----------------------------
 
-We generate a new buildout with enable_fullbackup set to false.  The
-fullbackup script should not be generated now (and buildout will
-actually remove the previously generated script).
+We generate a new buildout with enable_fullbackup set to true.
+This actually was the default before 4.0.
+The fullbackup script should be generated now.
 
     >>> write('buildout.cfg',
     ... """
@@ -214,13 +210,14 @@ actually remove the previously generated script).
     ... [backup]
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
-    ... enable_fullbackup = false
+    ... enable_fullbackup = true
     ... """)
 
     >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
+    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -228,6 +225,7 @@ actually remove the previously generated script).
     >>> ls('bin')
     -  backup
     -  buildout
+    -  fullbackup
     -  repozo
     -  restore
     -  snapshotbackup

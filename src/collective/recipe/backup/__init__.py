@@ -157,7 +157,7 @@ class Recipe(object):
         options.setdefault('compress_blob', 'false')
         options.setdefault('datafs', datafs)
         options.setdefault('debug', 'false')
-        options.setdefault('enable_fullbackup', 'true')
+        options.setdefault('enable_fullbackup', 'false')
         options.setdefault('enable_snapshotrestore', 'true')
         options.setdefault('enable_zipbackup', 'false')
         options.setdefault('full', 'false')

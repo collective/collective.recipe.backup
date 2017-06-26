@@ -34,8 +34,8 @@ cake is important!
 - ``bin/backup`` makes an incremental backup.
 
 - ``bin/fullbackup`` always makes a full backup, in the same directory
-  as the normal backups.  You can disable this by setting the
-  ``enable_fullbackup`` option to false.
+  as the normal backups.  You can enable this by setting the
+  ``enable_fullbackup`` option to true.
 
 - ``bin/restore`` restores the latest backup, created by the backup or
   fullbackup script.
@@ -171,6 +171,9 @@ have a blob storage it is by default backed up to
 set different cron jobs for full and incremental backups.  You may
 want to have incrementals done daily, with full backups done weekly.
 Now you can!
+
+Since version 4.0, the fullbackup script is not created by default.
+Enable it by setting ``enable_fullbackup`` to ``true``
 
 You should normally do a ``bin/zeopack`` regularly, say once a week,
 to remove unused objects from your Zope ``Data.fs``.  The next time
@@ -383,7 +386,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     with ``--verbose`` if this option is enabled.
 
 ``enable_fullbackup``
-    Create ``fullbackup`` script.  Default: true.
+    Create ``fullbackup`` script.  Default: false (changed in 4.0).
 
 ``enable_snapshotrestore``
     Having a ``snapshotrestore`` script is very useful in development

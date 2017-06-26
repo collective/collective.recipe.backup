@@ -66,7 +66,6 @@ is probably grudgingly allowed, at least by this particular check.
     >>> print system('bin/buildout')
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/zipbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
@@ -99,7 +98,6 @@ We'll use all options, except the blob options for now::
     Installing backup.
     utils: WARNING: Not able to create /my/unusable/path/for/backup
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
