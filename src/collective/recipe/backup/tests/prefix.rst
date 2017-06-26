@@ -309,7 +309,7 @@ something else,  the script names will also be different as will the created
     ... backup_blobs = false
     ... locationprefix = ${buildout:directory}/backuplocation
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing plonebackup.
     Generated script '/sample-buildout/bin/plonebackup'.
@@ -355,4 +355,4 @@ the ``backuplocation/plonebackups`` and ``backuplocation/plonebackup-snaphots`` 
     ... backup_blobs = false
     ... locationprefix = ${buildout:directory}/backuplocation
     ... """)
-    >>> dont_care = system(buildout) # doctest:+ELLIPSIS
+    >>> dont_care = system(buildout)

@@ -38,7 +38,7 @@ First we create some fresh content:
 One thing we test here is if the buildout does not create too many
 directories that will not get used because have set only_blobs=true::
 
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.

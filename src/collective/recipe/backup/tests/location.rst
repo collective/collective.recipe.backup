@@ -94,7 +94,7 @@ We'll use all options, except the blob options for now::
     ... backup_blobs = false
     ... location = /my/unusable/path/for/backup
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing backup.
     utils: WARNING: Not able to create /my/unusable/path/for/backup

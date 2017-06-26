@@ -24,7 +24,7 @@ Running the buildout adds a backup, snapshotbackup, restore and
 snapshotrestore scripts to the ``bin/`` directory and, by default, it
 creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
 
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
@@ -154,7 +154,7 @@ something else,  the script names will also be different as will the created
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
     ... """)
-    >>> print system(buildout) # doctest:+ELLIPSIS
+    >>> print system(buildout)
     Uninstalling backup.
     Installing plonebackup.
     Generated script '/sample-buildout/bin/plonebackup'.
