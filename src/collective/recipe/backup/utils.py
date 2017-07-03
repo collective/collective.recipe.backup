@@ -5,11 +5,24 @@ import shutil
 import subprocess
 import sys
 
+try:
+    from builtins import input as raw_input
+except ImportError:
+    # Python 2 has raw_input available by default.
+    pass
+
 
 logger = logging.getLogger('utils')
 
 # For zc.buildout's system() method:
 MUST_CLOSE_FDS = not sys.platform.startswith('win')
+
+try:
+    # Python 2
+    stringtypes = basestring
+except NameError:
+    # Python 3
+    stringtypes = str
 
 
 def system(command, input=''):

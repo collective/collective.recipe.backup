@@ -25,6 +25,12 @@ BACKUP_DIR = 'backups'
 is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 
 
+# cmp is not available on Python 3, so use an alternative.
+# See http://python-future.org/compatible_idioms.html#cmp
+def cmp(x, y):
+    return (x > y) - (x < y)
+
+
 def get_prefix_and_number(value, prefix=None, suffixes=None):
     """Get prefix and number out of value.
 
@@ -46,7 +52,7 @@ def get_prefix_and_number(value, prefix=None, suffixes=None):
     but it would be hard to read.
     """
     if suffixes is not None:
-        if isinstance(suffixes, basestring):
+        if isinstance(suffixes, utils.stringtypes):
             suffixes = [suffixes]
         found = False
         for suffix in suffixes:
