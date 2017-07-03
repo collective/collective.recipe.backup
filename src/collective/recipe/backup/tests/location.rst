@@ -11,7 +11,7 @@ Add mock ``bin/repozo`` script::
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 You should not mix backup locations; it is confusing for the recipe
@@ -31,7 +31,7 @@ You should not mix backup locations; it is confusing for the recipe
     ... snapshotlocation = ${buildout:directory}/var/loc2
     ... blobsnapshotlocation = ${buildout:directory}/var/loc2
     ... """)
-    >>> print system('bin/buildout')
+    >>> print(system('bin/buildout'))
     While:
       Installing.
       Getting section backup.
@@ -63,7 +63,7 @@ is probably grudgingly allowed, at least by this particular check.
     ... ziplocation =
     ... blobziplocation =
     ... """)
-    >>> print system('bin/buildout')
+    >>> print(system('bin/buildout'))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/zipbackup'.
@@ -93,7 +93,7 @@ We'll use all options, except the blob options for now::
     ... backup_blobs = false
     ... location = /my/unusable/path/for/backup
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     utils: WARNING: Not able to create /my/unusable/path/for/backup

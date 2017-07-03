@@ -11,7 +11,7 @@ Add mock ``bin/repozo`` script::
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 Create directories::
@@ -38,7 +38,7 @@ the ``alternative_restore_sources`` option::
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -49,7 +49,7 @@ the ``alternative_restore_sources`` option::
 
 Call the script::
 
-    >>> print system('bin/altrestore', input='yes\n')
+    >>> print(system('bin/altrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
@@ -74,7 +74,7 @@ add it to the alternative::
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     While:
@@ -96,7 +96,7 @@ Add blobstorage to the alternative, but not the original::
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     While:
       Installing backup.
@@ -117,7 +117,7 @@ Add blobstorage to original and alternative::
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -131,7 +131,7 @@ Call the script::
     >>> ls('var')
     d  filestorage
     >>> remove('var', 'filestorage')
-    >>> print system('bin/altrestore', input='yes\n')
+    >>> print(system('bin/altrestore', input='yes\n'))
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -149,7 +149,7 @@ Create the necessary sample directories and call the script again::
     >>> mkdir('alt', 'blobs', 'blobstorage.0')
     >>> mkdir('alt', 'blobs', 'blobstorage.0', 'blobstorage')
     >>> write('alt', 'blobs', 'blobstorage.0', 'blobstorage', 'blobfile.txt', 'Hello blob.')
-    >>> print system('bin/altrestore', input='yes\n')
+    >>> print(system('bin/altrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
@@ -174,7 +174,7 @@ normal restore script.  If the date is too early, the real repozo script would f
 saying 'No files in repository before <date>'.  Our mock repozo script would accept it,
 but we have added a check in the blob restore so we now fail as well.
 
-    >>> print system('bin/altrestore 2000-12-31-23-59', input='yes\n')
+    >>> print(system('bin/altrestore 2000-12-31-23-59', input='yes\n'))
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -188,7 +188,7 @@ but we have added a check in the blob restore so we now fail as well.
 
 So test is with a date in the future::
 
-    >>> print system('bin/altrestore 2100-12-31-23-59', input='yes\n')
+    >>> print(system('bin/altrestore 2100-12-31-23-59', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data -D 2100-12-31-23-59
     <BLANKLINE>
     This will replace the filestorage:
@@ -229,7 +229,7 @@ Test in combination with additional filestorage::
     >>> mkdir('alt', 'fooblobs', 'blobstorage-foo.0')
     >>> mkdir('alt', 'fooblobs', 'blobstorage-foo.0', 'blobstorage-foo')
     >>> write('alt', 'fooblobs', 'blobstorage-foo.0', 'blobstorage-foo', 'fooblobfile.txt', 'Hello fooblob.')
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -238,7 +238,7 @@ Test in combination with additional filestorage::
     Generated script '/sample-buildout/bin/snapshotrestore'.
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
-    >>> print system('bin/altrestore', input='yes\n')
+    >>> print(system('bin/altrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/foo/foo.fs -r /sample-buildout/alt/foo
     --recover -o /sample-buildout/var/filestorage/bar/bar.fs -r /sample-buildout/alt/bar
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
@@ -290,7 +290,7 @@ When archive_blob is true, we use it::
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data ${buildout:directory}/alt/blobs
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -299,7 +299,7 @@ When archive_blob is true, we use it::
     Generated script '/sample-buildout/bin/snapshotrestore'.
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups
     INFO: Created /sample-buildout/var/blobstoragebackups
@@ -308,9 +308,9 @@ When archive_blob is true, we use it::
     INFO: tar cf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     >>> remove('alt', 'data')
     >>> remove('alt', 'blobs')
-    >>> print system('mv var/backups alt/data')
-    >>> print system('mv var/blobstoragebackups alt/blobs')
-    >>> print system('bin/altrestore', input='yes\n')
+    >>> print(system('mv var/backups alt/data'))
+    >>> print(system('mv var/blobstoragebackups alt/blobs'))
+    >>> print(system('bin/altrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
@@ -350,7 +350,7 @@ different names for the scripts::
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing secondbackup.
     Generated script '/sample-buildout/bin/secondbackup'.
@@ -384,7 +384,7 @@ Specifying ``1`` instead of ``Data`` is fine::
     ... alternative_restore_sources =
     ...     1 ${buildout:directory}/alt/data
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling firstbackup.
     Uninstalling secondbackup.
     Installing backup.
@@ -394,7 +394,7 @@ Specifying ``1`` instead of ``Data`` is fine::
     Generated script '/sample-buildout/bin/snapshotrestore'.
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
-    >>> print system('bin/altrestore', input='yes\n')
+    >>> print(system('bin/altrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
@@ -418,7 +418,7 @@ Specifying both ``1`` and ``Data`` is bad::
     ...     1 ${buildout:directory}/alt/one
     ...     Data ${buildout:directory}/alt/data
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     While:
@@ -440,7 +440,7 @@ Switching them around also fails::
     ...     Data ${buildout:directory}/alt/data
     ...     1 ${buildout:directory}/alt/one
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     While:
       Installing backup.
@@ -462,7 +462,7 @@ Missing keys is bad::
     ... alternative_restore_sources =
     ...     Data ${buildout:directory}/alt/data
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     While:
       Installing backup.
@@ -481,7 +481,7 @@ Missing keys is bad::
     ... alternative_restore_sources =
     ...     foo ${buildout:directory}/alt/foo
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     While:
       Installing backup.
@@ -501,7 +501,7 @@ Extra keys are also bad::
     ... alternative_restore_sources =
     ...     foo ${buildout:directory}/alt/foo
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     While:
       Installing backup.
@@ -521,7 +521,7 @@ A filestorage source path is required::
     ... alternative_restore_sources =
     ...     Data
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     While:
       Installing backup.

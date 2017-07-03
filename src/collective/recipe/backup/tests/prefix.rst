@@ -45,12 +45,12 @@ Some needed imports:
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 By default, backups are done in ``backuplocation/backups``::
 
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/backups --quick --gzip
     INFO: Created /sample-buildout/backuplocation/backups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/backups
@@ -58,7 +58,7 @@ By default, backups are done in ``backuplocation/backups``::
 
 Full backups are placed there too::
 
-    >>> print system('bin/fullbackup')
+    >>> print(system('bin/fullbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/backups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/backups
     <BLANKLINE>
@@ -72,7 +72,7 @@ This will create the target directory when it does not exist::
 
     >>> ls('backuplocation')
     d  backups
-    >>> print system('bin/restore', input='yes\n')
+    >>> print(system('bin/restore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/backups
     <BLANKLINE>
     This will replace the filestorage:
@@ -89,7 +89,7 @@ You can also restore the backup as of a certain date. Just pass a date
 argument. According to repozo: specify UTC (not local) time.  The format is
 ``yyyy-mm-dd[-hh[-mm[-ss]]]``.
 
-    >>> print system('bin/restore 1972-12-25', input='yes\n')
+    >>> print(system('bin/restore 1972-12-25', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/backups -D 1972-12-25
     <BLANKLINE>
     This will replace the filestorage:
@@ -112,7 +112,7 @@ backup just before updating the production server is a good idea. For that,
 the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 ``var/snapshotbackups``.
 
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshotbackups -F --gzip
     INFO: Created /sample-buildout/backuplocation/snapshotbackups
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/snapshotbackups
@@ -120,7 +120,7 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 
 You can restore the very latest snapshotbackup with ``bin/snapshotrestore``::
 
-    >>> print system('bin/snapshotrestore', input='yes\n')
+    >>> print(system('bin/snapshotrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshotbackups
     <BLANKLINE>
     This will replace the filestorage:
@@ -158,7 +158,7 @@ A prefix plus relative locations should result in locations relative to the pref
 
 Let's run the buildout::
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -171,7 +171,7 @@ Let's run the buildout::
 
 And run the scripts::
 
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/std/datafs --quick --gzip
     INFO: Created /sample-buildout/backuplocation/std/datafs
     INFO: Created /sample-buildout/backuplocation/std/blobs
@@ -183,7 +183,7 @@ And run the scripts::
     d  blobstorage
     >>> ls('backuplocation', 'std', 'blobs', 'blobstorage.0', 'blobstorage')
     -  blob.txt
-    >>> print system('bin/zipbackup')
+    >>> print(system('bin/zipbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/zip -F --gzip
     INFO: Created /sample-buildout/backuplocation/snapshots/zip
     INFO: Created /sample-buildout/backuplocation/snapshots/zipblobs
@@ -191,7 +191,7 @@ And run the scripts::
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/backuplocation/snapshots/zipblobs
     INFO: tar cf /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/datafs -F --gzip
     INFO: Created /sample-buildout/backuplocation/snapshots/datafs
     INFO: Created /sample-buildout/backuplocation/snapshots/blobs
@@ -199,7 +199,7 @@ And run the scripts::
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/backuplocation/snapshots/blobs
     INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/backuplocation/snapshots/blobs/blobstorage.0
     <BLANKLINE>
-    >>> print system('bin/restore', input='yes\n')
+    >>> print(system('bin/restore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/std/datafs
     <BLANKLINE>
     This will replace the filestorage:
@@ -211,7 +211,7 @@ And run the scripts::
     INFO: Restoring blobs from /sample-buildout/backuplocation/std/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/backuplocation/std/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
-    >>> print system('bin/ziprestore', input='yes\n')
+    >>> print(system('bin/ziprestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/zip
     <BLANKLINE>
     This will replace the filestorage:
@@ -225,7 +225,7 @@ And run the scripts::
     INFO: Extracting /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar to /sample-buildout/var/blobstorage
     INFO: tar xf /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage
     <BLANKLINE>
-    >>> print system('bin/snapshotrestore', input='yes\n')
+    >>> print(system('bin/snapshotrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/datafs
     <BLANKLINE>
     This will replace the filestorage:
@@ -261,7 +261,7 @@ A prefix plus absolute locations should result in ignoring the prefix.
 
 Let's run the buildout::
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -272,7 +272,7 @@ Let's run the buildout::
 
 And run the scripts::
 
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/myownbackup/datafs --quick --gzip
     INFO: Created /sample-buildout/myownbackup/datafs
     INFO: Created /sample-buildout/myownbackup/blobs
@@ -302,7 +302,7 @@ something else,  the script names will also be different as will the created
     ... locationprefix = ${buildout:directory}/backuplocation
     ... enable_fullbackup = true
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing plonebackup.
     Generated script '/sample-buildout/bin/plonebackup'.

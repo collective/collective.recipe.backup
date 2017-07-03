@@ -21,7 +21,7 @@ Add mock ``bin/repozo`` script::
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 Create directories and content::
@@ -45,7 +45,7 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     ... keep = 42
     ... enable_zipbackup = true
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/zipbackup'.
@@ -57,7 +57,7 @@ Create some archived (gzipped) and not-archived separate backup scripts::
 
 Now we test it::
 
-    >>> print system('bin/zipbackup')
+    >>> print(system('bin/zipbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Created /sample-buildout/var/zipbackups
     INFO: Created /sample-buildout/var/blobstoragezips
@@ -68,7 +68,7 @@ Now we test it::
 
 Keep is ignored by zipbackup, always using 1 as value::
 
-    >>> print system('bin/zipbackup')
+    >>> print(system('bin/zipbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
@@ -79,7 +79,7 @@ Keep is ignored by zipbackup, always using 1 as value::
 
 Now test the ziprestore script::
 
-    >>> print system('bin/ziprestore', input='yes\n')
+    >>> print(system('bin/ziprestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups
     <BLANKLINE>
     This will replace the filestorage:
@@ -109,7 +109,7 @@ You can choose not to enable the zip scripts::
     ... keep = 42
     ... enable_zipbackup = false
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -139,7 +139,7 @@ the default::
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... keep = 42
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -168,7 +168,7 @@ refuse this combination::
     ... backup_blobs = false
     ... enable_zipbackup = true
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     While:
       Installing.
       Getting section backup.
