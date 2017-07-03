@@ -25,12 +25,6 @@ BACKUP_DIR = 'backups'
 is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 
 
-# cmp is not available on Python 3, so use an alternative.
-# See http://python-future.org/compatible_idioms.html#cmp
-def cmp(x, y):
-    return (x > y) - (x < y)
-
-
 def get_prefix_and_number(value, prefix=None, suffixes=None):
     """Get prefix and number out of value.
 
@@ -134,29 +128,6 @@ def first_number_key(value):
     return number_key(value[0])
 
 
-def strict_cmp_numbers(a, b):
-    """Compare backup numbers, sorting newest first.
-
-    Should not be needed anymore, but used for testing now.
-
-    a and b MUST be strings with either an integer or a timestamp.
-    So '0', '1', '1999-12-31-23-59-30'.
-
-    Comparing integers:
-    The smallest integer in a comparison gets -1.
-    Example: 0, 1, 2.
-
-    Comparing timestamps:
-    The biggest timestamp gets -1.
-    Example: 2000-12-31-23-59-30, 1999-12-31-23-59-30.
-
-    If integers and timestamps are compared, timestamps are always smaller:
-    1999-12-31-23-59-30, 0, 1.
-    """
-    # Use number_key for comparing, and return the reverse.
-    return - cmp(number_key(a), number_key(b))
-
-
 def part_of_same_backup(values):
     """Validate that values belong to the same backup.
 
@@ -212,29 +183,6 @@ def backup_key(value):
     return number_key(num)
 
 
-def strict_cmp_backups(a, b):
-    """Compare backups.
-
-    Should not be needed anymore, but used for testing now.
-
-    a and b MUST be something like blobstorage.0 and
-    blobstorage.1, which should be sorted numerically.
-
-    New is that it may also be  a timestamp like
-    blobstorage.1999-12-31-23-59-30.
-
-    Newest must be first: x.0, x.1, x.2.
-    This means that the smallest integer in a comparison gets -1.
-    The biggest timestamp gets -1.
-
-    If integers and timestamps are compared, timestamps are always smaller:
-    x.timestamp, x.0, x.1.
-    """
-    part_of_same_backup((a, b))
-    # Use backup_key for comparing, and return the reverse.
-    return - cmp(backup_key(a), backup_key(b))
-
-
 def archive_backup_key(value):
     """Key for comparing backup archives.
 
@@ -247,22 +195,7 @@ def archive_backup_key(value):
         if value.endswith(suffix):
             value = value[:-len(suffix)]
             break
-    num = value.rsplit('.', 1)[-1]
-    return number_key(num)
-
-
-def strict_cmp_gzips(a, b):
-    """Compare backups.
-
-    Should not be needed anymore, but used for testing now.
-
-    a and b MUST be something like blobstorage.0.tar.gz or
-    blobstorage.1.tar, which should be sorted numerically.
-    blobstorage.1999-12-31-23-59-30.tar.gz is good too.
-    """
-    part_of_same_archive_backup((a, b))
-    # Use archive_backup_key for comparing, and return the reverse.
-    return - cmp(archive_backup_key(a), archive_backup_key(b))
+    return backup_key(value)
 
 
 def gen_timestamp(now=None):
@@ -447,8 +380,6 @@ def rotate_directories(container, name):
 
     """
     previous_backups = get_valid_directories(container, name)
-    # This is always true:
-    # part_of_same_backup(previous_backups)
     sorted_backups = sorted(previous_backups, key=backup_key)
     # Rotate the directories.
     for directory in sorted_backups:
