@@ -160,7 +160,9 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(gpn('a.1', prefix='a.'), ('a', '1'))
         self.assertEqual(gpn('montypython.123'), ('montypython', '123'))
         self.assertEqual(gpn('a.1.tar.gz', suffixes='tar.gz'), ('a', '1'))
-        self.assertEqual(gpn('a.1.tar.gz', suffixes=['tar', 'tar.gz']), ('a', '1'))
+        self.assertEqual(
+            gpn('a.1.tar.gz', suffixes=['tar', 'tar.gz']),
+            ('a', '1'))
         self.assertFalse(gpn('a.1.tar.gz', suffixes=['tar', 'tgz']))
         self.assertEqual(gpn(
             'a.1999-12-31-23-59-30.tar.gz', prefix='a', suffixes='tar.gz'),

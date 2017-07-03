@@ -583,7 +583,8 @@ def get_oldest_filestorage_timestamp(directory):
 
 
 def backup_blobs(source, destination, full=False, use_rsync=True,
-                 keep=0, keep_blob_days=0, archive_blob=False, rsync_options='',
+                 keep=0, keep_blob_days=0, archive_blob=False,
+                 rsync_options='',
                  timestamps=False, fs_backup_location=None,
                  compress_blob=False):
     """Copy blobs from source to destination.
@@ -949,7 +950,9 @@ def backup_blobs_archive(
 
     >>> mkdir('fs')
     >>> write('fs', '2017-05-24-11-54-39.fsz', "Dummy filestorage backup")
-    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=True)
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=True)
     >>> ls('backups')
     -  blobs.0.tar
     -  blobs.1.tar.gz
@@ -958,7 +961,9 @@ def backup_blobs_archive(
 
     And again with the same settings, as I saw something go wrong once.
 
-    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=True)
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=True)
     >>> ls('backups')
     -  blobs.0.tar
     -  blobs.1.tar.gz
@@ -967,7 +972,9 @@ def backup_blobs_archive(
 
     Same without compressing, which accepts previous compressed tarballs too.
 
-    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=False)
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=False)
     >>> ls('backups')
     -  blobs.0.tar
     -  blobs.1.tar.gz
@@ -977,7 +984,9 @@ def backup_blobs_archive(
     Same settings, now with a newer filestorage backup.
 
     >>> write('fs', '2017-05-24-12-00-00.fsz', "Dummy filestorage backup 2")
-    >>> backup_blobs_archive('blobs', 'backups', fs_backup_location='fs', timestamps=True, compress_blob=False)
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=False)
     >>> ls('backups')
     -  blobs.0.tar
     -  blobs.1.tar.gz
@@ -1176,7 +1185,7 @@ def restore_blobs(source, destination, use_rsync=True,
 
 
 def restore_blobs_archive(source, destination, date=None, timestamps=False,
-                       only_check=False):
+                          only_check=False):
     """Restore blobs from source to destination.
 
     Prepare backup for test:
@@ -1535,8 +1544,8 @@ def cleanup_archives(
       ...     mod_time = time.time() - (86400 * days)
       ...     os.utime(join(backup_dir, name), (mod_time, mod_time))
 
-    Calling 'cleanup_archives' without a keep arguments will just return without
-    doing anything.
+    Calling 'cleanup_archives' without a keep arguments will just return
+    without doing anything.
 
       >>> cleanup_archives(backup_dir)
 
