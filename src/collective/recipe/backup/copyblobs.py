@@ -93,8 +93,51 @@ def get_prefix_and_number(value, prefix=None, suffixes=None):
     return prefix, value
 
 
+def number_key(value):
+    """Key for comparing backup numbers, sorting oldest first.
+
+    The value MUST be a string with either an integer or a timestamp.
+    So '0', '1', '2', '10 '1999-12-31-23-59-30'.
+
+    We return a tuple (x, y).
+    x indicates a number (0) or timestamp (1).
+    y is the negative of the integer or the original string.
+
+    This makes sure that the largest integer is sorted first,
+    and the newest timestamp is sorted last.
+    This used to be the other way around, but had to be changed
+    in order to use comparison by key, which is the only comparison
+    supported in Python 3.
+
+    Sample input may be '0', '1', '2', '10', '2000-12-31-23-59-30',
+    '1999-12-31-23-59-30'.
+    """
+    try:
+        # make number negative
+        value = - int(value)
+        type_indicator = 0
+    except ValueError:
+        if not is_time_stamp(value):
+            raise ValueError(
+                'No integer and no timestamp in {0}.'.format(value))
+        # timestamp
+        type_indicator = 1
+    return (type_indicator, value)
+
+
+def first_number_key(value):
+    """Key for comparing backup numbers.
+
+    value MUST be (number, something).
+    We are only interested in the number.
+    """
+    return number_key(value[0])
+
+
 def strict_cmp_numbers(a, b):
     """Compare backup numbers, sorting newest first.
+
+    Should not be needed anymore, but used for testing now.
 
     a and b MUST be strings with either an integer or a timestamp.
     So '0', '1', '1999-12-31-23-59-30'.
@@ -110,40 +153,69 @@ def strict_cmp_numbers(a, b):
     If integers and timestamps are compared, timestamps are always smaller:
     1999-12-31-23-59-30, 0, 1.
     """
-    # Check if one or both are timestamps.
-    a_time_stamp = None
-    b_time_stamp = None
-    try:
-        a = int(a)
-    except ValueError:
-        if not is_time_stamp(a):
-            raise ValueError('No integer and no timestamp in {0}.'.format(a))
-        a_time_stamp = a
-    try:
-        b = int(b)
-    except ValueError:
-        if not is_time_stamp(b):
-            raise ValueError('No integer and no timestamp in {0}.'.format(b))
-        b_time_stamp = b
+    # Use number_key for comparing, and return the reverse.
+    return - cmp(number_key(a), number_key(b))
 
-    # Now choose the right comparison.
-    if a_time_stamp is None and b_time_stamp is None:
-        # Both are integers.
-        return cmp(a, b)
-    if a_time_stamp is not None and b_time_stamp is not None:
-        # Both are timestamps.  The biggest must be first,
-        # so we switch the comparison around.
-        return cmp(b_time_stamp, a_time_stamp)
-    # From here on, one is an integer, the other a timestamp.
-    if a_time_stamp is None:
-        # a is an integer, so a is bigger than b.
-        return 1
-    # b is a timestamp, so a is smaller.
-    return -1
+
+def part_of_same_backup(values):
+    """Validate that values belong to the same backup.
+
+    values MUST be something like blobstorage.0 or
+    blobstorage.1999-12-31-23-59-30.
+    """
+    if not values:
+        return True
+    first = values[0]
+    if '.' not in first:
+        raise ValueError(
+            "Expected '.' in backup name {0}".format(first))
+    start = first.rsplit('.', 1)[0]
+    for value in values:
+        start2 = value.rsplit('.', 1)[0]
+        if start != start2:
+            raise ValueError(
+                "Not the same start for backups: {0} vs {1}".format(
+                    first, value))
+
+
+def part_of_same_archive_backup(values):
+    """Validate that values belong to the same archive backup.
+
+    values MUST be something like blobstorage.0.tar.gz or
+    blobstorage.1999-12-31-23-59-30.tar.
+    """
+    if not values:
+        return True
+    suffixes = ['.tar', '.tar.gz']
+    cleaned = []
+    for candidate in (values):
+        correct = False
+        for suffix in suffixes:
+            if candidate.endswith(suffix):
+                correct = True
+                cleaned.append(candidate[:-len(suffix)])
+                break
+        if not correct:
+            raise ValueError('{0} does not end with {1}'.format(
+                candidate, suffix))
+    return part_of_same_backup(cleaned)
+
+
+def backup_key(value):
+    """Key for comparing backups.
+
+    You should call part_of_same_backup on values,
+    so we can assume that value is something like blobstorage.0 or
+    blobstorage.1999-12-31-23-59-30.
+    """
+    num = value.rsplit('.', 1)[-1]
+    return number_key(num)
 
 
 def strict_cmp_backups(a, b):
     """Compare backups.
+
+    Should not be needed anymore, but used for testing now.
 
     a and b MUST be something like blobstorage.0 and
     blobstorage.1, which should be sorted numerically.
@@ -158,36 +230,39 @@ def strict_cmp_backups(a, b):
     If integers and timestamps are compared, timestamps are always smaller:
     x.timestamp, x.0, x.1.
     """
-    assert '.' in a
-    assert '.' in b
-    a_start, a_num = a.rsplit('.', 1)
-    b_start, b_num = b.rsplit('.', 1)
-    if a_start != b_start:
-        raise ValueError(
-            "Not the same start for backups: %r vs %r" % (a, b))
-    return strict_cmp_numbers(a_num, b_num)
+    part_of_same_backup((a, b))
+    # Use backup_key for comparing, and return the reverse.
+    return - cmp(backup_key(a), backup_key(b))
+
+
+def archive_backup_key(value):
+    """Key for comparing backup archives.
+
+    You should call part_of_same_backup on values,
+    so we can assume that value is something like blobstorage.0.tar.gz or
+    blobstorage.1999-12-31-23-59-30.tar.
+    """
+    suffixes = ['.tar', '.tar.gz']
+    for suffix in suffixes:
+        if value.endswith(suffix):
+            value = value[:-len(suffix)]
+            break
+    num = value.rsplit('.', 1)[-1]
+    return number_key(num)
 
 
 def strict_cmp_gzips(a, b):
     """Compare backups.
 
-    a and b MUST be something like blobstorage.0.tar.gz and
-    blobstorage.1.tar.gz, which should be sorted numerically.
+    Should not be needed anymore, but used for testing now.
 
+    a and b MUST be something like blobstorage.0.tar.gz or
+    blobstorage.1.tar, which should be sorted numerically.
+    blobstorage.1999-12-31-23-59-30.tar.gz is good too.
     """
-    suffixes = ['.tar', '.tar.gz']
-    cleaned = []
-    for candidate in (a, b):
-        correct = False
-        for suffix in suffixes:
-            if candidate.endswith(suffix):
-                correct = True
-                cleaned.append(candidate[:-len(suffix)])
-                break
-        if not correct:
-            raise ValueError('{0} does not end with {1}'.format(
-                candidate, suffix))
-    return strict_cmp_backups(*cleaned)
+    part_of_same_archive_backup((a, b))
+    # Use archive_backup_key for comparing, and return the reverse.
+    return - cmp(archive_backup_key(a), archive_backup_key(b))
 
 
 def gen_timestamp(now=None):
@@ -372,8 +447,9 @@ def rotate_directories(container, name):
 
     """
     previous_backups = get_valid_directories(container, name)
-    sorted_backups = sorted(previous_backups, cmp=strict_cmp_backups,
-                            reverse=True)
+    # This is always true:
+    # part_of_same_backup(previous_backups)
+    sorted_backups = sorted(previous_backups, key=backup_key)
     # Rotate the directories.
     for directory in sorted_backups:
         new_num = int(directory.split('.')[-1]) + 1
@@ -421,8 +497,7 @@ def rotate_archives(container, name):
 
     """
     previous_backups = get_valid_archives(container, name)
-    sorted_backups = sorted(previous_backups, cmp=strict_cmp_gzips,
-                            reverse=True)
+    sorted_backups = sorted(previous_backups, key=archive_backup_key)
     # Rotate the directories.
     for entry in sorted_backups:
         matched = re.match("^%s\.(\d+)\.tar(\.gz)?$" % name, entry)
@@ -477,9 +552,8 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
         mod_time = os.path.getmtime(full_path)
         backup_dirs.append((num, mod_time, full_path))
     # We always sort by backup number:
-    backup_dirs = sorted(
-        backup_dirs, key=itemgetter(0), cmp=strict_cmp_numbers)
-    # Check if this is the same as reverse sorting by modification time:
+    backup_dirs = sorted(backup_dirs, key=first_number_key, reverse=True)
+    # Check if this is the same as sorting by modification time:
     mod_times = sorted(backup_dirs, key=itemgetter(1), reverse=True)
     if backup_dirs != mod_times:
         logger.warn("Sorting blob backups by number gives other result than "
@@ -532,11 +606,9 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
 
     # We always sort by backup number:
     backup_archives = sorted(
-        backup_archives, key=itemgetter(0), cmp=strict_cmp_numbers)
-
+        backup_archives, key=first_number_key, reverse=True)
     # Check if this is the same as reverse sorting by modification time:
     mod_times = sorted(backup_archives, key=itemgetter(1), reverse=True)
-
     if backup_archives != mod_times:
         logger.warn("Sorting blob backups by number gives other result than "
                     "reverse sorting by last modification time.")

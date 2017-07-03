@@ -175,6 +175,7 @@ class CopyBlobsTestCase(unittest.TestCase):
 
     def test_strict_cmp_numbers(self):
         from collective.recipe.backup.copyblobs import strict_cmp_numbers
+        from collective.recipe.backup.copyblobs import number_key
         self.assertEqual(strict_cmp_numbers('0', '1'), -1)
         self.assertEqual(strict_cmp_numbers('0', '0'), 0)
         self.assertEqual(strict_cmp_numbers('1', '0'), 1)
@@ -199,15 +200,16 @@ class CopyBlobsTestCase(unittest.TestCase):
                                '1999-12-31-23-59-30'), 0)
 
         # Check the effect on a complete sort.
+        # We usually want it reversed.
         self.assertEqual(
-            sorted(['0', '2', '1'], cmp=strict_cmp_numbers),
+            sorted(['0', '2', '1'], key=number_key, reverse=True),
             ['0', '1', '2'])
         self.assertEqual(
             sorted([
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05',
                 '2017-10-02-03-04-05'],
-                cmp=strict_cmp_numbers),
+                key=number_key, reverse=True),
             [
                 '2017-10-02-03-04-05',
                 '2017-01-02-03-04-05',
@@ -218,21 +220,21 @@ class CopyBlobsTestCase(unittest.TestCase):
                 '2',
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05'],
-                cmp=strict_cmp_numbers),
+                key=number_key, reverse=True),
             [
                 '2017-01-02-03-04-05',
                 '1999-12-31-23-59-30',
                 '0',
                 '2'])
 
-        # Test reverse sorting for good measure.
+        # Test normal sorting for good measure.
         self.assertEqual(
             sorted([
                 '0',
                 '2',
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05'],
-                cmp=strict_cmp_numbers, reverse=True),
+                key=number_key),
             [
                 '2',
                 '0',
@@ -241,6 +243,7 @@ class CopyBlobsTestCase(unittest.TestCase):
 
     def test_strict_cmp_backups(self):
         from collective.recipe.backup.copyblobs import strict_cmp_backups
+        from collective.recipe.backup.copyblobs import backup_key
         self.assertEqual(strict_cmp_backups('foo.0', 'foo.1'), -1)
         self.assertEqual(strict_cmp_backups('foo.0', 'foo.0'), 0)
         self.assertEqual(strict_cmp_backups('foo.1', 'foo.0'), 1)
@@ -266,7 +269,7 @@ class CopyBlobsTestCase(unittest.TestCase):
                 'foo.2',
                 'foo.1999-12-31-23-59-30',
                 'foo.2017-01-02-03-04-05'],
-                cmp=strict_cmp_backups, reverse=True),
+                key=backup_key),
             [
                 'foo.2',
                 'foo.0',
@@ -275,6 +278,7 @@ class CopyBlobsTestCase(unittest.TestCase):
 
     def test_strict_cmp_gzips(self):
         from collective.recipe.backup.copyblobs import strict_cmp_gzips
+        from collective.recipe.backup.copyblobs import archive_backup_key
         self.assertEqual(strict_cmp_gzips('foo.0.tar.gz', 'foo.1.tar.gz'), -1)
         self.assertEqual(strict_cmp_gzips('foo.0.tar.gz', 'foo.0.tar.gz'), 0)
         self.assertEqual(strict_cmp_gzips('foo.1.tar.gz', 'foo.0.tar.gz'), 1)
@@ -292,7 +296,7 @@ class CopyBlobsTestCase(unittest.TestCase):
                 'foo.2.tar.gz',
                 'foo.1999-12-31-23-59-30.tar.gz',
                 'foo.2017-01-02-03-04-05.tar.gz'],
-                cmp=strict_cmp_gzips, reverse=True),
+                key=archive_backup_key),
             [
                 'foo.2.tar.gz',
                 'foo.0.tar.gz',
