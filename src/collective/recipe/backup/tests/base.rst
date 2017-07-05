@@ -25,7 +25,7 @@ Running the buildout adds a backup, snapshotbackup, restore and
 snapshotrestore scripts to the ``bin/`` directory and, by default, it
 creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/fullbackup'.
@@ -52,12 +52,12 @@ Some needed imports:
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 By default, backups are done in ``var/backups``::
 
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
@@ -65,7 +65,7 @@ By default, backups are done in ``var/backups``::
 
 Full backups are placed there too::
 
-    >>> print system('bin/fullbackup')
+    >>> print(system('bin/fullbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
@@ -79,7 +79,7 @@ This will create the target directory when it does not exist::
 
     >>> ls('var')
     d  backups
-    >>> print system('bin/restore', input='yes\n')
+    >>> print(system('bin/restore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
     This will replace the filestorage:
@@ -97,7 +97,7 @@ You can also restore the backup as of a certain date. Just pass a date
 argument. According to repozo: specify UTC (not local) time.  The format is
 ``yyyy-mm-dd[-hh[-mm[-ss]]]``.
 
-    >>> print system('bin/restore 1972-12-25', input='yes\n')
+    >>> print(system('bin/restore 1972-12-25', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D 1972-12-25
     <BLANKLINE>
     This will replace the filestorage:
@@ -120,7 +120,7 @@ backup just before updating the production server is a good idea. For that,
 the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 ``var/snapshotbackups``.
 
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Created /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
@@ -128,7 +128,7 @@ the ``bin/snapshotbackup`` is great. It places a full backup in, by default,
 
 You can restore the very latest snapshotbackup with ``bin/snapshotrestore``::
 
-    >>> print system('bin/snapshotrestore', input='yes\n')
+    >>> print(system('bin/snapshotrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
     <BLANKLINE>
     This will replace the filestorage:
@@ -155,7 +155,7 @@ something else,  the script names will also be different as will the created
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing plonebackup.
     Generated script '/sample-buildout/bin/plonebackup'.

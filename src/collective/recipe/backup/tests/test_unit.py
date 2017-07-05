@@ -173,41 +173,41 @@ class CopyBlobsTestCase(unittest.TestCase):
                          ('a', '1'))
         self.assertFalse(gpn('a.1.tar.gz', suffixes=['tar', 'tgz']))
 
-    def test_strict_cmp_numbers(self):
-        from collective.recipe.backup.copyblobs import strict_cmp_numbers
-        self.assertEqual(strict_cmp_numbers('0', '1'), -1)
-        self.assertEqual(strict_cmp_numbers('0', '0'), 0)
-        self.assertEqual(strict_cmp_numbers('1', '0'), 1)
-        self.assertEqual(strict_cmp_numbers('9', '10'), -1)
-        self.assertEqual(strict_cmp_numbers('99', '10'), 1)
+    def test_number_key(self):
+        from collective.recipe.backup.copyblobs import number_key
+        self.assertGreater(number_key('0'), number_key('1'))
+        self.assertEqual(number_key('0'), number_key('0'))
+        self.assertLess(number_key('1'), number_key('0'))
+        self.assertGreater(number_key('9'), number_key('10'))
+        self.assertLess(number_key('99'), number_key('10'))
 
-        # Compare integers and timestamps.  Time stamps are smaller.
-        self.assertEqual(
-            strict_cmp_numbers('0', '1999-12-31-23-59-30'), 1)
-        self.assertEqual(
-            strict_cmp_numbers('1999-12-31-23-59-30', '0'), -1)
+        # Compare integers and timestamps.  Time stamps are more recent,
+        # so they are larger.
+        self.assertLess(number_key('0'), number_key('1999-12-31-23-59-30'))
+        self.assertGreater(number_key('1999-12-31-23-59-30'), number_key('0'))
 
-        # Compare timestamps.  Newest first.
+        # Compare timestamps.  Newest last.
+        self.assertLess(
+            number_key('1999-12-31-23-59-30'),
+            number_key('2000-12-31-23-59-30'))
+        self.assertGreater(
+            number_key('2000-12-31-23-59-30'),
+            number_key('1999-12-31-23-59-30'))
         self.assertEqual(
-            strict_cmp_numbers('1999-12-31-23-59-30',
-                               '2000-12-31-23-59-30'), 1)
-        self.assertEqual(
-            strict_cmp_numbers('2000-12-31-23-59-30',
-                               '1999-12-31-23-59-30'), -1)
-        self.assertEqual(
-            strict_cmp_numbers('1999-12-31-23-59-30',
-                               '1999-12-31-23-59-30'), 0)
+            number_key('1999-12-31-23-59-30'),
+            number_key('1999-12-31-23-59-30'))
 
         # Check the effect on a complete sort.
+        # We usually want it reversed.
         self.assertEqual(
-            sorted(['0', '2', '1'], cmp=strict_cmp_numbers),
+            sorted(['0', '2', '1'], key=number_key, reverse=True),
             ['0', '1', '2'])
         self.assertEqual(
             sorted([
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05',
                 '2017-10-02-03-04-05'],
-                cmp=strict_cmp_numbers),
+                key=number_key, reverse=True),
             [
                 '2017-10-02-03-04-05',
                 '2017-01-02-03-04-05',
@@ -218,47 +218,48 @@ class CopyBlobsTestCase(unittest.TestCase):
                 '2',
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05'],
-                cmp=strict_cmp_numbers),
+                key=number_key, reverse=True),
             [
                 '2017-01-02-03-04-05',
                 '1999-12-31-23-59-30',
                 '0',
                 '2'])
 
-        # Test reverse sorting for good measure.
+        # Test normal sorting for good measure.
         self.assertEqual(
             sorted([
                 '0',
                 '2',
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05'],
-                cmp=strict_cmp_numbers, reverse=True),
+                key=number_key),
             [
                 '2',
                 '0',
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05'])
 
-    def test_strict_cmp_backups(self):
-        from collective.recipe.backup.copyblobs import strict_cmp_backups
-        self.assertEqual(strict_cmp_backups('foo.0', 'foo.1'), -1)
-        self.assertEqual(strict_cmp_backups('foo.0', 'foo.0'), 0)
-        self.assertEqual(strict_cmp_backups('foo.1', 'foo.0'), 1)
-        self.assertEqual(strict_cmp_backups('foo.9', 'foo.10'), -1)
+    def test_backup_key(self):
+        from collective.recipe.backup.copyblobs import backup_key
+        self.assertGreater(backup_key('foo.0'), backup_key('foo.1'))
+        self.assertEqual(backup_key('foo.0'), backup_key('foo.0'))
+        self.assertLess(backup_key('foo.1'), backup_key('foo.0'))
+        self.assertGreater(backup_key('foo.9'), backup_key('foo.10'))
 
-        # Not the same start for directories:
-        self.assertRaises(ValueError, strict_cmp_backups, 'foo.1', 'bar.1')
+        # You should only compare names with the same start for directories,
+        # but that is not the job of the key.
+        self.assertEqual(backup_key('foo.1'), backup_key('bar.1'))
 
-        # Compare integers and timestamps.  Time stamps are smaller.
-        self.assertEqual(
-            strict_cmp_backups('foo.0', 'foo.1999-12-31-23-59-30'), 1)
+        # Compare integers and timestamps.  Time stamps are last.
+        self.assertLess(
+            backup_key('foo.0'), backup_key('foo.1999-12-31-23-59-30'))
 
-        # Compare timestamps.  Newest first.
-        self.assertEqual(
-            strict_cmp_backups('foo.1999-12-31-23-59-30',
-                               'foo.2000-12-31-23-59-30'), 1)
+        # Compare timestamps.  Newest last.
+        self.assertLess(
+            backup_key('foo.1999-12-31-23-59-30'),
+            backup_key('foo.2000-12-31-23-59-30'))
 
-        # It let's most of the logic be handled in strict_cmp_numbers,
+        # It let's most of the logic be handled in number_key,
         # so let's take over one more test from there.
         self.assertEqual(
             sorted([
@@ -266,25 +267,54 @@ class CopyBlobsTestCase(unittest.TestCase):
                 'foo.2',
                 'foo.1999-12-31-23-59-30',
                 'foo.2017-01-02-03-04-05'],
-                cmp=strict_cmp_backups, reverse=True),
+                key=backup_key),
             [
                 'foo.2',
                 'foo.0',
                 'foo.1999-12-31-23-59-30',
                 'foo.2017-01-02-03-04-05'])
 
-    def test_strict_cmp_gzips(self):
-        from collective.recipe.backup.copyblobs import strict_cmp_gzips
-        self.assertEqual(strict_cmp_gzips('foo.0.tar.gz', 'foo.1.tar.gz'), -1)
-        self.assertEqual(strict_cmp_gzips('foo.0.tar.gz', 'foo.0.tar.gz'), 0)
-        self.assertEqual(strict_cmp_gzips('foo.1.tar.gz', 'foo.0.tar.gz'), 1)
-        self.assertEqual(strict_cmp_gzips('foo.9.tar.gz', 'foo.10.tar.gz'), -1)
+    def test_archive_backup_key(self):
+        from collective.recipe.backup.copyblobs import archive_backup_key
+        self.assertGreater(
+            archive_backup_key('foo.0.tar.gz'),
+            archive_backup_key('foo.1.tar.gz'))
+        self.assertEqual(
+            archive_backup_key('foo.0.tar.gz'),
+            archive_backup_key('foo.0.tar.gz'))
+        self.assertLess(
+            archive_backup_key('foo.1.tar.gz'),
+            archive_backup_key('foo.0.tar.gz'))
+        self.assertGreater(
+            archive_backup_key('foo.9.tar.gz'),
+            archive_backup_key('foo.10.tar.gz'))
 
-        # Not the same start for directories:
-        self.assertRaises(ValueError, strict_cmp_gzips,
-                          'foo.1.tar.gz', 'bar.1.tar.gz')
+        # tar or tar.gz are both accepted.
+        self.assertGreater(
+            archive_backup_key('foo.0.tar.gz'),
+            archive_backup_key('foo.1.tar'))
+        self.assertEqual(
+            archive_backup_key('foo.0.tar.gz'),
+            archive_backup_key('foo.0.tar'))
+        self.assertLess(
+            archive_backup_key('foo.1.tar.gz'),
+            archive_backup_key('foo.0.tar'))
+        self.assertGreater(
+            archive_backup_key('foo.9.tar.gz'),
+            archive_backup_key('foo.10.tar'))
 
-        # It shares most code with strict_cmp_backups,
+        # Compare timestamps.  Newest last.
+        self.assertLess(
+            archive_backup_key('foo.1999-12-31-23-59-30.tar'),
+            archive_backup_key('foo.2000-12-31-23-59-30.tar.gz'))
+
+        # You should only compare names with the same start,
+        # but that is not the job of the key.
+        self.assertEqual(
+            archive_backup_key('foo.1.tar'),
+            archive_backup_key('bar.1.tar'))
+
+        # It shares most code with backup_key,
         # so let's take over one more test from there.
         self.assertEqual(
             sorted([
@@ -292,7 +322,7 @@ class CopyBlobsTestCase(unittest.TestCase):
                 'foo.2.tar.gz',
                 'foo.1999-12-31-23-59-30.tar.gz',
                 'foo.2017-01-02-03-04-05.tar.gz'],
-                cmp=strict_cmp_gzips, reverse=True),
+                key=archive_backup_key),
             [
                 'foo.2.tar.gz',
                 'foo.0.tar.gz',

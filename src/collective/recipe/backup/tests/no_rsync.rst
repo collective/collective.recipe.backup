@@ -11,7 +11,7 @@ Add mock ``bin/repozo`` script::
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 If you cannot use rsync and hard links (which may not work on Windows)
@@ -38,7 +38,7 @@ First we create some fresh content:
 One thing we test here is if the buildout does not create too many
 directories that will not get used because have set only_blobs=true::
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -52,7 +52,7 @@ nowhere to be found::
     >>> output = system('bin/backup')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
@@ -63,7 +63,7 @@ Try again to see that renaming/rotating keeps working::
     >>> output = system('bin/backup')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
@@ -74,7 +74,7 @@ And again to see that for incremental backups no old blob backups are removed::
     >>> output = system('bin/backup')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
@@ -86,7 +86,7 @@ Now a restore::
     >>> output = system('bin/restore', input='yes\n')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     <BLANKLINE>
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage
@@ -101,7 +101,7 @@ Snapshots should work too::
     >>> output = system('bin/snapshotbackup')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
@@ -112,7 +112,7 @@ Try again to see that renaming/rotating keeps working::
     >>> output = system('bin/snapshotbackup')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.0 to blobstorage.1.
     INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
@@ -123,7 +123,7 @@ And again to see that removing old backups works::
     >>> output = system('bin/snapshotbackup')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: Renaming blobstorage.1 to blobstorage.2.
     INFO: Renaming blobstorage.0 to blobstorage.1.
@@ -136,7 +136,7 @@ And the snapshotrestore::
     >>> output = system('bin/snapshotrestore', input='yes\n')
     >>> 'rsync' in output
     False
-    >>> print output
+    >>> print(output)
     <BLANKLINE>
     This will replace the blobstorage:
         /sample-buildout/var/blobstorage

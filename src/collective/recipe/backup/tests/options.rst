@@ -11,7 +11,7 @@ Add mock ``bin/repozo`` script::
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 We'll use most options, except the blob options for now::
@@ -38,7 +38,7 @@ We'll use most options, except the blob options for now::
     ...     echo 'Thanks a lot for the backup.'
     ...     echo 'We are done.'
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -54,7 +54,7 @@ because several things conspire in the tests to mess up stdout and
 stderr.  Anyway::
 
     >>> output = system('bin/backup')
-    >>> print output
+    >>> print(output)
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     Can I have a backup?
     <BLANKLINE>
@@ -66,12 +66,12 @@ stderr.  Anyway::
 
 We explicitly look for errors here::
 
-    >>> if 'ERROR' in output: print output
+    >>> if 'ERROR' in output: print(output)
 
 The same is true for the snapshot backup.
 
     >>> output = system('bin/snapshotbackup')
-    >>> print output
+    >>> print(output)
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
@@ -79,7 +79,7 @@ The same is true for the snapshot backup.
     20...-...-... INFO: Created /sample-buildout/var/snap/my
     20...-...-... INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/var/snap/my
     20...-...-...
-    >>> if 'ERROR' in output: print output
+    >>> if 'ERROR' in output: print(output)
 
 Untested in this file, as it would create directories in your root or your
 home dir, are absolute links (starting with a '/') or directories in your home
@@ -98,12 +98,12 @@ get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
 In the tests, we do get messages unfortunately, though at least the
 INFO level logging is not there::
 
-    >>> print system('bin/backup -q')
+    >>> print(system('bin/backup -q'))
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
     We are done.
-    >>> print system('bin/backup --quiet')
+    >>> print(system('bin/backup --quiet'))
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     Can I have a backup?
     Thanks a lot for the backup.
@@ -143,7 +143,7 @@ generated script).
     ... enable_snapshotrestore = false
     ... """)
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -179,7 +179,7 @@ wanted.
     ... quick = false
     ... """)
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -187,7 +187,7 @@ wanted.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Created /sample-buildout/var/backups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
@@ -213,7 +213,7 @@ The fullbackup script should be generated now.
     ... enable_fullbackup = true
     ... """)
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.

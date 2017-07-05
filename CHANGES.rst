@@ -1,7 +1,9 @@
 4.0b3 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Added basic Python 3 support.  We do not test with it yet,
+  but you should not get NameErrors anymore.
+  See `issue #31 <https://github.com/collective/collective.recipe.backup/issues/31>`_. [maurits]
 
 
 4.0b2 (2017-06-26)

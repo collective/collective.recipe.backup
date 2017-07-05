@@ -589,7 +589,7 @@ def check_for_true(options, keys):
 def to_bool(option):
     if option is None:
         return False
-    if not isinstance(option, basestring):
+    if not isinstance(option, utils.stringtypes):
         return bool(option)
     option = option.lower()
     return option in ('true', 'yes', 'on', '1')

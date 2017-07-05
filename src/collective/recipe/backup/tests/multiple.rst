@@ -11,7 +11,7 @@ Add mock ``bin/repozo`` script::
 
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 Create var directory::
@@ -42,7 +42,7 @@ The additional backups have to be stored separate from the ``Data.fs``
 backup. That's done by appending the file's name and creating extra backup
 directories named that way::
 
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -56,7 +56,7 @@ same time with repozo. So they are not completely in sync. The "other"
 databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors::
 
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
     --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
@@ -78,7 +78,7 @@ mildly irritating, but the other way around users can get real errors::
 
 Same with snapshot backups::
 
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
     --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/snapshotbackups_foo/bar -F --gzip
@@ -95,7 +95,7 @@ Same with snapshot backups::
 
 And a restore restores all three backups::
 
-    >>> print system('bin/restore', input='yes\n')
+    >>> print(system('bin/restore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
     --recover -o /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
     --recover -o /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar
@@ -137,7 +137,7 @@ test if the 'keep' parameter is working correctly.
     -  0.fs
     -  1.fs
     -  2.fs
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
     --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
@@ -157,7 +157,7 @@ test if the 'keep' parameter is working correctly.
 
 Same for the snapshot backups:
 
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
     --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
     --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/snapshotbackups_foo/bar -F --gzip

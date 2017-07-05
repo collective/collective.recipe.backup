@@ -16,7 +16,7 @@ Add mock ``bin/repozo`` script::
     >>> import os
     >>> import sys
     >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint ' '.join(sys.argv[1:])" % sys.executable)
+    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
 
 Write a buildout config::
@@ -39,7 +39,7 @@ Write a buildout config::
     ...    foo ${buildout:directory}/var/filestorage/foo.fs ${buildout:directory}/var/blobstorage-foo
     ...    bar ${buildout:directory}/var/filestorage/bar.fs ${buildout:directory}/var/blobstorage-bar
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
@@ -64,7 +64,7 @@ Write a buildout config::
 
 Test the snapshotbackup first, as that should be easiest.
 
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
@@ -108,7 +108,7 @@ Note that due to the timestamps no renaming takes place from blobstorage.0 to bl
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> write('var', 'blobstorage-foo', 'blob-foo2.txt', "Sample blob foo 2.")
     >>> write('var', 'blobstorage-bar', 'blob-bar2.txt', "Sample blob bar 2.")
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
@@ -166,7 +166,7 @@ But let's test it for good measure::
     >>> remove('var', 'blobstorage-foo', 'blob-foo1.txt')
     >>> remove('var', 'blobstorage-bar', 'blob-bar1.txt')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1 version 2.")
-    >>> print system('bin/snapshotbackup')
+    >>> print(system('bin/snapshotbackup'))
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
@@ -229,7 +229,7 @@ sure if this works on all operating systems.
 
 Let's see how a bin/backup goes:
 
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
@@ -269,7 +269,7 @@ We try again with an extra 'blob' and a changed 'blob':
     >>> time.sleep(2)
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1 version 3.")
-    >>> print system('bin/backup')
+    >>> print(system('bin/backup'))
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
@@ -310,7 +310,7 @@ Write a third file.
 Now try a restore.
 The third file should be gone afterwards::
 
-    >>> print system('bin/restore', input='no\n')
+    >>> print(system('bin/restore', input='no\n'))
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/foo.fs
@@ -327,7 +327,7 @@ The third file should be gone afterwards::
     -  blob1.txt
     -  blob2.txt
     -  blob3.txt
-    >>> print system('bin/restore', input='yes\n')
+    >>> print(system('bin/restore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
@@ -364,7 +364,7 @@ With the ``no-prompt`` option we avoid the question::
     -  blob1.txt
     -  blob2.txt
     -  blob3.txt
-    >>> print system('bin/restore --no-prompt')
+    >>> print(system('bin/restore --no-prompt'))
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
@@ -395,7 +395,7 @@ Since we use timestamps, this should be fairly straight forward.
     >>> time_string = backup_timestamp0[len('blobstorage.'):]
     >>> time_string
     '20...-...-...-...-...-...'
-    >>> print system('bin/restore %s' % time_string, input='yes\n')
+    >>> print(system('bin/restore %s' % time_string, input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo -D ...
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar -D ...
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D ...
@@ -433,7 +433,7 @@ The first blob file is back to an earlier version::
 
 The snapshotrestore works too::
 
-    >>> print system('bin/snapshotrestore', input='yes\n')
+    >>> print(system('bin/snapshotrestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
@@ -493,7 +493,7 @@ Since we use timestamps, this should be fairly straight forward.
     >>> time_string = timestamp1[len('blobstorage.'):]
     >>> time_string
     '20...-...-...-...-...-...'
-    >>> print system('bin/snapshotrestore %s' % time_string, input='yes\n')
+    >>> print(system('bin/snapshotrestore %s' % time_string, input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -D ...
     --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -D ...
@@ -558,7 +558,7 @@ Create some archived (gzipped) and not-archived separate backup scripts::
     ... blob_timestamps = true
     ... enable_zipbackup = true
     ... """)
-    >>> print system(buildout)
+    >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
@@ -571,7 +571,7 @@ Create some archived (gzipped) and not-archived separate backup scripts::
 
 Now we test it::
 
-    >>> print system('bin/zipbackup')
+    >>> print(system('bin/zipbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Created /sample-buildout/var/zipbackups
     INFO: Created /sample-buildout/var/blobstoragezips
@@ -587,7 +587,7 @@ Keep is ignored by zipbackup, always using 1 as value.
 Pause a short time to avoid getting an error for overwriting the previous file::
 
     >>> time.sleep(1)
-    >>> print system('bin/zipbackup')
+    >>> print(system('bin/zipbackup'))
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
@@ -602,7 +602,7 @@ Pause a short time to avoid getting an error for overwriting the previous file::
 
 Now test the ziprestore script::
 
-    >>> print system('bin/ziprestore', input='yes\n')
+    >>> print(system('bin/ziprestore', input='yes\n'))
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups
     <BLANKLINE>
     This will replace the filestorage:
