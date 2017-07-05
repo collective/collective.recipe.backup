@@ -1,4 +1,4 @@
-4.0b3 (unreleased)
+4.0b3 (2017-07-05)
 ==================
 
 - Added basic Python 3 support.  We do not test with it yet,
