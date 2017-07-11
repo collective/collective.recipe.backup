@@ -1,7 +1,16 @@
 4.0b4 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Test Python 3.6 (and 2.6 and 2.7) on Travis from now on.  [maurits]
+
+- Ignore the zope2instance recipe integration tests on Python 3.
+  They would need a compatible ``mailinglogger`` package.
+  See `issue #31 <https://github.com/collective/collective.recipe.backup/issues/31>`_. [maurits]
+
+- Tests: use cleaner way to check the mock repozo output.
+  Share this setup between tests.
+  This makes the output order the same on Python 2 and 3.
+  See `issue #31 <https://github.com/collective/collective.recipe.backup/issues/31>`_. [maurits]
 
 
 4.0b3 (2017-07-05)

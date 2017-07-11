@@ -3,17 +3,6 @@
 Location
 ========
 
-Just to isolate some test differences, we run an empty buildout once::
-
-    >>> ignore = system(buildout)
-
-Add mock ``bin/repozo`` script::
-
-    >>> import sys
-    >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
-    >>> dontcare = system('chmod u+x bin/repozo')
-
 You should not mix backup locations; it is confusing for the recipe
 (or at least its authors) when backups end up in the same directory::
 

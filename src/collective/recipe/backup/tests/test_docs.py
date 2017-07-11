@@ -11,7 +11,10 @@ from zope.testing import renormalizing
 # Importing modules so that we can install their eggs in the test buildout.
 import collective.recipe.backup
 import doctest
+import os
 import re
+import sys
+import tempfile
 import unittest
 import zc.buildout.testing
 import zc.buildout.tests
@@ -33,6 +36,19 @@ checker = renormalizing.RENormalizing([
 ])
 
 
+_dummy, REPOZO_OUTPUT = tempfile.mkstemp()
+REPOZO_SCRIPT_TEXT = """#!/bin/sh
+echo $* >> {0}""".format(REPOZO_OUTPUT)
+
+
+def check_repozo_output():
+    # Print output and empty the file.
+    with open(REPOZO_OUTPUT) as myfile:
+        print(myfile.read())
+    with open(REPOZO_OUTPUT, 'w') as myfile:
+        myfile.write('')
+
+
 def setUp(test):
     zc.buildout.testing.buildoutSetUp(test)
 
@@ -41,6 +57,20 @@ def setUp(test):
 
     # Install any other recipes that should be available in the tests
     zc.buildout.testing.install_develop('zc.recipe.egg', test)
+
+    # Add mock ``bin/repozo`` script:
+    test.globs['write']('bin', 'repozo', REPOZO_SCRIPT_TEXT)
+    test.globs['system']('chmod u+x bin/repozo')
+
+    # Create var directory:
+    test.globs['mkdir']('var')
+
+    # Add some items to the global definitions of the test,
+    # so we can access them from the doc tests.
+    test.globs.update({
+        'check_repozo_output': check_repozo_output,
+        'REPOZO_SCRIPT_TEXT': REPOZO_SCRIPT_TEXT,
+    })
 
 
 def test_suite():
@@ -70,9 +100,16 @@ def test_suite():
         'multiple.rst',
         'no_rsync.rst',
         'options.rst',
-        'zipbackup.rst',
         'prefix.rst',
+        'zipbackup.rst',
     ]
+    test_file = 'zope2instance.rst'
+    if sys.version_info[0] > 2:
+        print('WARNING: ignoring {0} tests on Python 3.'.format(test_file))
+        print('Enable them when there is a compatible mailinglogger version.')
+        print('See https://github.com/collective/collective.recipe.backup/issues/31')
+    else:
+        docfiles.append(test_file)
     for docfile in docfiles:
         suite.addTest(doctest.DocFileSuite(
             docfile,

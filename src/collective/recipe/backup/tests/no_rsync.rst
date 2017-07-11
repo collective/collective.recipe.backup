@@ -3,23 +3,11 @@
 No rsync
 ========
 
-Just to isolate some test differences, we run an empty buildout once::
-
-    >>> ignore = system(buildout)
-
-Add mock ``bin/repozo`` script::
-
-    >>> import sys
-    >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
-    >>> dontcare = system('chmod u+x bin/repozo')
-
 If you cannot use rsync and hard links (which may not work on Windows)
 you can set ``use_rsync = false``.  Then we will do a simple copy.
 
 First we create some fresh content:
 
-    >>> mkdir('var')
     >>> mkdir('var/blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
     >>> write('buildout.cfg',

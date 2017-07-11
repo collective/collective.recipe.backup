@@ -7,17 +7,9 @@ These are tests with ``blob_timestamps = true``.
 This started as a copy of the ``blobs.rst`` file.
 Several corner cases are only tested in that file, not in the current one.
 
-Just to isolate some test differences, we run an empty buildout once::
-
-    >>> ignore = system(buildout)
-
-Add mock ``bin/repozo`` script::
+Some imports:
 
     >>> import os
-    >>> import sys
-    >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
-    >>> dontcare = system('chmod u+x bin/repozo')
 
 Write a buildout config::
 
@@ -53,7 +45,6 @@ Write a buildout config::
     -  restore
     -  snapshotbackup
     -  snapshotrestore
-    >>> mkdir('var')
     >>> mkdir('var', 'filestorage')
     >>> mkdir('var', 'blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
@@ -65,9 +56,6 @@ Write a buildout config::
 Test the snapshotbackup first, as that should be easiest.
 
     >>> print(system('bin/snapshotbackup'))
-    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Created /sample-buildout/var/snapshotbackups_foo
     INFO: Created /sample-buildout/var/blobstoragesnapshots_foo
     INFO: Created /sample-buildout/var/snapshotbackups_bar
@@ -84,6 +72,10 @@ Test the snapshotbackup first, as that should be easiest.
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     >>> ls('var', 'blobstoragesnapshots')
     d  blobstorage.20...-...-...-...-...-...
     >>> timestamp0 = os.listdir('var/blobstoragesnapshots/')[0]
@@ -109,9 +101,6 @@ Note that due to the timestamps no renaming takes place from blobstorage.0 to bl
     >>> write('var', 'blobstorage-foo', 'blob-foo2.txt', "Sample blob foo 2.")
     >>> write('var', 'blobstorage-bar', 'blob-bar2.txt', "Sample blob bar 2.")
     >>> print(system('bin/snapshotbackup'))
-    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
@@ -122,6 +111,10 @@ Note that due to the timestamps no renaming takes place from blobstorage.0 to bl
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a  --delete --link-dest=../blobstorage.20...-...-...-...-...-... /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.20...-...-...-...-...-...
     d  blobstorage.20...-...-...-...-...-...
@@ -167,9 +160,6 @@ But let's test it for good measure::
     >>> remove('var', 'blobstorage-bar', 'blob-bar1.txt')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1 version 2.")
     >>> print(system('bin/snapshotbackup'))
-    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
@@ -180,6 +170,10 @@ But let's test it for good measure::
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: rsync -a  --delete --link-dest=../blobstorage.20...-...-...-...-...-... /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -F --gzip
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -F --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.20...-...-...-...-...-...
     d  blobstorage.20...-...-...-...-...-...
@@ -230,9 +224,6 @@ sure if this works on all operating systems.
 Let's see how a bin/backup goes:
 
     >>> print(system('bin/backup'))
-    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups_foo
     INFO: Created /sample-buildout/var/blobstoragebackups_foo
     INFO: Created /sample-buildout/var/backups_bar
@@ -249,6 +240,10 @@ Let's see how a bin/backup goes:
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     >>> backup_timestamp0 = os.listdir('var/blobstoragebackups/')[0]
     >>> ls('var', 'blobstoragebackups')
     d  blobstorage.20...-...-...-...-...-...
@@ -270,9 +265,6 @@ We try again with an extra 'blob' and a changed 'blob':
     >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1 version 3.")
     >>> print(system('bin/backup'))
-    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
@@ -283,6 +275,10 @@ We try again with an extra 'blob' and a changed 'blob':
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: rsync -a  --delete --link-dest=../blobstorage.20...-...-...-...-...-... /sample-buildout/var/blobstorage /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-...
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     >>> ls('var', 'blobstoragebackups')
     d  blobstorage.20...-...-...-...-...-...
     d  blobstorage.20...-...-...-...-...-...
@@ -328,9 +324,6 @@ The third file should be gone afterwards::
     -  blob2.txt
     -  blob3.txt
     >>> print(system('bin/restore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo
-    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/foo.fs
@@ -351,6 +344,10 @@ The third file should be gone afterwards::
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-.../blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo
+    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     >>> ls('var/blobstorage')
     -  blob1.txt
     -  blob2.txt
@@ -365,9 +362,6 @@ With the ``no-prompt`` option we avoid the question::
     -  blob2.txt
     -  blob3.txt
     >>> print(system('bin/restore --no-prompt'))
-    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo
-    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo to /sample-buildout/var/filestorage/foo.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_bar to /sample-buildout/var/filestorage/bar.fs
@@ -379,6 +373,10 @@ With the ``no-prompt`` option we avoid the question::
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-.../blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo
+    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     >>> ls('var/blobstorage')
     -  blob1.txt
     -  blob2.txt
@@ -396,9 +394,6 @@ Since we use timestamps, this should be fairly straight forward.
     >>> time_string
     '20...-...-...-...-...-...'
     >>> print(system('bin/restore %s' % time_string, input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo -D ...
-    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar -D ...
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D ...
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/foo.fs
@@ -420,6 +415,10 @@ Since we use timestamps, this should be fairly straight forward.
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/var/blobstoragebackups/blobstorage.20...-...-...-...-...-.../blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo -D ...
+    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar -D ...
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -D ...
 
 The second blob file is now no longer in the blob storage.
 
@@ -434,9 +433,6 @@ The first blob file is back to an earlier version::
 The snapshotrestore works too::
 
     >>> print(system('bin/snapshotrestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo
-    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/foo.fs
@@ -457,6 +453,10 @@ The snapshotrestore works too::
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-.../blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo
+    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups
 
 Check that this fits what is in the most recent snapshot::
 
@@ -494,9 +494,6 @@ Since we use timestamps, this should be fairly straight forward.
     >>> time_string
     '20...-...-...-...-...-...'
     >>> print(system('bin/snapshotrestore %s' % time_string, input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -D ...
-    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -D ...
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/foo.fs
@@ -518,6 +515,10 @@ Since we use timestamps, this should be fairly straight forward.
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-.../blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/snapshotbackups_foo -D ...
+    --recover -o /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/snapshotbackups_bar -D ...
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -D ...
 
 The second blob file was only in blobstorage snapshot number 1 when we
 started and now it is also in the main blobstorage again.
@@ -572,13 +573,14 @@ Create some archived (gzipped) and not-archived separate backup scripts::
 Now we test it::
 
     >>> print(system('bin/zipbackup'))
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Created /sample-buildout/var/zipbackups
     INFO: Created /sample-buildout/var/blobstoragezips
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     >>> ls('var', 'blobstoragezips')
     -   blobstorage.20...-...-...-...-...-....tar
     >>> zip_timestamp0 = os.listdir('var/blobstoragezips')[0]
@@ -588,12 +590,13 @@ Pause a short time to avoid getting an error for overwriting the previous file::
 
     >>> time.sleep(1)
     >>> print(system('bin/zipbackup'))
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage .
     INFO: Removed 1 blob backup(s), the latest 1 backup(s) have been kept.
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     >>> ls('var', 'blobstoragezips')
     -   blobstorage.20...-...-...-...-...-....tar
     >>> zip_timestamp1 = os.listdir('var/blobstoragezips')[0]
@@ -603,7 +606,6 @@ Pause a short time to avoid getting an error for overwriting the previous file::
 Now test the ziprestore script::
 
     >>> print(system('bin/ziprestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -616,3 +618,5 @@ Now test the ziprestore script::
     INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar to /sample-buildout/var/blobstorage
     INFO: tar xf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups

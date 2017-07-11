@@ -13,20 +13,8 @@ options for the standard bin/backup script.
 By default the scripts are not created.  You can ensable the them by
 setting the enable_zipbackup option to true.
 
-Just to isolate some test differences, we run an empty buildout once::
-
-    >>> ignore = system(buildout)
-
-Add mock ``bin/repozo`` script::
-
-    >>> import sys
-    >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
-    >>> dontcare = system('chmod u+x bin/repozo')
-
 Create directories and content::
 
-    >>> mkdir('var')
     >>> mkdir('var', 'blobstorage')
     >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
 
@@ -58,29 +46,30 @@ Create some archived (gzipped) and not-archived separate backup scripts::
 Now we test it::
 
     >>> print(system('bin/zipbackup'))
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Created /sample-buildout/var/zipbackups
     INFO: Created /sample-buildout/var/blobstoragezips
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
 
 Keep is ignored by zipbackup, always using 1 as value::
 
     >>> print(system('bin/zipbackup'))
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: Renaming blobstorage.0.tar to blobstorage.1.tar.
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
     INFO: Removed 1 blob backup(s), the latest 1 backup(s) have been kept.
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
 
 Now test the ziprestore script::
 
     >>> print(system('bin/ziprestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -94,6 +83,8 @@ Now test the ziprestore script::
     INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.0.tar to /sample-buildout/var/blobstorage
     INFO: tar xf /sample-buildout/var/blobstoragezips/blobstorage.0.tar -C /sample-buildout/var/blobstorage
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups
 
 You can choose not to enable the zip scripts::
 

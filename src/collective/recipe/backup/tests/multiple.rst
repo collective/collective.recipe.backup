@@ -3,21 +3,6 @@
 Advanced usage: multiple Data.fs files
 ======================================
 
-Just to isolate some test differences, we run an empty buildout once::
-
-    >>> ignore = system(buildout)
-
-Add mock ``bin/repozo`` script::
-
-    >>> import sys
-    >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
-    >>> dontcare = system('chmod u+x bin/repozo')
-
-Create var directory::
-
-    >>> mkdir('var')
-
 Sometimes, a Data.fs is split into several files. Most common reason is to
 have a regular Data.fs and a catalog.fs which contains the
 portal_catalog. This is supported with the ``additional_filestorages``
@@ -57,10 +42,6 @@ databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors::
 
     >>> print(system('bin/backup'))
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups_catalog
     INFO: Created /sample-buildout/var/backups_another
     INFO: Created /sample-buildout/var/backups_foo/bar
@@ -70,6 +51,11 @@ mildly irritating, but the other way around users can get real errors::
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo/bar.fs to /sample-buildout/var/backups_foo/bar
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     >>> ls('var')
     d  backups
     d  backups_another
@@ -79,10 +65,6 @@ mildly irritating, but the other way around users can get real errors::
 Same with snapshot backups::
 
     >>> print(system('bin/snapshotbackup'))
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
-    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/snapshotbackups_foo/bar -F --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Created /sample-buildout/var/snapshotbackups_catalog
     INFO: Created /sample-buildout/var/snapshotbackups_another
     INFO: Created /sample-buildout/var/snapshotbackups_foo/bar
@@ -92,14 +74,15 @@ Same with snapshot backups::
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo/bar.fs to /sample-buildout/var/snapshotbackups_foo/bar
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
+    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/snapshotbackups_foo/bar -F --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
 
 And a restore restores all three backups::
 
     >>> print(system('bin/restore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
-    --recover -o /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
-    --recover -o /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/catalog.fs
@@ -114,6 +97,11 @@ And a restore restores all three backups::
     INFO: Please wait while restoring database file: /sample-buildout/var/backups_foo/bar to /sample-buildout/var/filestorage/foo/bar.fs
     INFO: Please wait while restoring database file: /sample-buildout/var/backups to /sample-buildout/var/filestorage/Data.fs
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog
+    --recover -o /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another
+    --recover -o /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups
 
 We fake three old backups in all the (snapshot)backup directories to
 test if the 'keep' parameter is working correctly.
@@ -138,10 +126,6 @@ test if the 'keep' parameter is working correctly.
     -  1.fs
     -  2.fs
     >>> print(system('bin/backup'))
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/backups_catalog
     INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/backups_another
@@ -151,6 +135,11 @@ test if the 'keep' parameter is working correctly.
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/backups_catalog --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/backups_another --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/backups_foo/bar --quick --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     >>> ls('var/backups')  # After
     -  0.fs
     -  1.fs
@@ -158,10 +147,6 @@ test if the 'keep' parameter is working correctly.
 Same for the snapshot backups:
 
     >>> print(system('bin/snapshotbackup'))
-    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
-    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
-    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/snapshotbackups_foo/bar -F --gzip
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/catalog.fs to /sample-buildout/var/snapshotbackups_catalog
     INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/another.fs to /sample-buildout/var/snapshotbackups_another
@@ -171,3 +156,8 @@ Same for the snapshot backups:
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     INFO: Removed 1 file(s) belonging to old backups, the latest 2 full backups have been kept.
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/catalog.fs -r /sample-buildout/var/snapshotbackups_catalog -F --gzip
+    --backup -f /sample-buildout/var/filestorage/another.fs -r /sample-buildout/var/snapshotbackups_another -F --gzip
+    --backup -f /sample-buildout/var/filestorage/foo/bar.fs -r /sample-buildout/var/snapshotbackups_foo/bar -F --gzip
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip

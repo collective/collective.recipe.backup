@@ -5,15 +5,6 @@ Supported options
 
 Just to isolate some test differences, we run an empty buildout once::
 
-    >>> ignore = system(buildout)
-
-Add mock ``bin/repozo`` script::
-
-    >>> import sys
-    >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
-    >>> dontcare = system('chmod u+x bin/repozo')
-
 We'll use most options, except the blob options for now::
 
     >>> write('buildout.cfg',
@@ -33,10 +24,10 @@ We'll use most options, except the blob options for now::
     ... snapshotlocation = snap/my
     ... gzip = false
     ... enable_snapshotrestore = true
-    ... pre_command = echo 'Can I have a backup?'
+    ... pre_command = echo 'Can I have a backup?' > pre
     ... post_command =
-    ...     echo 'Thanks a lot for the backup.'
-    ...     echo 'We are done.'
+    ...     echo 'Thanks a lot for the backup.' > post
+    ...     echo 'We are done.' >> post
     ... """)
     >>> print(system(buildout))
     Installing backup.
@@ -55,14 +46,23 @@ stderr.  Anyway::
 
     >>> output = system('bin/backup')
     >>> print(output)
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
-    Can I have a backup?
     <BLANKLINE>
-    Thanks a lot for the backup.
-    We are done.
     20...-...-... INFO: Created /sample-buildout/myproject
     20...-...-... INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
     20...-...-...
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
+
+We do not check that the pre and post output appear in the correct order.
+In the tests the output order can differ between Python 2 and 3.
+
+    >>> cat('pre')
+    Can I have a backup?
+    >>> cat('post')
+    Thanks a lot for the backup.
+    We are done.
+    >>> remove('pre')
+    >>> remove('post')
 
 We explicitly look for errors here::
 
@@ -72,14 +72,19 @@ The same is true for the snapshot backup.
 
     >>> output = system('bin/snapshotbackup')
     >>> print(output)
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose
-    Can I have a backup?
-    Thanks a lot for the backup.
-    We are done.
     20...-...-... INFO: Created /sample-buildout/var/snap/my
     20...-...-... INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/var/snap/my
     20...-...-...
     >>> if 'ERROR' in output: print(output)
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose
+    >>> cat('pre')
+    Can I have a backup?
+    >>> cat('post')
+    Thanks a lot for the backup.
+    We are done.
+    >>> remove('pre')
+    >>> remove('post')
 
 Untested in this file, as it would create directories in your root or your
 home dir, are absolute links (starting with a '/') or directories in your home
@@ -99,15 +104,25 @@ In the tests, we do get messages unfortunately, though at least the
 INFO level logging is not there::
 
     >>> print(system('bin/backup -q'))
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
+    >>> cat('pre')
     Can I have a backup?
+    >>> cat('post')
     Thanks a lot for the backup.
     We are done.
+    >>> remove('pre')
+    >>> remove('post')
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     >>> print(system('bin/backup --quiet'))
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
+    >>> cat('pre')
     Can I have a backup?
+    >>> cat('post')
     Thanks a lot for the backup.
     We are done.
+    >>> remove('pre')
+    >>> remove('post')
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
 
 In our case the ``--backup ...`` lines above are just the mock repozo script
 that still prints something. So it proves that the command is executed, but it
@@ -188,10 +203,11 @@ wanted.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
     >>> print(system('bin/backup'))
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
     INFO: Created /sample-buildout/var/backups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     <BLANKLINE>
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --gzip
 
 
 Enable the fullbackup script

@@ -58,8 +58,11 @@ cake is important!
 Compatibility
 =============
 
-The recipe is tested with Pyhton 2.6 and 2.7.
+The recipe is tested with Python 2.6, 2.7, and 3.6.
 In Plone terms it works fine on Plone 4 and 5.
+
+Note that the integration with ``plone.recipe.zope2instance`` is not tested on Python 3.6.
+There is not yet a Python 3 compatible version of this recipe and its ``mailinglogger`` dependency.
 
 
 Development
