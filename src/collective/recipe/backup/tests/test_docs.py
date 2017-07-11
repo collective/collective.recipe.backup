@@ -99,8 +99,9 @@ def test_suite():
         'multiple.rst',
         'no_rsync.rst',
         'options.rst',
-        'zipbackup.rst',
         'prefix.rst',
+        'zipbackup.rst',
+        'zope2instance.rst',
     ]
     for docfile in docfiles:
         suite.addTest(doctest.DocFileSuite(
