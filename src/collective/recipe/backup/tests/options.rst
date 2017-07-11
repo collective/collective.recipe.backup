@@ -24,10 +24,10 @@ We'll use most options, except the blob options for now::
     ... snapshotlocation = snap/my
     ... gzip = false
     ... enable_snapshotrestore = true
-    ... pre_command = echo 'Can I have a backup?'
+    ... pre_command = echo 'Can I have a backup?' > pre
     ... post_command =
-    ...     echo 'Thanks a lot for the backup.'
-    ...     echo 'We are done.'
+    ...     echo 'Thanks a lot for the backup.' > post
+    ...     echo 'We are done.' >> post
     ... """)
     >>> print(system(buildout))
     Installing backup.
@@ -46,15 +46,23 @@ stderr.  Anyway::
 
     >>> output = system('bin/backup')
     >>> print(output)
-    Can I have a backup?
     <BLANKLINE>
-    Thanks a lot for the backup.
-    We are done.
     20...-...-... INFO: Created /sample-buildout/myproject
     20...-...-... INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
     20...-...-...
     >>> check_repozo_output()
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
+
+We do not check that the pre and post output appear in the correct order.
+In the tests the output order can differ between Python 2 and 3.
+
+    >>> cat('pre')
+    Can I have a backup?
+    >>> cat('post')
+    Thanks a lot for the backup.
+    We are done.
+    >>> remove('pre')
+    >>> remove('post')
 
 We explicitly look for errors here::
 
@@ -64,15 +72,19 @@ The same is true for the snapshot backup.
 
     >>> output = system('bin/snapshotbackup')
     >>> print(output)
-    Can I have a backup?
-    Thanks a lot for the backup.
-    We are done.
     20...-...-... INFO: Created /sample-buildout/var/snap/my
     20...-...-... INFO: Please wait while making snapshot backup: /sample-buildout/subfolder/myproject.fs to /sample-buildout/var/snap/my
     20...-...-...
     >>> if 'ERROR' in output: print(output)
     >>> check_repozo_output()
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose
+    >>> cat('pre')
+    Can I have a backup?
+    >>> cat('post')
+    Thanks a lot for the backup.
+    We are done.
+    >>> remove('pre')
+    >>> remove('post')
 
 Untested in this file, as it would create directories in your root or your
 home dir, are absolute links (starting with a '/') or directories in your home
@@ -92,15 +104,23 @@ In the tests, we do get messages unfortunately, though at least the
 INFO level logging is not there::
 
     >>> print(system('bin/backup -q'))
+    >>> cat('pre')
     Can I have a backup?
+    >>> cat('post')
     Thanks a lot for the backup.
     We are done.
+    >>> remove('pre')
+    >>> remove('post')
     >>> check_repozo_output()
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
     >>> print(system('bin/backup --quiet'))
+    >>> cat('pre')
     Can I have a backup?
+    >>> cat('post')
     Thanks a lot for the backup.
     We are done.
+    >>> remove('pre')
+    >>> remove('post')
     >>> check_repozo_output()
     --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
 
