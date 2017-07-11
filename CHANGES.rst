@@ -1,6 +1,8 @@
 4.0b4 (unreleased)
 ==================
 
+- Test Python 3.6 (and 2.6 and 2.7) on Travis from now on.  [maurits]
+
 - Ignore the zope2instance recipe integration tests on Python 3.
   They would need a compatible ``mailinglogger`` package.
   See `issue #31 <https://github.com/collective/collective.recipe.backup/issues/31>`_. [maurits]
