@@ -27,7 +27,7 @@ zeoserver recipe) when it is used::
     ... [versions]
     ... # A slightly older version that does not rely on the Zope2 egg
     ... plone.recipe.zope2instance = 3.9
-    ... mailinglogger = 3.3
+    ... mailinglogger = 3.8.0
     ...
     ... [instance]
     ... # The recipe should be all lower case, but it actually works
@@ -60,8 +60,8 @@ speed things up a bit):
     Setting socket time out to 5 seconds.
     Getting distribution for 'plone.recipe.zope2INSTANCE==3.9'...
     Got plone.recipe.zope2instance 3.9.
-    Getting distribution for 'mailinglogger==3.3'...
-    Got mailinglogger 3.3.0.
+    Getting distribution for 'mailinglogger==3.8.0'...
+    Got mailinglogger 3.8.0.
     Installing instance.
     Generated script '/sample-buildout/bin/instance'.
     Installing backup.
@@ -104,7 +104,7 @@ Without explicit blob-storage option, it defaults to ``blobstorage`` in the var 
     ... [versions]
     ... # A slightly older version that does not rely on the Zope2 egg
     ... plone.recipe.zope2instance = 3.9
-    ... mailinglogger = 3.3
+    ... mailinglogger = 3.8.0
     ...
     ... [instance]
     ... recipe = plone.recipe.zope2instance
