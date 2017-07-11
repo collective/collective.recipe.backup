@@ -1,7 +1,10 @@
 4.0b4 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Tests: use cleaner way to check the mock repozo output.
+  Share this setup between tests.
+  This makes the output order the same on Python 2 and 3.
+  See `issue #31 <https://github.com/collective/collective.recipe.backup/issues/31>`_. [maurits]
 
 
 4.0b3 (2017-07-05)

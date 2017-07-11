@@ -3,20 +3,8 @@
 Alternative restore sources
 ===========================
 
-Just to isolate some test differences, we run an empty buildout once::
-
-    >>> ignore = system(buildout)
-
-Add mock ``bin/repozo`` script::
-
-    >>> import sys
-    >>> write('bin', 'repozo',
-    ...       "#!%s\nimport sys\nprint(' '.join(sys.argv[1:]))" % sys.executable)
-    >>> dontcare = system('chmod u+x bin/repozo')
-
 Create directories::
 
-    >>> mkdir('var')
     >>> mkdir('alt')
     >>> mkdir('alt', 'data')
     >>> mkdir('alt', 'blobs')
@@ -50,13 +38,14 @@ the ``alternative_restore_sources`` option::
 Call the script::
 
     >>> print(system('bin/altrestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Created directory /sample-buildout/var/filestorage
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
 
 Add original blobstorage (usually done by having a part that creates a
 zope instance or a zeoserver, but we do it simpler here) but forget to
@@ -150,7 +139,6 @@ Create the necessary sample directories and call the script again::
     >>> mkdir('alt', 'blobs', 'blobstorage.0', 'blobstorage')
     >>> write('alt', 'blobs', 'blobstorage.0', 'blobstorage', 'blobfile.txt', 'Hello blob.')
     >>> print(system('bin/altrestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -161,6 +149,8 @@ Create the necessary sample directories and call the script again::
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     >>> ls('var')
     d  blobstorage
     d  filestorage
@@ -189,7 +179,6 @@ but we have added a check in the blob restore so we now fail as well.
 So test is with a date in the future::
 
     >>> print(system('bin/altrestore 2100-12-31-23-59', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data -D 2100-12-31-23-59
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -201,6 +190,8 @@ So test is with a date in the future::
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data -D 2100-12-31-23-59
 
 Test in combination with additional filestorage::
 
@@ -239,9 +230,6 @@ Test in combination with additional filestorage::
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
     >>> print(system('bin/altrestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/foo/foo.fs -r /sample-buildout/alt/foo
-    --recover -o /sample-buildout/var/filestorage/bar/bar.fs -r /sample-buildout/alt/bar
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/foo/foo.fs
@@ -262,6 +250,10 @@ Test in combination with additional filestorage::
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: rsync -a  --delete /sample-buildout/alt/blobs/blobstorage.0/blobstorage /sample-buildout/var
     <BLANKLINE>
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/foo/foo.fs -r /sample-buildout/alt/foo
+    --recover -o /sample-buildout/var/filestorage/bar/bar.fs -r /sample-buildout/alt/bar
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     >>> ls('var')
     d  blobstorage
     d  blobstorage-foo
@@ -300,18 +292,18 @@ When archive_blob is true, we use it::
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
     >>> print(system('bin/backup'))
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     INFO: Created /sample-buildout/var/backups
     INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
     INFO: tar cf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
+    >>> check_repozo_output()
+    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     >>> remove('alt', 'data')
     >>> remove('alt', 'blobs')
     >>> print(system('mv var/backups alt/data'))
     >>> print(system('mv var/blobstoragebackups alt/blobs'))
     >>> print(system('bin/altrestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
@@ -324,6 +316,8 @@ When archive_blob is true, we use it::
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Extracting /sample-buildout/alt/blobs/blobstorage.0.tar to /sample-buildout/var/blobstorage
     INFO: tar xf /sample-buildout/alt/blobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     >>> ls('var', 'blobstorage')
     -   blobfile.txt
 
@@ -395,13 +389,13 @@ Specifying ``1`` instead of ``Data`` is fine::
     Generated script '/sample-buildout/bin/altrestore'.
     <BLANKLINE>
     >>> print(system('bin/altrestore', input='yes\n'))
-    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     <BLANKLINE>
     This will replace the filestorage:
         /sample-buildout/var/filestorage/Data.fs
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/alt/data to /sample-buildout/var/filestorage/Data.fs
-
+    >>> check_repozo_output()
+    --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
 
 Specifying both ``1`` and ``Data`` is bad::
 
