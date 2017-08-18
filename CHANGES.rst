@@ -1,4 +1,4 @@
-4.0b4 (unreleased)
+4.0b4 (2017-08-18)
 ==================
 
 - Test Python 3.6 (and 2.6 and 2.7) on Travis from now on.  [maurits]
