@@ -1,5 +1,6 @@
 """Functions that invoke repozo and/or the blob backup.
 """
+from collective.recipe.backup import config
 from collective.recipe.backup import copyblobs
 from collective.recipe.backup import repozorunner
 from collective.recipe.backup import utils
@@ -29,24 +30,22 @@ def backup_main(
         rsync_options='',
         quick=True,
         blob_timestamps=False,
-        backup=True,
-        snapshot=False,
-        zipbackup=False,
+        backup_method=config.STANDARD_BACKUP,
         **kwargs):
     """Main method, gets called by generated bin/backup."""
+    if backup_method not in config.BACKUP_METHODS:
+        raise RuntimeError('Unknown backup method {0}.'.format(backup_method))
     utils.execute_or_fail(pre_command)
     utils.check_folders(
         storages,
         backup_blobs=backup_blobs,
         only_blobs=only_blobs,
-        backup=backup,
-        snapshot=snapshot,
-        zipbackup=zipbackup,
+        backup_method=backup_method,
     )
     if not only_blobs:
         result = repozorunner.backup_main(
             bin_dir, storages, keep, full, verbose, gzip, quick,
-            backup=backup, snapshot=snapshot, zipbackup=zipbackup,
+            backup_method,
         )
         if result:
             if backup_blobs:
@@ -65,12 +64,13 @@ def backup_main(
             logger.info(
                 "No blob dir defined for %s storage" % storage['storage'])
             continue
-        if backup:
+        blob_backup_location = None
+        if backup_method == config.STANDARD_BACKUP:
             blob_backup_location = storage['blob_backup_location']
             logger.info(
                 "Please wait while backing up blobs from %s to %s",
                 blobdir, blob_backup_location)
-        elif snapshot:
+        elif backup_method == config.SNAPSHOT_BACKUP:
             blob_backup_location = storage['blob_snapshot_location']
             logger.info(
                 "Please wait while making snapshot of blobs from %s to %s",
@@ -105,8 +105,7 @@ def fullbackup_main(*args, **kwargs):
 def snapshot_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     kwargs['full'] = True
-    kwargs['backup'] = False
-    kwargs['snapshot'] = True
+    kwargs['backup_method'] = config.SNAPSHOT_BACKUP
     return backup_main(*args, **kwargs)
 
 
@@ -135,9 +134,7 @@ def zipbackup_main(
         storages,
         backup_blobs=backup_blobs,
         only_blobs=only_blobs,
-        backup=False,
-        snapshot=False,
-        zipbackup=True,
+        backup_method=config.ZIP_BACKUP,
     )
     # Force some options.
     full = True

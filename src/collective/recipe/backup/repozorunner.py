@@ -17,6 +17,8 @@ import logging
 import os
 import sys
 
+from collective.recipe.backup import config
+
 
 logger = logging.getLogger('repozorunner')
 
@@ -40,9 +42,7 @@ def backup_main(
         verbose,
         gzip,
         quick,
-        backup=True,
-        snapshot=False,
-        zipbackup=False,
+        backup_method=config.STANDARD_BACKUP,
 ):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
@@ -51,11 +51,11 @@ def backup_main(
 
     for storage in storages:
         fs = storage['datafs']
-        if backup:
+        if backup_method == config.STANDARD_BACKUP:
             location = storage['backup_location']
             logger.info("Please wait while backing up database file: %s to %s",
                         fs, location)
-        elif snapshot:
+        elif backup_method == config.SNAPSHOT_BACKUP:
             location = storage['snapshot_location']
             logger.info("Please wait while making snapshot backup: %s to %s",
                         fs, location)
