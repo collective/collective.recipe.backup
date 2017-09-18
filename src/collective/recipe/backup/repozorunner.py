@@ -32,27 +32,43 @@ def quote_command(command):
     return command
 
 
-def backup_main(bin_dir, storages, keep, full, verbose, gzip, quick):
+def backup_main(
+        bin_dir,
+        storages,
+        keep,
+        full,
+        verbose,
+        gzip,
+        quick,
+        backup=True,
+        snapshot=False,
+        zipbackup=False,
+):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
     if full:
         quick = False
 
     for storage in storages:
-        backup_location = storage['backup_location']
         fs = storage['datafs']
-        logger.info("Please wait while backing up database file: %s to %s",
-                    fs, backup_location)
+        if backup:
+            location = storage['backup_location']
+            logger.info("Please wait while backing up database file: %s to %s",
+                        fs, location)
+        elif snapshot:
+            location = storage['snapshot_location']
+            logger.info("Please wait while making snapshot backup: %s to %s",
+                        fs, location)
         result = os.system(quote_command(
             [repozo] +
             backup_arguments(
-                fs, backup_location, full, verbose, gzip, quick,
+                fs, location, full, verbose, gzip, quick,
                 as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
-        cleanup(backup_location, keep)
+        cleanup(location, keep)
 
 
 def snapshot_main(bin_dir, storages, keep, verbose, gzip):

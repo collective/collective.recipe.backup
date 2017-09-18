@@ -44,12 +44,10 @@ def backup_main(
         zipbackup=zipbackup,
     )
     if not only_blobs:
-        if backup:
-            result = repozorunner.backup_main(
-                bin_dir, storages, keep, full, verbose, gzip, quick)
-        elif snapshot:
-            result = repozorunner.snapshot_main(
-                bin_dir, storages, keep, verbose, gzip)
+        result = repozorunner.backup_main(
+            bin_dir, storages, keep, full, verbose, gzip, quick,
+            backup=backup, snapshot=snapshot, zipbackup=zipbackup,
+        )
         if result:
             if backup_blobs:
                 logger.error(
