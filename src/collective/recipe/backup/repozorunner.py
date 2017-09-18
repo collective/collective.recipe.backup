@@ -17,6 +17,8 @@ import logging
 import os
 import sys
 
+from collective.recipe.backup import config
+
 
 logger = logging.getLogger('repozorunner')
 
@@ -32,95 +34,45 @@ def quote_command(command):
     return command
 
 
-def backup_main(bin_dir, storages, keep, full, verbose, gzip, quick):
+def backup_main(
+        bin_dir,
+        storages,
+        keep,
+        full,
+        verbose,
+        gzip,
+        quick,
+        backup_method=config.STANDARD_BACKUP,
+):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
+    if full:
+        quick = False
 
     for storage in storages:
-        backup_location = storage['backup_location']
         fs = storage['datafs']
-        logger.info("Please wait while backing up database file: %s to %s",
-                    fs, backup_location)
+        if backup_method == config.STANDARD_BACKUP:
+            location = storage['backup_location']
+            logger.info("Please wait while backing up database file: %s to %s",
+                        fs, location)
+        elif backup_method == config.SNAPSHOT_BACKUP:
+            location = storage['snapshot_location']
+            logger.info("Please wait while making snapshot backup: %s to %s",
+                        fs, location)
+        elif backup_method == config.ZIP_BACKUP:
+            location = storage['zip_location']
+            logger.info("Please wait while backing up database file: %s to %s",
+                        fs, location)
         result = os.system(quote_command(
             [repozo] +
             backup_arguments(
-                fs, backup_location, full, verbose, gzip, quick,
+                fs, location, full, verbose, gzip, quick,
                 as_list=True)))
         logger.debug("Repozo command executed.")
         if result:
             logger.error("Repozo command failed. See message above.")
             return result
-        cleanup(backup_location, keep)
-
-
-def fullbackup_main(bin_dir, storages, keep, full, verbose, gzip):
-    """Main method, gets called by generated bin/fullbackup."""
-    repozo = os.path.join(bin_dir, 'repozo')
-
-    for storage in storages:
-        backup_location = storage['backup_location']
-        fs = storage['datafs']
-        logger.info("Please wait while backing up database file: %s to %s",
-                    fs, backup_location)
-        # Again, forcing full=True for this method here,
-        # in case it's called from somewhere other than
-        # main.fullbackup_main()
-        full = True
-        result = os.system(quote_command(
-            [repozo] +
-            backup_arguments(
-                fs, backup_location, full, verbose, gzip,
-                as_list=True)))
-        logger.debug("Repozo command executed.")
-        if result:
-            logger.error("Repozo command failed. See message above.")
-            return result
-        cleanup(backup_location, keep)
-
-
-def snapshot_main(bin_dir, storages, keep, verbose, gzip):
-    """Main method, gets called by generated bin/snapshotbackup."""
-    repozo = os.path.join(bin_dir, 'repozo')
-    for storage in storages:
-        snapshot_location = storage['snapshot_location']
-        fs = storage['datafs']
-        logger.info("Please wait while making snapshot backup: %s to %s",
-                    fs, snapshot_location)
-        result = os.system(quote_command(
-            [repozo] +
-            backup_arguments(
-                fs, snapshot_location, full=True, verbose=verbose,
-                gzip=gzip, as_list=True)))
-        if result:
-            logger.error("Repozo command failed. See message above.")
-            return result
-        logger.debug("Repozo command executed.")
-        cleanup(snapshot_location, keep)
-
-
-def zipbackup_main(bin_dir, storages, keep, full, verbose, gzip):
-    """Main method, gets called by generated bin/zipbackup."""
-    # Force some options.
-    full = True
-    gzip = True
-    keep = 1
-
-    repozo = os.path.join(bin_dir, 'repozo')
-    for storage in storages:
-        backup_location = storage['zip_location']
-        fs = storage['datafs']
-        logger.info("Please wait while backing up database file: %s to %s",
-                    fs, backup_location)
-        result = os.system(quote_command(
-            [repozo] +
-            backup_arguments(
-                fs, backup_location, full, verbose, gzip,
-                as_list=True)))
-        logger.debug("Repozo command executed.")
-        if result:
-            logger.error("Repozo command failed. See message above.")
-            return result
-        cleanup(backup_location, keep)
+        cleanup(location, keep)
 
 
 def restore_main(bin_dir, storages, verbose,

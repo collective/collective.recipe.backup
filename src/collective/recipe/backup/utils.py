@@ -5,6 +5,8 @@ import shutil
 import subprocess
 import sys
 
+from collective.recipe.backup import config
+
 try:
     from builtins import input as raw_input
 except ImportError:
@@ -100,9 +102,16 @@ def execute_or_fail(command):
         sys.exit(1)
 
 
-def check_folders(storages, backup_blobs=True, only_blobs=False,
-                  backup=True, snapshot=True, zipbackup=False):
-    """ """
+def check_folders(
+        storages,
+        backup_blobs=True,
+        only_blobs=False,
+        backup_method=config.STANDARD_BACKUP,
+):
+    """Check that folders exist, and create them if not."""
+    backup = backup_method == config.STANDARD_BACKUP
+    snapshot = backup_method == config.SNAPSHOT_BACKUP
+    zipbackup = backup_method == config.ZIP_BACKUP
     for storage in storages:
         pathdirs = []
         if not only_blobs:
