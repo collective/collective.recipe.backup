@@ -11,7 +11,6 @@ from zope.testing import renormalizing
 # Importing modules so that we can install their eggs in the test buildout.
 import collective.recipe.backup
 import doctest
-import os
 import re
 import sys
 import tempfile
@@ -107,7 +106,9 @@ def test_suite():
     if sys.version_info[0] > 2:
         print('WARNING: ignoring {0} tests on Python 3.'.format(test_file))
         print('Enable them when there is a compatible mailinglogger version.')
-        print('See https://github.com/collective/collective.recipe.backup/issues/31')
+        print(
+            'See '
+            'https://github.com/collective/collective.recipe.backup/issues/31')
     else:
         docfiles.append(test_file)
     for docfile in docfiles:
