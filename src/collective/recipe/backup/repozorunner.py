@@ -35,6 +35,8 @@ def quote_command(command):
 def backup_main(bin_dir, storages, keep, full, verbose, gzip, quick):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, 'repozo')
+    if full:
+        quick = False
 
     for storage in storages:
         backup_location = storage['backup_location']

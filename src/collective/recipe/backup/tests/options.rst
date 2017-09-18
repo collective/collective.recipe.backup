@@ -51,7 +51,7 @@ stderr.  Anyway::
     20...-...-... INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
     20...-...-...
     >>> check_repozo_output()
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
 
 We do not check that the pre and post output appear in the correct order.
 In the tests the output order can differ between Python 2 and 3.
@@ -112,7 +112,7 @@ INFO level logging is not there::
     >>> remove('pre')
     >>> remove('post')
     >>> check_repozo_output()
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
     >>> print(system('bin/backup --quiet'))
     >>> cat('pre')
     Can I have a backup?
@@ -122,7 +122,7 @@ INFO level logging is not there::
     >>> remove('pre')
     >>> remove('post')
     >>> check_repozo_output()
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject --quick -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
 
 In our case the ``--backup ...`` lines above are just the mock repozo script
 that still prints something. So it proves that the command is executed, but it
