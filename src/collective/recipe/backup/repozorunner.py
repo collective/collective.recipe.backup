@@ -59,6 +59,10 @@ def backup_main(
             location = storage['snapshot_location']
             logger.info("Please wait while making snapshot backup: %s to %s",
                         fs, location)
+        elif backup_method == config.ZIP_BACKUP:
+            location = storage['zip_location']
+            logger.info("Please wait while backing up database file: %s to %s",
+                        fs, location)
         result = os.system(quote_command(
             [repozo] +
             backup_arguments(
