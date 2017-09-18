@@ -67,7 +67,7 @@ def ask(question, default=True, exact=False):
             yn = yn.replace('y', 'Y')
         if default is False:
             yn = yn.replace('n', 'N')
-        q = question + " (%s)? " % yn
+        q = question + ' (%s)? ' % yn
         input = raw_input(q)
         if input:
             answer = input
@@ -76,8 +76,8 @@ def ask(question, default=True, exact=False):
         if not answer and default is not None:
             return default
         if exact and answer.lower() not in ('yes', 'no'):
-            print("Please explicitly answer yes/no in full "
-                  "(or accept the default)")
+            print('Please explicitly answer yes/no in full '
+                  '(or accept the default)')
             continue
         if answer:
             answer = answer[0].lower()
@@ -94,11 +94,11 @@ def execute_or_fail(command):
     if not command:
         return
     output, failed = system(command)
-    logger.debug("command executed: %r", command)
+    logger.debug('command executed: %r', command)
     if output:
         print(output)
     if failed:
-        logger.error("command %r failed. See message above.", command)
+        logger.error('command %r failed. See message above.', command)
         sys.exit(1)
 
 
@@ -132,7 +132,7 @@ def check_folders(
         for pathdir in pathdirs:
             if pathdir and not os.path.isdir(pathdir):
                 os.makedirs(pathdir)
-                logger.info("Created %s" % pathdir)
+                logger.info('Created %s' % pathdir)
 
 
 def try_create_folder(pathdir):

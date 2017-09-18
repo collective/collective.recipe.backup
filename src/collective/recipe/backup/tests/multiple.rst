@@ -37,7 +37,7 @@ directories named that way::
     >>> ls('var')
 
 The various backups are done one after the other. They cannot be done at the
-same time with repozo. So they are not completely in sync. The "other"
+same time with repozo. So they are not completely in sync. The 'other'
 databases are backed up first as a small difference in the catalog is just
 mildly irritating, but the other way around users can get real errors::
 

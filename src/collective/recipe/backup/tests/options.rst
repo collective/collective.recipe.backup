@@ -96,7 +96,7 @@ Cron job integration
 --------------------
 
 ``bin/backup`` is of course ideal to put in your cronjob instead of a whole
-``bin/repozo ....`` line. But you don't want the "INFO" level logging that you
+``bin/repozo ....`` line. But you don't want the 'INFO' level logging that you
 get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
 ``--quiet`` and ``bin/backup`` will shut up unless there's a problem.
 

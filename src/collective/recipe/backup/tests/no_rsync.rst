@@ -9,7 +9,7 @@ you can set ``use_rsync = false``.  Then we will do a simple copy.
 First we create some fresh content:
 
     >>> mkdir('var/blobstorage')
-    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
+    >>> write('var', 'blobstorage', 'blob1.txt', 'Sample blob 1.')
     >>> write('buildout.cfg',
     ... """
     ... [buildout]

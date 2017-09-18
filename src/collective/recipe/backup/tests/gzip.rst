@@ -6,7 +6,7 @@ With or without gzip
 Create directories and content::
 
     >>> mkdir('var', 'blobstorage')
-    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
+    >>> write('var', 'blobstorage', 'blob1.txt', 'Sample blob 1.')
 
 Create some archived (gzipped) and not-archived separate backup scripts::
 

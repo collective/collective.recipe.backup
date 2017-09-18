@@ -48,8 +48,8 @@ class Recipe(object):
                 # Both options have been set explicitly, which is
                 # wrong.
                 raise zc.buildout.UserError(
-                    "Both blob_storage and blob-storage have been set. "
-                    "Please pick one.")
+                    'Both blob_storage and blob-storage have been set. '
+                    'Please pick one.')
 
         # We usually want backup_blobs to be true.  If no blob_storage is
         # found, we complain, unless backup_blobs has explicitly been disabled.
@@ -194,9 +194,9 @@ class Recipe(object):
         backup_blobs = to_bool(options['backup_blobs'])
         if backup_blobs and not blob_storage:
             raise zc.buildout.UserError(
-                "No blob_storage found. You must specify one. "
+                'No blob_storage found. You must specify one. '
                 "To ignore this, set 'backup_blobs = false' "
-                "in the [%s] section." % self.name)
+                'in the [%s] section.' % self.name)
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
@@ -280,7 +280,7 @@ class Recipe(object):
         # ``storage`` on this recipe currently is used only for
         # logging.
         storage = dict(
-            storage="1",
+            storage='1',
             datafs=datafs,
             blobdir=self.options['blob_storage'],
             backup_location=backup_location,
@@ -314,8 +314,8 @@ class Recipe(object):
                     utils.try_create_folder(blob_snapshot_location)
             if not blob_storage_found:
                 raise zc.buildout.UserError(
-                    "backup_blobs is true, but no blob_storage could be "
-                    "found.")
+                    'backup_blobs is true, but no blob_storage could be '
+                    'found.')
 
         # Handle alternative restore sources.
         alt_sources = self.options['alternative_restore_sources']
@@ -332,30 +332,30 @@ class Recipe(object):
                 match = re.match(ALT_REGEX, a)
                 if match is None:
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources line %r has a wrong "
+                        'alternative_restore_sources line %r has a wrong '
                         "format. Should be: 'storage-name "
                         "filestorage-backup-path', optionally followed by "
-                        "a blobstorage-backup-path." % a)
+                        'a blobstorage-backup-path.' % a)
                 source = match.groupdict()
                 key = orig_key = source['storage']
                 if key == 'Data':
                     key = '1'  # Data.fs is called storage '1'.
                 if key not in storage_keys:
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources key %r unknown in "
-                        "storages." % orig_key)
+                        'alternative_restore_sources key %r unknown in '
+                        'storages.' % orig_key)
                 alt_keys.append(key)
                 storage = [s for s in storages if key == s['storage']][0]
                 if storage.get('alt_location'):
                     # Duplicate key.
                     if key == '1':
                         raise zc.buildout.UserError(
-                            "alternative_restore_sources key %r is used. "
+                            'alternative_restore_sources key %r is used. '
                             "Are you using both '1' and 'Data'? They are "
-                            "alternative keys for the same Data.fs."
+                            'alternative keys for the same Data.fs.'
                             % orig_key)
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources key %r is used twice."
+                        'alternative_restore_sources key %r is used twice.'
                         % orig_key)
                 storage['alt_location'] = construct_path(
                     buildout_dir, source['datafs'])
@@ -363,15 +363,15 @@ class Recipe(object):
                 if storage['blobdir']:
                     if not blobdir:
                         raise zc.buildout.UserError(
-                            "alternative_restore_sources key %r is missing a "
-                            "blobdir." % orig_key)
+                            'alternative_restore_sources key %r is missing a '
+                            'blobdir.' % orig_key)
                     storage['blob_alt_location'] = construct_path(
                         buildout_dir, blobdir)
                 elif blobdir:
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources key %r specifies "
-                        "blobdir %r but the original storage has no "
-                        "blobstorage." % (orig_key, blobdir))
+                        'alternative_restore_sources key %r specifies '
+                        'blobdir %r but the original storage has no '
+                        'blobstorage.' % (orig_key, blobdir))
                 else:
                     storage['blob_alt_location'] = ''
             # Check that all original storages have an alternative.
@@ -380,7 +380,7 @@ class Recipe(object):
                     if key == '1':
                         key = 'Data'  # canonical spelling
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources is missing key %r. "
+                        'alternative_restore_sources is missing key %r. '
                         % key)
 
         if to_bool(self.options['debug']):
@@ -392,15 +392,15 @@ import logging
 loglevel = logging.%(loglevel)s
 from optparse import OptionParser
 parser = OptionParser()
-# parser.add_option("-S", "--storage", dest="storage",
-#                  action="store", type="string",
-#                  help="storage name")
-parser.add_option("-q", "--quiet",
-                  action="store_false", dest="verbose", default=True,
-                  help="don't print status messages to stdout")
-parser.add_option("-n", "--no-prompt",
-                  action="store_true", dest="no_prompt", default=False,
-                  help="don't ask for any user confirmation")
+# parser.add_option('-S', '--storage', dest='storage',
+#                  action='store', type='string',
+#                  help='storage name')
+parser.add_option('-q', '--quiet',
+                  action='store_false', dest='verbose', default=True,
+                  help='do not print status messages to stdout')
+parser.add_option('-n', '--no-prompt',
+                  action='store_true', dest='no_prompt', default=False,
+                  help='do not ask for any user confirmation')
 (options, args) = parser.parse_args()
 # storage = options.storage
 # Allow the user to make the script more quiet (say in a cronjob):
@@ -556,18 +556,18 @@ logging.basicConfig(level=loglevel,
                 locations[opt] = value
         if len(locations.keys()) != len(set(locations.values())):
             raise zc.buildout.UserError(
-                "These must be distinct locations:\n",
+                'These must be distinct locations:\n',
                 '\n'.join([('%s = %s' % (k, v)) for (k, v) in
                            sorted(locations.items())]))
 
         if not to_bool(options.get('backup_blobs')):
             if to_bool(options.get('only_blobs')):
                 raise zc.buildout.UserError(
-                    "Cannot have backup_blobs false and only_blobs true.")
+                    'Cannot have backup_blobs false and only_blobs true.')
             if to_bool(options.get('enable_zipbackup')):
                 raise zc.buildout.UserError(
-                    "Cannot have backup_blobs false and enable_zipbackup "
-                    "true. zipbackup is useless without blobs.")
+                    'Cannot have backup_blobs false and enable_zipbackup '
+                    'true. zipbackup is useless without blobs.')
 
 
 def check_for_true(options, keys):
