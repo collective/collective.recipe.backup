@@ -11,25 +11,42 @@ import sys
 logger = logging.getLogger('backup')
 
 
-def backup_main(bin_dir, storages, keep, full,
-                verbose, gzip, backup_blobs, only_blobs, use_rsync,
-                keep_blob_days=0, pre_command='', post_command='',
-                archive_blob=False, rsync_options='', quick=True,
-                compress_blob=False,
-                blob_timestamps=False,
-                **kwargs):
+def backup_main(
+        bin_dir,
+        storages,
+        keep,
+        full,
+        verbose,
+        gzip,
+        backup_blobs,
+        only_blobs,
+        use_rsync,
+        keep_blob_days=0,
+        pre_command='',
+        post_command='',
+        archive_blob=False,
+        rsync_options='',
+        quick=True,
+        compress_blob=False,
+        blob_timestamps=False,
+        **kwargs):
     """Main method, gets called by generated bin/backup."""
-    utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs, backup=True,
-                        snapshot=False, zipbackup=False)
+    utils.check_folders(
+        storages,
+        backup_blobs=backup_blobs,
+        only_blobs=only_blobs,
+        backup=True,
+        snapshot=False,
+        zipbackup=False
+    )
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.backup_main(
             bin_dir, storages, keep, full, verbose, gzip, quick)
         if result:
             if backup_blobs:
-                logger.error("Halting execution due to error; not backing up "
-                             "blobs.")
+                logger.error(
+                    "Halting execution due to error; not backing up blobs.")
             else:
                 logger.error("Halting execution due to error.")
             sys.exit(1)
@@ -40,8 +57,8 @@ def backup_main(bin_dir, storages, keep, full,
     for storage in storages:
         blobdir = storage['blobdir']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" %
-                        storage['storage'])
+            logger.info(
+                "No blob dir defined for %s storage" % storage['storage'])
             continue
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
@@ -50,31 +67,51 @@ def backup_main(bin_dir, storages, keep, full,
             fs_backup_location = None
         else:
             fs_backup_location = storage['backup_location']
-        copyblobs.backup_blobs(blobdir, blob_backup_location, full,
-                               use_rsync, keep=keep,
-                               keep_blob_days=keep_blob_days,
-                               archive_blob=archive_blob,
-                               compress_blob=compress_blob,
-                               rsync_options=rsync_options,
-                               timestamps=blob_timestamps,
-                               fs_backup_location=fs_backup_location,
-                               )
+        copyblobs.backup_blobs(
+            blobdir,
+            blob_backup_location,
+            full,
+            use_rsync,
+            keep=keep,
+            keep_blob_days=keep_blob_days,
+            archive_blob=archive_blob,
+            compress_blob=compress_blob,
+            rsync_options=rsync_options,
+            timestamps=blob_timestamps,
+            fs_backup_location=fs_backup_location,
+        )
     utils.execute_or_fail(post_command)
 
 
-def fullbackup_main(bin_dir, storages, keep, full,
-                    verbose, gzip, backup_blobs, only_blobs, use_rsync,
-                    keep_blob_days=0, pre_command='',
-                    post_command='', archive_blob=False,
-                    compress_blob=False,
-                    rsync_options='', quick=True,
-                    blob_timestamps=False,
-                    **kwargs):
+def fullbackup_main(
+        bin_dir,
+        storages,
+        keep,
+        full,
+        verbose,
+        gzip,
+        backup_blobs,
+        only_blobs,
+        use_rsync,
+        keep_blob_days=0,
+        pre_command='',
+        post_command='',
+        archive_blob=False,
+        compress_blob=False,
+        rsync_options='',
+        quick=True,
+        blob_timestamps=False,
+        **kwargs):
     """Main method, gets called by generated bin/fullbackup."""
     utils.execute_or_fail(pre_command)
-    utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs, backup=True,
-                        snapshot=False, zipbackup=False)
+    utils.check_folders(
+        storages,
+        backup_blobs=backup_blobs,
+        only_blobs=only_blobs,
+        backup=True,
+        snapshot=False,
+        zipbackup=False,
+    )
     if not only_blobs:
         # Set Full=True for forced full backups.
         # It was easier to do this here, than mess with
@@ -85,8 +122,8 @@ def fullbackup_main(bin_dir, storages, keep, full,
             bin_dir, storages, keep, full, verbose, gzip)
         if result:
             if backup_blobs:
-                logger.error("Halting execution due to error; not backing up "
-                             "blobs.")
+                logger.error(
+                    "Halting execution due to error; not backing up blobs.")
             else:
                 logger.error("Halting execution due to error.")
             sys.exit(1)
@@ -97,8 +134,8 @@ def fullbackup_main(bin_dir, storages, keep, full,
     for storage in storages:
         blobdir = storage['blobdir']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" %
-                        storage['storage'])
+            logger.info(
+                "No blob dir defined for %s storage" % storage['storage'])
             continue
         blob_backup_location = storage['blob_backup_location']
         logger.info("Please wait while backing up blobs from %s to %s",
@@ -107,37 +144,57 @@ def fullbackup_main(bin_dir, storages, keep, full,
             fs_backup_location = None
         else:
             fs_backup_location = storage['backup_location']
-        copyblobs.backup_blobs(blobdir, blob_backup_location, full,
-                               use_rsync, keep=keep,
-                               keep_blob_days=keep_blob_days,
-                               archive_blob=archive_blob,
-                               compress_blob=compress_blob,
-                               rsync_options=rsync_options,
-                               timestamps=blob_timestamps,
-                               fs_backup_location=fs_backup_location,
-                               )
+        copyblobs.backup_blobs(
+            blobdir,
+            blob_backup_location,
+            full,
+            use_rsync,
+            keep=keep,
+            keep_blob_days=keep_blob_days,
+            archive_blob=archive_blob,
+            compress_blob=compress_blob,
+            rsync_options=rsync_options,
+            timestamps=blob_timestamps,
+            fs_backup_location=fs_backup_location,
+        )
     utils.execute_or_fail(post_command)
 
 
-def snapshot_main(bin_dir, storages, keep, verbose, gzip,
-                  backup_blobs, only_blobs, use_rsync,
-                  keep_blob_days=0, pre_command='', post_command='',
-                  archive_blob=False, rsync_options='', quick=True,
-                  compress_blob=False,
-                  blob_timestamps=False,
-                  **kwargs):
+def snapshot_main(
+        bin_dir,
+        storages,
+        keep,
+        verbose,
+        gzip,
+        backup_blobs,
+        only_blobs,
+        use_rsync,
+        keep_blob_days=0,
+        pre_command='',
+        post_command='',
+        archive_blob=False,
+        rsync_options='',
+        quick=True,
+        compress_blob=False,
+        blob_timestamps=False,
+        **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
-    utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs, backup=False,
-                        snapshot=True, zipbackup=False)
+    utils.check_folders(
+        storages,
+        backup_blobs=backup_blobs,
+        only_blobs=only_blobs,
+        backup=False,
+        snapshot=True,
+        zipbackup=False,
+    )
     utils.execute_or_fail(pre_command)
     if not only_blobs:
         result = repozorunner.snapshot_main(
             bin_dir, storages, keep, verbose, gzip)
         if result:
             if backup_blobs:
-                logger.error("Halting execution due to error; not backing up "
-                             "blobs.")
+                logger.error(
+                    "Halting execution due to error; not backing up blobs.")
             else:
                 logger.error("Halting execution due to error.")
             sys.exit(1)
@@ -148,8 +205,8 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
     for storage in storages:
         blobdir = storage['blobdir']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" %
-                        storage['storage'])
+            logger.info(
+                "No blob dir defined for %s storage" % storage['storage'])
             continue
         blob_snapshot_location = storage['blob_snapshot_location']
         logger.info("Please wait while making snapshot of blobs from %s to %s",
@@ -158,31 +215,51 @@ def snapshot_main(bin_dir, storages, keep, verbose, gzip,
             fs_backup_location = None
         else:
             fs_backup_location = storage['backup_location']
-        copyblobs.backup_blobs(blobdir, blob_snapshot_location,
-                               full=True, use_rsync=use_rsync, keep=keep,
-                               keep_blob_days=keep_blob_days,
-                               archive_blob=archive_blob,
-                               compress_blob=compress_blob,
-                               rsync_options=rsync_options,
-                               timestamps=blob_timestamps,
-                               fs_backup_location=fs_backup_location,
-                               )
+        copyblobs.backup_blobs(
+            blobdir,
+            blob_snapshot_location,
+            full=True,
+            use_rsync=use_rsync,
+            keep=keep,
+            keep_blob_days=keep_blob_days,
+            archive_blob=archive_blob,
+            compress_blob=compress_blob,
+            rsync_options=rsync_options,
+            timestamps=blob_timestamps,
+            fs_backup_location=fs_backup_location,
+        )
     utils.execute_or_fail(post_command)
 
 
-def zipbackup_main(bin_dir, storages, keep, full,
-                   verbose, gzip, backup_blobs, only_blobs, use_rsync,
-                   keep_blob_days=0, pre_command='',
-                   post_command='', archive_blob=True,
-                   rsync_options='', quick=True,
-                   compress_blob=False,
-                   blob_timestamps=False,
-                   **kwargs):
+def zipbackup_main(
+        bin_dir,
+        storages,
+        keep,
+        full,
+        verbose,
+        gzip,
+        backup_blobs,
+        only_blobs,
+        use_rsync,
+        keep_blob_days=0,
+        pre_command='',
+        post_command='',
+        archive_blob=True,
+        rsync_options='',
+        quick=True,
+        compress_blob=False,
+        blob_timestamps=False,
+        **kwargs):
     """Main method, gets called by generated bin/zipbackup."""
     utils.execute_or_fail(pre_command)
-    utils.check_folders(storages, backup_blobs=backup_blobs,
-                        only_blobs=only_blobs, backup=False,
-                        snapshot=False, zipbackup=True)
+    utils.check_folders(
+        storages,
+        backup_blobs=backup_blobs,
+        only_blobs=only_blobs,
+        backup=False,
+        snapshot=False,
+        zipbackup=True,
+    )
     # Force some options.
     full = True
     gzip = True
@@ -193,8 +270,8 @@ def zipbackup_main(bin_dir, storages, keep, full,
             bin_dir, storages, keep, full, verbose, gzip)
         if result:
             if backup_blobs:
-                logger.error("Halting execution due to error; not backing up "
-                             "blobs.")
+                logger.error(
+                    "Halting execution due to error; not backing up blobs.")
             else:
                 logger.error("Halting execution due to error.")
             sys.exit(1)
@@ -205,8 +282,8 @@ def zipbackup_main(bin_dir, storages, keep, full,
     for storage in storages:
         blobdir = storage['blobdir']
         if not blobdir:
-            logger.info("No blob dir defined for %s storage" %
-                        storage['storage'])
+            logger.info(
+                "No blob dir defined for %s storage" % storage['storage'])
             continue
         blob_backup_location = storage['blob_zip_location']
         logger.info("Please wait while backing up blobs from %s to %s",
@@ -215,15 +292,19 @@ def zipbackup_main(bin_dir, storages, keep, full,
             fs_backup_location = None
         else:
             fs_backup_location = storage['backup_location']
-        copyblobs.backup_blobs(blobdir, blob_backup_location, full,
-                               use_rsync, keep=keep,
-                               keep_blob_days=keep_blob_days,
-                               archive_blob=archive_blob,
-                               compress_blob=compress_blob,
-                               rsync_options=rsync_options,
-                               timestamps=blob_timestamps,
-                               fs_backup_location=fs_backup_location,
-                               )
+        copyblobs.backup_blobs(
+            blobdir,
+            blob_backup_location,
+            full,
+            use_rsync,
+            keep=keep,
+            keep_blob_days=keep_blob_days,
+            archive_blob=archive_blob,
+            compress_blob=compress_blob,
+            rsync_options=rsync_options,
+            timestamps=blob_timestamps,
+            fs_backup_location=fs_backup_location,
+        )
     utils.execute_or_fail(post_command)
 
 
