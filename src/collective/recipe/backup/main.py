@@ -41,12 +41,8 @@ def backup_main(
         zipbackup=False,
     )
     if not only_blobs:
-        if full:
-            result = repozorunner.fullbackup_main(
-                bin_dir, storages, keep, full, verbose, gzip)
-        else:
-            result = repozorunner.backup_main(
-                bin_dir, storages, keep, full, verbose, gzip, quick)
+        result = repozorunner.backup_main(
+            bin_dir, storages, keep, full, verbose, gzip, quick)
         if result:
             if backup_blobs:
                 logger.error(
