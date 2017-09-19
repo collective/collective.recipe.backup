@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 # Small utility methods.
 import logging
 import os

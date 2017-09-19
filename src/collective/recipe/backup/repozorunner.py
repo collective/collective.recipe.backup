@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 """Wrapper that invokes repozo.
 
 There are three main methods, these get called by the generated scripts. So

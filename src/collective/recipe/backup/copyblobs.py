@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 """
 The idea is to use rsync and hard links; this probably requires a
 unixy (Linux, Mac OS X) operating system.

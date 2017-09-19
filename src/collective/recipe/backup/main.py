@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 """Functions that invoke repozo and/or the blob backup.
 """
 from collective.recipe.backup import config
