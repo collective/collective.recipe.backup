@@ -1165,7 +1165,7 @@ def backup_blobs_archive(
     -  blobs.2017-05-25-13-00-00.tar
     -  blobs.2017-05-26-12-00-00.snar
     -  blobs.2017-05-26-12-00-00.tar
-    -  blobs.2017-05-26-13-00-00.tar
+    -  blobs.2017-05-26-13-00-00.delta.tar
 
     Now remove the file storage backups.
 
@@ -1182,7 +1182,7 @@ def backup_blobs_archive(
     -  blobs.2017-05-25-13-00-00.tar
     -  blobs.2017-05-26-12-00-00.snar
     -  blobs.2017-05-26-12-00-00.tar
-    -  blobs.2017-05-26-13-00-00.tar
+    -  blobs.2017-05-26-13-00-00.delta.tar
     -  blobs.20...-...-...-...-...-....tar
 
     Cleanup:
@@ -1200,13 +1200,15 @@ def backup_blobs_archive(
     if not os.path.exists(destination):
         os.makedirs(destination)
     timestamp = None
+    tar_options = ''
     if timestamps:
         timestamp = get_latest_filestorage_timestamp(fs_backup_location)
         if timestamp:
-            filename = base_name + '.' + timestamp + '.tar'
+            filename = '{0}.{1}'.format(base_name, timestamp)
             # compress_blob may be on now, or may have been on in the past.
-            # Look for both.
-            for fname in (filename, filename + '.gz'):
+            # Look for both.  And look for deltas too.
+            for suffix in ('tar', 'tar.gz', 'delta.tar', 'delta.tar.gz'):
+                fname = '{0}.{1}'.format(filename, suffix)
                 dest = os.path.join(destination, fname)
                 # If a backup already exists, then apparently there were no
                 # database changes since the last backup, so we don't need
@@ -1222,7 +1224,20 @@ def backup_blobs_archive(
                     return
         else:
             timestamp = gen_timestamp()
-            filename = '{0}.{1}.tar'.format(base_name, timestamp)
+            filename = '{0}.{1}'.format(base_name, timestamp)
+        if incremental_blobs:
+            # Get the timestamp of the latest full backup,
+            # if we have a snapshot archive for it.
+            snapshot_archive = find_snapshot_archive(
+                fs_backup_location, destination, base_name, timestamp)
+            if snapshot_archive is not None:
+                tar_options = '--listed-incremental={0}'.format(
+                    snapshot_archive)
+                if os.path.exists(snapshot_archive):
+                    # The snapshot archive exists, so this is a delta backup.
+                    # File name should be blobs.timestamp.delta.tar(.gz).
+                    filename += '.delta'
+        filename += '.tar'  # .gz may be added a few lines later.
         dest = os.path.join(destination, filename)
     else:
         # Without timestamps we need to rotate backups.
@@ -1233,15 +1248,6 @@ def backup_blobs_archive(
         tar_command = 'tar czf'
     else:
         tar_command = 'tar cf'
-    if incremental_blobs:
-        # TODO This should be the timestamp of the latest full backup,
-        # if we have a snapshot archive for it.
-        snapshot_archive = find_snapshot_archive(
-            fs_backup_location, destination, base_name, timestamp)
-        tar_options = '--listed-incremental={0}'.format(snapshot_archive)
-        # TODO: filename should be blobs.timestamp.delta.tar(.gz).
-    else:
-        tar_options = ''
     if os.path.exists(dest):
         raise Exception('Path already exists: {0}'.format(dest))
     cmd = '{0} {1} {2} -C {3} .'.format(tar_command, dest, tar_options, source)
