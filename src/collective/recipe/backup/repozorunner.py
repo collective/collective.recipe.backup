@@ -25,12 +25,12 @@ logger = logging.getLogger('repozorunner')
 
 def quote_command(command):
     # Quote the program name, so it works even if it contains spaces
-    command = ' '.join(['"%s"' % x for x in command])
+    command = ' '.join(['"{0}"'.format(x) for x in command])
     if sys.platform[:3].lower() == 'win':
         # odd, but true: the windows cmd processor can't handle more than
         # one quoted item per string unless you add quotes around the
         # whole line.
-        command = '"%s"' % command
+        command = '"{0}"'.format(command)
     return command
 
 

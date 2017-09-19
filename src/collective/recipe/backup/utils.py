@@ -67,7 +67,7 @@ def ask(question, default=True, exact=False):
             yn = yn.replace('y', 'Y')
         if default is False:
             yn = yn.replace('n', 'N')
-        q = question + ' (%s)? ' % yn
+        q = '{0} ({1})? '.format(question, yn)
         input = raw_input(q)
         if input:
             answer = input
@@ -132,7 +132,7 @@ def check_folders(
         for pathdir in pathdirs:
             if pathdir and not os.path.isdir(pathdir):
                 os.makedirs(pathdir)
-                logger.info('Created %s' % pathdir)
+                logger.info('Created %s', pathdir)
 
 
 def try_create_folder(pathdir):
@@ -172,7 +172,7 @@ def try_create_folder(pathdir):
         return
     if os.path.exists(pathdir):
         if not os.path.isdir(pathdir):
-            logger.warn('WARNING: %s is a file, not a directory.' % pathdir)
+            logger.warning('WARNING: %s is a file, not a directory.', pathdir)
         return
     # Now the tricky thing is: if only a/ exists, without sub
     # directories, and we call this function with a/b/c, we do not
@@ -187,7 +187,8 @@ def try_create_folder(pathdir):
         newdir = os.path.join(newdir, part)
         if os.path.exists(newdir):
             if not os.path.isdir(newdir):
-                logger.warn('WARNING: %s is a file, not a directory.' % newdir)
+                logger.warning(
+                    'WARNING: %s is a file, not a directory.', newdir)
                 return
             continue
         # newdir does not exist.  Try to create the full path, and the
@@ -196,5 +197,5 @@ def try_create_folder(pathdir):
             os.makedirs(pathdir)
             shutil.rmtree(newdir)
         except OSError:
-            logger.warn('WARNING: Not able to create %s' % pathdir)
+            logger.warning('WARNING: Not able to create %s', pathdir)
         return

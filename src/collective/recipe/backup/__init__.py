@@ -196,7 +196,7 @@ class Recipe(object):
             raise zc.buildout.UserError(
                 'No blob_storage found. You must specify one. '
                 "To ignore this, set 'backup_blobs = false' "
-                'in the [%s] section.' % self.name)
+                'in the [{0}] section.'.format(self.name))
 
         self.egg = zc.recipe.egg.Egg(buildout, options['recipe'], options)
 
@@ -255,25 +255,26 @@ class Recipe(object):
                 storage = re.match(ADDITIONAL_REGEX, a).groupdict()
                 if storage['storage'] in [s['storage'] for s in storages]:
                     logger.warning(
-                        'storage %s duplicated' % storage['storage'])
+                        'storage {0} duplicated'.format(storage['storage']))
                 if not storage['datafs']:
                     storage['datafs'] = os.path.join(
-                        filestorage_dir, '%s.fs' % storage['storage'])
-                storage['backup_location'] = backup_location + '_' + \
-                    storage['storage']
-                storage['snapshot_location'] = snapshot_location + '_' + \
-                    storage['storage']
-                storage['zip_location'] = zip_location + '_' + \
-                    storage['storage']
+                        filestorage_dir, '{0}.fs'.format(storage['storage']))
+                storage['backup_location'] = '{0}_{1}'.format(
+                    backup_location, storage['storage'])
+                storage['snapshot_location'] = '{0}_{1}'.format(
+                    snapshot_location, storage['storage'])
+                storage['zip_location'] = '{0}_{1}'.format(
+                    zip_location, storage['storage'])
                 if storage['blobdir']:
-                    storage['blob_backup_location'] = blob_backup_location \
-                        and (blob_backup_location + '_' + storage['storage'])
-                    storage['blob_snapshot_location'] = \
-                        blob_snapshot_location and (blob_snapshot_location +
-                                                    '_' + storage['storage'])
-                    storage['blob_zip_location'] = \
-                        blob_zip_location and (blob_zip_location +
-                                               '_' + storage['storage'])
+                    storage['blob_backup_location'] = '{0}_{1}'.format(
+                        blob_backup_location, storage['storage']) \
+                        if blob_backup_location else None
+                    storage['blob_snapshot_location'] = '{0}_{1}'.format(
+                        blob_snapshot_location, storage['storage']) \
+                        if blob_snapshot_location else None
+                    storage['blob_zip_location'] = '{0}_{1}'.format(
+                        blob_zip_location, storage['storage']) \
+                        if blob_zip_location else None
                 storages.append(storage)
 
         # '1' is the default root storagename for Zope. The property
@@ -332,46 +333,46 @@ class Recipe(object):
                 match = re.match(ALT_REGEX, a)
                 if match is None:
                     raise zc.buildout.UserError(
-                        'alternative_restore_sources line %r has a wrong '
+                        'alternative_restore_sources line {0!r} has a wrong '
                         "format. Should be: 'storage-name "
                         "filestorage-backup-path', optionally followed by "
-                        'a blobstorage-backup-path.' % a)
+                        'a blobstorage-backup-path.'.format(a))
                 source = match.groupdict()
                 key = orig_key = source['storage']
                 if key == 'Data':
                     key = '1'  # Data.fs is called storage '1'.
                 if key not in storage_keys:
                     raise zc.buildout.UserError(
-                        'alternative_restore_sources key %r unknown in '
-                        'storages.' % orig_key)
+                        'alternative_restore_sources key {0!r} unknown in '
+                        'storages.'.format(orig_key))
                 alt_keys.append(key)
                 storage = [s for s in storages if key == s['storage']][0]
                 if storage.get('alt_location'):
                     # Duplicate key.
                     if key == '1':
                         raise zc.buildout.UserError(
-                            'alternative_restore_sources key %r is used. '
+                            'alternative_restore_sources key {0!r} is used. '
                             "Are you using both '1' and 'Data'? They are "
-                            'alternative keys for the same Data.fs.'
-                            % orig_key)
+                            'alternative keys for the same Data.fs.'.format(
+                                orig_key))
                     raise zc.buildout.UserError(
-                        'alternative_restore_sources key %r is used twice.'
-                        % orig_key)
+                        'alternative_restore_sources key {0!r} '
+                        'is used twice.'.format(orig_key))
                 storage['alt_location'] = construct_path(
                     buildout_dir, source['datafs'])
                 blobdir = source['blobdir']
                 if storage['blobdir']:
                     if not blobdir:
                         raise zc.buildout.UserError(
-                            'alternative_restore_sources key %r is missing a '
-                            'blobdir.' % orig_key)
+                            'alternative_restore_sources key {0!r} is '
+                            'missing a blobdir.'.format(orig_key))
                     storage['blob_alt_location'] = construct_path(
                         buildout_dir, blobdir)
                 elif blobdir:
                     raise zc.buildout.UserError(
-                        'alternative_restore_sources key %r specifies '
-                        'blobdir %r but the original storage has no '
-                        'blobstorage.' % (orig_key, blobdir))
+                        'alternative_restore_sources key {0!r} specifies '
+                        'blobdir {1!r} but the original storage has no '
+                        'blobstorage.'.format(orig_key, blobdir))
                 else:
                     storage['blob_alt_location'] = ''
             # Check that all original storages have an alternative.
@@ -380,8 +381,8 @@ class Recipe(object):
                     if key == '1':
                         key = 'Data'  # canonical spelling
                     raise zc.buildout.UserError(
-                        'alternative_restore_sources is missing key %r. '
-                        % key)
+                        'alternative_restore_sources is missing key {0!r}.'
+                        .format(key))
 
         if to_bool(self.options['debug']):
             loglevel = 'DEBUG'
@@ -389,7 +390,7 @@ class Recipe(object):
             loglevel = 'INFO'
         initialization_template = """
 import logging
-loglevel = logging.%(loglevel)s
+loglevel = logging.{loglevel}
 from optparse import OptionParser
 parser = OptionParser()
 # parser.add_option('-S', '--storage', dest='storage',
@@ -406,31 +407,31 @@ parser.add_option('-n', '--no-prompt',
 # Allow the user to make the script more quiet (say in a cronjob):
 if not options.verbose:
     loglevel = logging.WARN
-log_format = '%%(levelname)s: %%(message)s'
+log_format = '%(levelname)s: %(message)s'
 if loglevel < logging.INFO:
-    log_format = '%%(asctime)s ' + log_format
+    log_format = '%(asctime)s ' + log_format
 logging.basicConfig(level=loglevel,
     format=log_format)
 """
         arguments_template = """
-        bin_dir=%(bin-directory)r,
-        storages=%(storages)s,
-        keep=%(keep)s,
-        keep_blob_days=%(keep_blob_days)s,
-        full=%(full)s,
-        verbose=%(debug)s,
-        gzip=%(gzip)s,
-        quick=%(quick)s,
-        only_blobs=%(only_blobs)s,
-        backup_blobs=%(backup_blobs)s,
-        use_rsync=%(use_rsync)s,
-        rsync_options=%(rsync_options)r,
-        archive_blob=%(archive_blob)s,
-        compress_blob=%(compress_blob)s,
-        pre_command=%(pre_command)r,
-        post_command=%(post_command)r,
+        bin_dir={bin-directory!r},
+        storages={storages},
+        keep={keep},
+        keep_blob_days={keep_blob_days},
+        full={full},
+        verbose={debug},
+        gzip={gzip},
+        quick={quick},
+        only_blobs={only_blobs},
+        backup_blobs={backup_blobs},
+        use_rsync={use_rsync},
+        rsync_options={rsync_options!r},
+        archive_blob={archive_blob},
+        compress_blob={compress_blob},
+        pre_command={pre_command!r},
+        post_command={post_command!r},
         no_prompt=options.no_prompt,
-        blob_timestamps=%(blob_timestamps)s,
+        blob_timestamps={blob_timestamps},
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -451,13 +452,13 @@ logging.basicConfig(level=loglevel,
         opts['verbose'] = opts['debug']
 
         # Get general options for all scripts.
-        initialization = initialization_template % opts
+        initialization = initialization_template.format(**opts)
         orig_distributions, working_set = self.egg.working_set(
             ['collective.recipe.backup', 'zc.buildout', 'zc.recipe.egg'])
         executable = self.options['executable']
         dest = self.options['bin-directory']
         site_py_dest = self.options['parts-directory']
-        script_arguments = arguments_template % opts
+        script_arguments = arguments_template.format(**opts)
         creation_args = dict(
             dest=dest, working_set=working_set, executable=executable,
             site_py_dest=site_py_dest, initialization=initialization,
@@ -557,7 +558,7 @@ logging.basicConfig(level=loglevel,
         if len(locations.keys()) != len(set(locations.values())):
             raise zc.buildout.UserError(
                 'These must be distinct locations:\n',
-                '\n'.join([('%s = %s' % (k, v)) for (k, v) in
+                '\n'.join([('{0} = {1}'.format(k, v)) for (k, v) in
                            sorted(locations.items())]))
 
         if not to_bool(options.get('backup_blobs')):

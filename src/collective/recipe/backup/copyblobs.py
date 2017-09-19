@@ -207,7 +207,7 @@ def gen_timestamp(now=None):
     """
     if now is None or isinstance(now, (int, float)):
         now = time.gmtime(now)[:6]
-    return '%04d-%02d-%02d-%02d-%02d-%02d' % now
+    return '{0:04d}-{1:02d}-{2:02d}-{3:02d}-{4:02d}-{5:02d}'.format(*now)
 
 
 def gen_blobdir_name(prefix='blobstorage', now=None):
@@ -272,7 +272,7 @@ def get_valid_directories(container, name):
         entry_start, entry_num = entry.rsplit('.', 1)
         if entry_start != name:
             # Maybe something like 'blobstorage.break.me.0'
-            logger.warn('Ignoring entry %s in %s', entry, container)
+            logger.warning('Ignoring entry %s in %s', entry, container)
             continue
         try:
             entry_num = int(entry_num)
@@ -280,8 +280,9 @@ def get_valid_directories(container, name):
             continue
         # Looks like we have a winner.  It must be a directory though.
         if not os.path.isdir(os.path.join(container, entry)):
-            raise Exception('Refusing to rotate %s as it is not a directory.' %
-                            entry)
+            raise Exception(
+                'Refusing to rotate {0} as it is not a directory.'.format(
+                    entry))
         valid_entries.append(entry)
     return valid_entries
 
@@ -329,7 +330,7 @@ def get_valid_archives(container, name):
     """
     valid_entries = []
     for entry in os.listdir(container):
-        matched = re.match('^%s\.(\d+)\.tar(\.gz)?$' % name, entry)
+        matched = re.match('^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
         if matched is None:
             continue
         match = matched.groups()[0]
@@ -338,8 +339,8 @@ def get_valid_archives(container, name):
         except (ValueError, TypeError):
             continue
         if not os.path.isfile(os.path.join(container, entry)):
-            raise Exception('Refusing to rotate %s as it is not a file.' %
-                            entry)
+            raise Exception(
+                'Refusing to rotate {0} as it is not a file.'.format(entry))
         valid_entries.append(entry)
     return valid_entries
 
@@ -384,7 +385,7 @@ def rotate_directories(container, name):
     # Rotate the directories.
     for directory in sorted_backups:
         new_num = int(directory.split('.')[-1]) + 1
-        new_name = '%s.%s' % (name, new_num)
+        new_name = '{0}.{1}'.format(name, new_num)
         logger.info('Renaming %s to %s.', directory, new_name)
         os.rename(os.path.join(container, directory),
                   os.path.join(container, new_name))
@@ -431,12 +432,12 @@ def rotate_archives(container, name):
     sorted_backups = sorted(previous_backups, key=archive_backup_key)
     # Rotate the directories.
     for entry in sorted_backups:
-        matched = re.match('^%s\.(\d+)\.tar(\.gz)?$' % name, entry)
+        matched = re.match('^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
         old_num, gz = matched.groups()
         new_num = int(old_num) + 1
         if gz is None:
             gz = ''
-        new_name = '%s.%s.tar%s' % (name, new_num, gz)
+        new_name = '{0}.{1}.tar{2}'.format(name, new_num, gz)
         logger.info('Renaming %s to %s.', entry, new_name)
         os.rename(os.path.join(container, entry),
                   os.path.join(container, new_name))
@@ -475,8 +476,8 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
                 logger.error(
                     'Different backup prefixes found in %s (%s, %s). Are you '
                     'mixing two backups in one directory? For safety we will '
-                    'exit, because we cannot get a correct sort order.' % (
-                        backup_location, prefix, parts[0]))
+                    'exit, because we cannot get a correct sort order.',
+                    backup_location, prefix, parts[0])
                 sys.exit(1)
         else:
             prefix = parts[0]
@@ -526,8 +527,8 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
                 logger.error(
                     'Different backup prefixes found in %s (%s, %s). Are you '
                     'mixing two backups in one directory? For safety we will '
-                    'exit, because we cannot get a correct sort order.' % (
-                        backup_location, prefix, parts[0]))
+                    'exit, because we cannot get a correct sort order.',
+                    backup_location, prefix, parts[0])
                 sys.exit(1)
         else:
             prefix = parts[0]
@@ -541,8 +542,9 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     # Check if this is the same as reverse sorting by modification time:
     mod_times = sorted(backup_archives, key=itemgetter(1), reverse=True)
     if backup_archives != mod_times:
-        logger.warn('Sorting blob backups by number gives other result than '
-                    'reverse sorting by last modification time.')
+        logger.warning(
+            'Sorting blob backups by number gives other result than '
+            'reverse sorting by last modification time.')
     logger.debug('Found %d blob backups: %r.', len(backup_archives),
                  [d[1] for d in backup_archives])
     return backup_archives
@@ -878,19 +880,22 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             # not.
             if not os.path.isdir(prev):
                 # Should have been caught already.
-                raise Exception('%s must be a directory' % prev)
+                raise Exception('{0} must be a directory'.format(prev))
             # Hardlink against the previous directory.  Done by hand it
             # would be:
             # rsync -a  --delete --link-dest=../blobstorage.1 blobstorage/
             #     backups/blobstorage.0
             prev_link = os.path.relpath(prev, dest)
-            cmd = ('rsync -a %(options)s --delete --link-dest=%(link)s '
-                   '%(source)s %(dest)s' % dict(
-                       options=rsync_options, link=prev_link,
-                       source=source, dest=dest))
+            cmd = (
+                'rsync -a {options} --delete --link-dest={link} {source} '
+                '{dest}'.format(
+                    options=rsync_options,
+                    link=prev_link,
+                    source=source,
+                    dest=dest))
         else:
             # No previous directory to hardlink against.
-            cmd = 'rsync -a %(options)s %(source)s %(dest)s' % dict(
+            cmd = 'rsync -a {options} {source} {dest}'.format(
                 options=rsync_options, source=source, dest=dest)
         logger.info(cmd)
         output, failed = utils.system(cmd)
@@ -1048,8 +1053,8 @@ def backup_blobs_archive(
     else:
         tar_command = 'tar cf'
     if os.path.exists(dest):
-        raise Exception('Path already exists: %s' % dest)
-    cmd = '%s %s -C %s .' % (tar_command, dest, source)
+        raise Exception('Path already exists: {0}'.format(dest))
+    cmd = '{0} {1} -C {2} .'.format(tar_command, dest, source)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -1175,7 +1180,7 @@ def restore_blobs(source, destination, use_rsync=True,
     # You should end up with something like this:
     # rsync -a  --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
     if use_rsync:
-        cmd = 'rsync -a %(options)s --delete %(source)s %(dest)s' % dict(
+        cmd = 'rsync -a {options} --delete {source} {dest}'.format(
             options=rsync_options,
             source=backup_source,
             dest=dest_dir)
@@ -1259,7 +1264,7 @@ def restore_blobs_archive(source, destination, date=None, timestamps=False,
         tar_command = 'tar xzf'
     else:
         tar_command = 'tar xf'
-    cmd = '%s %s -C %s' % (tar_command, backup_source, destination)
+    cmd = '{0} {1} -C {2}'.format(tar_command, backup_source, destination)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:

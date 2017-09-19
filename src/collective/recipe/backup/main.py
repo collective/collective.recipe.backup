@@ -62,7 +62,7 @@ def backup_main(
         blobdir = storage['blobdir']
         if not blobdir:
             logger.info(
-                'No blob dir defined for %s storage' % storage['storage'])
+                'No blob dir defined for %s storage', storage['storage'])
             continue
         blob_backup_location = None
         if backup_method == config.STANDARD_BACKUP:
@@ -148,7 +148,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         date = arg
         logger.debug('Argument passed to bin/restore, we assume it is '
                      'a date that we have to pass to repozo: %s.', date)
-        logger.info('Date restriction: restoring state at %s.' % date)
+        logger.info('Date restriction: restoring state at %s.', date)
         break
 
     if not kwargs.get('no_prompt'):
@@ -156,12 +156,12 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         if not only_blobs:
             question += 'This will replace the filestorage:\n'
             for storage in storages:
-                question += '    %s\n' % storage.get('datafs')
+                question += '    {0}\n'.format(storage.get('datafs'))
         if backup_blobs:
             question += 'This will replace the blobstorage:\n'
             for storage in storages:
                 if storage.get('blobdir'):
-                    question += '    %s\n' % storage.get('blobdir')
+                    question += '    {0}\n'.format(storage.get('blobdir'))
         question += 'Are you sure?'
         if not utils.ask(question, default=False, exact=True):
             logger.info('Not restoring.')
@@ -185,7 +185,7 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
         for storage in storages:
             blobdir = storage['blobdir']
             if not blobdir:
-                logger.info('No blob dir defined for %s storage' %
+                logger.info('No blob dir defined for %s storage',
                             storage['storage'])
                 continue
             if restore_snapshot:
