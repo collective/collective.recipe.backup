@@ -1,6 +1,8 @@
 4.0b5 (unreleased)
 ==================
 
+- Improved code quality, reducing complexity.  [maurits]
+
 - Refactored the main functions to not have so much code duplication.
   The normal, full, snapshot and zip backups had almost the same code.
   This made it hard to add new options.
