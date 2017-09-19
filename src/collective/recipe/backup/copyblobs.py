@@ -1100,7 +1100,7 @@ def find_backup_to_restore(source, date_string='', archive=False,
     # We want the backup for a specific date.
     try:
         date_args = [int(num) for num in date_string.split('-')]
-    except:
+    except (AttributeError, ValueError, TypeError):
         logger.error('Could not parse date argument to restore blobs: %r',
                      date_string)
         return
