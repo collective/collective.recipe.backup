@@ -606,11 +606,19 @@ def get_oldest_filestorage_timestamp(directory):
             return root
 
 
-def backup_blobs(source, destination, full=False, use_rsync=True,
-                 keep=0, keep_blob_days=0, archive_blob=False,
-                 rsync_options='',
-                 timestamps=False, fs_backup_location=None,
-                 compress_blob=False):
+def backup_blobs(
+        source,
+        destination,
+        full=False,
+        use_rsync=True,
+        keep=0,
+        keep_blob_days=0,
+        archive_blob=False,
+        rsync_options='',
+        timestamps=False,
+        fs_backup_location=None,
+        compress_blob=False,
+):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -930,9 +938,12 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
 
 
 def backup_blobs_archive(
-    source, destination, keep=0, timestamps=False,
-    fs_backup_location=None,
-    compress_blob=False,
+        source,
+        destination,
+        keep=0,
+        timestamps=False,
+        fs_backup_location=None,
+        compress_blob=False,
 ):
     """Make archive from blobs in source directory.
 
@@ -1143,9 +1154,16 @@ def find_backup_to_restore(source, date_string='', archive=False,
     logger.error('Could not find backup of %r or earlier.', date_string)
 
 
-def restore_blobs(source, destination, use_rsync=True,
-                  date=None, archive_blob=False, rsync_options='',
-                  timestamps=False, only_check=False):
+def restore_blobs(
+        source,
+        destination,
+        use_rsync=True,
+        date=None,
+        archive_blob=False,
+        rsync_options='',
+        timestamps=False,
+        only_check=False,
+):
     """Restore blobs from source to destination.
 
     With 'use_rsync' at the default True, we use rsync to copy,
@@ -1211,8 +1229,13 @@ def restore_blobs(source, destination, use_rsync=True,
         shutil.copytree(backup_source, destination)
 
 
-def restore_blobs_archive(source, destination, date=None, timestamps=False,
-                          only_check=False):
+def restore_blobs_archive(
+        source,
+        destination,
+        date=None,
+        timestamps=False,
+        only_check=False,
+):
     """Restore blobs from source to destination.
 
     Prepare backup for test:
@@ -1286,8 +1309,11 @@ def restore_blobs_archive(source, destination, date=None, timestamps=False,
         return
 
 
-def remove_orphaned_blob_backups(backup_location, fs_backup_location,
-                                 archive=False):
+def remove_orphaned_blob_backups(
+        backup_location,
+        fs_backup_location,
+        archive=False,
+):
     """Remove orphaned blob backups.
 
     This means: blob backups that have a timestamp older than the oldest
@@ -1335,8 +1361,13 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
     return True
 
 
-def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
-            fs_backup_location=None):
+def cleanup(
+        backup_location,
+        full=False,
+        keep=0,
+        keep_blob_days=0,
+        fs_backup_location=None,
+):
     """Clean up old blob backups.
 
     When fs_backup_location is passed and we find filestorage backups there,
@@ -1542,9 +1573,9 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
 
 
 def cleanup_archives(
-    backup_location,
-    keep=0,
-    fs_backup_location=None
+        backup_location,
+        keep=0,
+        fs_backup_location=None
 ):
     """Clean up old blob backups.
 
