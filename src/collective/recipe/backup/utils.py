@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*
 # Small utility methods.
+from collective.recipe.backup import config
+
 import logging
 import os
 import shutil
 import subprocess
 import sys
 
-from collective.recipe.backup import config
 
 try:
     from builtins import input as raw_input
