@@ -26,6 +26,27 @@ BACKUP_DIR = 'backups'
 is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 
 
+def find_suffixes(value, suffixes):
+    """Check that value contains ons of the suffixes.
+
+    If it does, return the value without suffix.
+    It it does not, return None.
+    """
+    if isinstance(suffixes, utils.stringtypes):
+        suffixes = [suffixes]
+    found = False
+    for suffix in suffixes:
+        if not suffix.startswith('.'):
+            suffix = '.' + suffix
+        if value.endswith(suffix):
+            found = True
+            break
+    if not found:
+        return
+    value = value[:-len(suffix)]
+    return value
+
+
 def get_prefix_and_number(value, prefix=None, suffixes=None):
     """Get prefix and number out of value.
 
@@ -47,18 +68,9 @@ def get_prefix_and_number(value, prefix=None, suffixes=None):
     but it would be hard to read.
     """
     if suffixes is not None:
-        if isinstance(suffixes, utils.stringtypes):
-            suffixes = [suffixes]
-        found = False
-        for suffix in suffixes:
-            if not suffix.startswith('.'):
-                suffix = '.' + suffix
-            if value.endswith(suffix):
-                found = True
-                break
-        if not found:
+        value = find_suffixes(value, suffixes)
+        if value is None:
             return
-        value = value[:-len(suffix)]
     if prefix is None:
         # number or anything.number.
         # But 'anything' should not contain dots: too tricky.
