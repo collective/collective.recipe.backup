@@ -588,22 +588,80 @@ def get_latest_filestorage_timestamp(directory):
     logger.debug('No data files found in directory: %s', directory)
 
 
-def get_oldest_filestorage_timestamp(directory):
-    """Get timestamp of oldest full filestorage backup file in directory.
+def get_full_filestorage_timestamp(directory, timestamp=None):
+    """Get timestamp of full filestorage backup file in directory.
+
+    When timestamp is None, we return the oldest.
+    We can remove any older blob backups.
+
+    With a specific timestamp, we return the timestamp of the
+    full backup belonging to this timestamp.
 
     Adapted from find_files in ZODB/scripts/repozo.py.
-
-    We can remove any older blob backups.
     """
     if not directory or not os.path.isdir(directory):
         return
     # oldest first
+    found = None
     for fname in sorted(os.listdir(directory)):
         if not is_data_file(fname):
             continue
         root, ext = os.path.splitext(fname)
-        if ext in ('.fs', '.fsz'):
+        if ext not in ('.fs', '.fsz'):
+            # We are not interested in deltas.
+            continue
+        # We have found a timestamp of a full backup.  Now compare it.
+        if timestamp is None:
+            # Just return the oldest one.
             return root
+        if timestamp >= root:
+            found = root
+        else:
+            break
+    return found
+
+
+def find_snapshot_archive(
+        fs_backup_location,
+        destination,
+        base_name,
+        timestamp,
+):
+    """Find a snapshot archive (.snar).
+
+    This is a file used by tar --listed-incremental to record where each
+    backed up file ended up.
+
+    A snapshot archive must always have the same timestamp
+    as the full filestorage backup it belongs to: it has file pointers
+    to the full backup and the incremental backups.
+    This will usually be the case, but not when you first make a full
+    backup, and only later enable incremental_blobs.
+
+    It might not exist yet, but may be created by the upcoming tar command,
+    *if* this is a full backup.
+    """
+    if timestamp is None:
+        # Not supported. Programming error? Maybe raise an exception.
+        return
+    fs_stamp = get_full_filestorage_timestamp(fs_backup_location, timestamp)
+    if fs_stamp is None:
+        # There is no proper Data.fs backup belonging to the timestamp.
+        # TODO: maybe we are only backing up blobs, and no Data.fs.
+        # Look for actual snars then.
+        return
+    # If the time stamps are the same, then a full backup is in progress.
+    full = timestamp == fs_stamp
+    snapshot_archive = os.path.join(
+        destination, '{0}.{1}.snar'.format(base_name, fs_stamp))
+    if not full and not os.path.exists(snapshot_archive):
+        # TODO: will this message get shown during restore? I hope not.
+        logger.warning(
+            'Not making incremental blob backup, because this is a '
+            'partial backup, and there is no snapshot file yet. '
+            'Incremental backups will be created with the next full backup.')
+        return
+    return snapshot_archive
 
 
 def backup_blobs(
@@ -618,6 +676,7 @@ def backup_blobs(
         timestamps=False,
         fs_backup_location=None,
         compress_blob=False,
+        incremental_blobs=False,
 ):
     """Copy blobs from source to destination.
 
@@ -861,9 +920,14 @@ def backup_blobs(
 
     if archive_blob:
         backup_blobs_archive(
-            source, destination, keep, timestamps=timestamps,
+            source,
+            destination,
+            keep,
+            timestamps=timestamps,
             fs_backup_location=fs_backup_location,
-            compress_blob=compress_blob)
+            compress_blob=compress_blob,
+            incremental_blobs=incremental_blobs,
+        )
         return
 
     if timestamps:
@@ -944,6 +1008,7 @@ def backup_blobs_archive(
         timestamps=False,
         fs_backup_location=None,
         compress_blob=False,
+        incremental_blobs=False,
 ):
     """Make archive from blobs in source directory.
 
@@ -987,7 +1052,7 @@ def backup_blobs_archive(
     Use timestamps with a fs_backup_location.
 
     >>> mkdir('fs')
-    >>> write('fs', '2017-05-24-11-54-39.fsz', 'Dummy filestorage backup')
+    >>> write('fs', '2017-05-24-11-54-39.fsz', 'Dummy fs backup 24')
     >>> backup_blobs_archive(
     ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
     ...     compress_blob=True)
@@ -1019,9 +1084,9 @@ def backup_blobs_archive(
     -  blobs.2.tar
     -  blobs.2017-05-24-11-54-39.tar.gz
 
-    Same settings, now with a newer filestorage backup.
+    Same settings, now with a change and a newer filestorage backup.
 
-    >>> write('fs', '2017-05-24-12-00-00.fsz', 'Dummy filestorage backup 2')
+    >>> write('fs', '2017-05-25-12-00-00.fsz', 'Full fs backup 25')
     >>> backup_blobs_archive(
     ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
     ...     compress_blob=False)
@@ -1030,18 +1095,111 @@ def backup_blobs_archive(
     -  blobs.1.tar.gz
     -  blobs.2.tar
     -  blobs.2017-05-24-11-54-39.tar.gz
-    -  blobs.2017-05-24-12-00-00.tar
+    -  blobs.2017-05-25-12-00-00.tar
+
+    Now with incremental_blobs, which requires timestamps to be True.
+
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=False,
+    ...     compress_blob=False, incremental_blobs=True)
+    Traceback (most recent call last):
+    ...
+    Exception: Cannot have incremental_blobs without timestamps.
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=False, incremental_blobs=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+    -  blobs.2017-05-25-12-00-00.tar
+
+    Same settings, now with a newer filestorage delta backup.
+    This does not create a snapshot file yet, because
+    that is only done for a full backup.
+
+    >>> write('blobs', 'one.txt', '25.1')
+    >>> write('fs', '2017-05-25-13-00-00.deltafsz', 'Delta fs backup 25.1')
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=False, incremental_blobs=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+    -  blobs.2017-05-25-12-00-00.tar
+    -  blobs.2017-05-25-13-00-00.tar
+
+    Again, with a full backup.
+
+    >>> write('blobs', 'one.txt', '26')
+    >>> write('fs', '2017-05-26-12-00-00.fsz', 'Full fs backup 26')
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=False, incremental_blobs=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+    -  blobs.2017-05-25-12-00-00.tar
+    -  blobs.2017-05-25-13-00-00.tar
+    -  blobs.2017-05-26-12-00-00.snar
+    -  blobs.2017-05-26-12-00-00.tar
+
+    Again, with a delta.
+
+    >>> write('blobs', 'one.txt', '26.1')
+    >>> write('fs', '2017-05-26-13-00-00.deltafsz', 'Delta fs backup 26.1')
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=False, incremental_blobs=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+    -  blobs.2017-05-25-12-00-00.tar
+    -  blobs.2017-05-25-13-00-00.tar
+    -  blobs.2017-05-26-12-00-00.snar
+    -  blobs.2017-05-26-12-00-00.tar
+    -  blobs.2017-05-26-13-00-00.tar
+
+    Now remove the file storage backups.
+
+    >>> remove('fs')
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     compress_blob=False, incremental_blobs=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+    -  blobs.2017-05-25-12-00-00.tar
+    -  blobs.2017-05-25-13-00-00.tar
+    -  blobs.2017-05-26-12-00-00.snar
+    -  blobs.2017-05-26-12-00-00.tar
+    -  blobs.2017-05-26-13-00-00.tar
+    -  blobs.20...-...-...-...-...-....tar
 
     Cleanup:
 
     >>> remove('blobs')
     >>> remove('backups')
-    >>> remove('fs')
     """
+    if incremental_blobs and not timestamps:
+        # This should have been caught by buildout already,
+        # but we may trigger it in tests.
+        raise Exception(
+            'Cannot have incremental_blobs without timestamps.')
     source = source.rstrip(os.sep)
     base_name = os.path.basename(source)
     if not os.path.exists(destination):
         os.makedirs(destination)
+    timestamp = None
     if timestamps:
         timestamp = get_latest_filestorage_timestamp(fs_backup_location)
         if timestamp:
@@ -1062,11 +1220,10 @@ def backup_blobs_archive(
                         destination, keep=keep,
                         fs_backup_location=fs_backup_location)
                     return
-            # Use the .tar filename as initial destination.
-            dest = os.path.join(destination, filename)
         else:
-            filename = base_name + '.' + gen_timestamp() + '.tar'
-            dest = os.path.join(destination, filename)
+            timestamp = gen_timestamp()
+            filename = '{0}.{1}.tar'.format(base_name, timestamp)
+        dest = os.path.join(destination, filename)
     else:
         # Without timestamps we need to rotate backups.
         rotate_archives(destination, base_name)
@@ -1076,9 +1233,18 @@ def backup_blobs_archive(
         tar_command = 'tar czf'
     else:
         tar_command = 'tar cf'
+    if incremental_blobs:
+        # TODO This should be the timestamp of the latest full backup,
+        # if we have a snapshot archive for it.
+        snapshot_archive = find_snapshot_archive(
+            fs_backup_location, destination, base_name, timestamp)
+        tar_options = '--listed-incremental={0}'.format(snapshot_archive)
+        # TODO: filename should be blobs.timestamp.delta.tar(.gz).
+    else:
+        tar_options = ''
     if os.path.exists(dest):
         raise Exception('Path already exists: {0}'.format(dest))
-    cmd = '{0} {1} -C {2} .'.format(tar_command, dest, source)
+    cmd = '{0} {1} {2} -C {3} .'.format(tar_command, dest, tar_options, source)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -1163,6 +1329,7 @@ def restore_blobs(
         rsync_options='',
         timestamps=False,
         only_check=False,
+        incremental_blobs=False,
 ):
     """Restore blobs from source to destination.
 
@@ -1235,6 +1402,7 @@ def restore_blobs_archive(
         date=None,
         timestamps=False,
         only_check=False,
+        incremental_blobs=False,
 ):
     """Restore blobs from source to destination.
 
@@ -1324,7 +1492,7 @@ def remove_orphaned_blob_backups(
     """
     if not fs_backup_location:
         return
-    oldest_timestamp = get_oldest_filestorage_timestamp(fs_backup_location)
+    oldest_timestamp = get_full_filestorage_timestamp(fs_backup_location)
     if not oldest_timestamp:
         return
     logger.debug('Removing blob backups with timestamp before %s from %s',

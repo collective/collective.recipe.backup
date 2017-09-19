@@ -419,6 +419,19 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
 ``gzip_blob``
     Backwards compatibility alias for ``archive_blob`` option.
 
+``incremental_blobs``
+    New in version 4.0.  Default is false.
+    When switched on, it will use the ``--listed-incremental`` option of ``tar``.
+    Note: this only works with the GNU version of ``tar``.
+    It will create a metadata or `snapshot file <https://www.gnu.org/software/tar/manual/html_node/Incremental-Dumps.html>`_
+    so that a second call to the backup script will create a second tarball with only the differences.
+    For some reason, all directories always end up in the second tarball,
+    even when there are no changes; this may depend on the used file system.
+    This option is ignored when the ``archive_blob`` option is false.
+    This option *requires* the ``blob_timestamps`` option to be true,
+    because it needs the tarball names to be stable, instead of getting rotated.
+    If you have explicitly set ``blob_timestamps`` to false, buildout will exit with an error.
+
 ``keep``
     Number of full backups to keep. Defaults to ``2``, which means that the
     current and the previous full backup are kept. Older backups are removed,

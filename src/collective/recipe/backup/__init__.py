@@ -162,6 +162,7 @@ class Recipe(object):
         options.setdefault('enable_zipbackup', 'false')
         options.setdefault('full', 'false')
         options.setdefault('gzip', 'true')
+        options.setdefault('incremental_blobs', 'false')
         options.setdefault('keep', '2')
         options.setdefault('keep_blob_days', '14')  # two weeks
         options.setdefault('only_blobs', 'false')
@@ -187,6 +188,11 @@ class Recipe(object):
                     # 'None' would give a TypeError when setting the option.
                     blob_storage = ''
             options['blob_storage'] = blob_storage
+
+        if to_bool(options['incremental_blobs']):
+            # Incremental blobs only work with timestamped file names.
+            options['blob_timestamps'] = 'true'
+
         # Validate again, which also makes sure the blob storage options are
         # the same, for good measure.
         self.validate()
@@ -472,6 +478,7 @@ logging.basicConfig(level=loglevel,
         post_command={post_command!r},
         no_prompt=options.no_prompt,
         blob_timestamps={blob_timestamps},
+        incremental_blobs={incremental_blobs},
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -585,7 +592,9 @@ logging.basicConfig(level=loglevel,
              'quick', 'enable_snapshotrestore',
              'enable_zipbackup', 'enable_fullbackup',
              'compress_blob',
-             'blob_timestamps'])
+             'blob_timestamps',
+             'incremental_blobs',
+             ])
 
         # These must be distinct locations.
         locations = {}
@@ -609,6 +618,12 @@ logging.basicConfig(level=loglevel,
                 raise zc.buildout.UserError(
                     'Cannot have backup_blobs false and enable_zipbackup '
                     'true. zipbackup is useless without blobs.')
+        if not to_bool(options.get('blob_timestamps', True)):
+            # blob_timestamps was explicitly set to false
+            if to_bool(options.get('incremental_blobs')):
+                raise zc.buildout.UserError(
+                    'Cannot have blob_timestamps false and '
+                    'incremental_blobs true.')
 
 
 def check_for_true(options, keys):
