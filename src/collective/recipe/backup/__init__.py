@@ -341,70 +341,84 @@ class Recipe(object):
                     'found.')
 
         # Handle alternative restore sources.
+        storages = self.compute_alternative_restore_sources(
+            buildout_dir, storages)
+        return storages
+
+    def compute_alternative_restore_sources(
+            self,
+            buildout_dir,
+            storages,
+    ):
+        """Compute alternative restore sources.
+
+        Return them in the storages list.
+        """
         alt_sources = self.options['alternative_restore_sources']
-        if alt_sources:
-            storage_keys = [s['storage'] for s in storages]
-            alt_keys = []
-            ALT_REGEX = (
-                r'^\s*(?P<storage>[^\s]+)'
-                '\s+(?P<datafs>[^\s]+)'
-                '\s*(?P<blobdir>[^\s]*)\s*$')
-            for a in alt_sources.split('\n'):
-                if not a:
-                    continue
-                match = re.match(ALT_REGEX, a)
-                if match is None:
+        if not alt_sources:
+            return storages
+        storage_keys = [s['storage'] for s in storages]
+        alt_keys = []
+        ALT_REGEX = (
+            r'^\s*(?P<storage>[^\s]+)'
+            '\s+(?P<datafs>[^\s]+)'
+            '\s*(?P<blobdir>[^\s]*)\s*$')
+        for a in alt_sources.split('\n'):
+            if not a:
+                continue
+            match = re.match(ALT_REGEX, a)
+            if match is None:
+                raise zc.buildout.UserError(
+                    'alternative_restore_sources line {0!r} has a wrong '
+                    "format. Should be: 'storage-name "
+                    "filestorage-backup-path', optionally followed by "
+                    'a blobstorage-backup-path.'.format(a))
+            source = match.groupdict()
+            key = orig_key = source['storage']
+            if key == 'Data':
+                key = '1'  # Data.fs is called storage '1'.
+            if key not in storage_keys:
+                raise zc.buildout.UserError(
+                    'alternative_restore_sources key {0!r} unknown in '
+                    'storages.'.format(orig_key))
+            alt_keys.append(key)
+            storage = [s for s in storages if key == s['storage']][0]
+            if storage.get('alt_location'):
+                # Duplicate key.
+                if key == '1':
                     raise zc.buildout.UserError(
-                        'alternative_restore_sources line {0!r} has a wrong '
-                        "format. Should be: 'storage-name "
-                        "filestorage-backup-path', optionally followed by "
-                        'a blobstorage-backup-path.'.format(a))
-                source = match.groupdict()
-                key = orig_key = source['storage']
-                if key == 'Data':
-                    key = '1'  # Data.fs is called storage '1'.
-                if key not in storage_keys:
+                        'alternative_restore_sources key {0!r} is used. '
+                        "Are you using both '1' and 'Data'? They are "
+                        'alternative keys for the same Data.fs.'.format(
+                            orig_key))
+                raise zc.buildout.UserError(
+                    'alternative_restore_sources key {0!r} '
+                    'is used twice.'.format(orig_key))
+            storage['alt_location'] = construct_path(
+                buildout_dir, source['datafs'])
+            blobdir = source['blobdir']
+            if storage['blobdir']:
+                if not blobdir:
                     raise zc.buildout.UserError(
-                        'alternative_restore_sources key {0!r} unknown in '
-                        'storages.'.format(orig_key))
-                alt_keys.append(key)
-                storage = [s for s in storages if key == s['storage']][0]
-                if storage.get('alt_location'):
-                    # Duplicate key.
-                    if key == '1':
-                        raise zc.buildout.UserError(
-                            'alternative_restore_sources key {0!r} is used. '
-                            "Are you using both '1' and 'Data'? They are "
-                            'alternative keys for the same Data.fs.'.format(
-                                orig_key))
-                    raise zc.buildout.UserError(
-                        'alternative_restore_sources key {0!r} '
-                        'is used twice.'.format(orig_key))
-                storage['alt_location'] = construct_path(
-                    buildout_dir, source['datafs'])
-                blobdir = source['blobdir']
-                if storage['blobdir']:
-                    if not blobdir:
-                        raise zc.buildout.UserError(
-                            'alternative_restore_sources key {0!r} is '
-                            'missing a blobdir.'.format(orig_key))
-                    storage['blob_alt_location'] = construct_path(
-                        buildout_dir, blobdir)
-                elif blobdir:
-                    raise zc.buildout.UserError(
-                        'alternative_restore_sources key {0!r} specifies '
-                        'blobdir {1!r} but the original storage has no '
-                        'blobstorage.'.format(orig_key, blobdir))
-                else:
-                    storage['blob_alt_location'] = ''
-            # Check that all original storages have an alternative.
-            for key in storage_keys:
-                if key not in alt_keys:
-                    if key == '1':
-                        key = 'Data'  # canonical spelling
-                    raise zc.buildout.UserError(
-                        'alternative_restore_sources is missing key {0!r}.'
-                            .format(key))
+                        'alternative_restore_sources key {0!r} is '
+                        'missing a blobdir.'.format(orig_key))
+                storage['blob_alt_location'] = construct_path(
+                    buildout_dir, blobdir)
+            elif blobdir:
+                raise zc.buildout.UserError(
+                    'alternative_restore_sources key {0!r} specifies '
+                    'blobdir {1!r} but the original storage has no '
+                    'blobstorage.'.format(orig_key, blobdir))
+            else:
+                storage['blob_alt_location'] = ''
+        # Check that all original storages have an alternative.
+        for key in storage_keys:
+            if key not in alt_keys:
+                if key == '1':
+                    key = 'Data'  # canonical spelling
+                raise zc.buildout.UserError(
+                    'alternative_restore_sources is missing key {0!r}.'
+                        .format(key))
 
         return storages
 
