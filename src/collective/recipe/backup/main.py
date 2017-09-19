@@ -125,32 +125,85 @@ def zipbackup_main(*args, **kwargs):
     return backup_main(*args, **kwargs)
 
 
-def restore_main(bin_dir, storages, verbose, backup_blobs,
-                 only_blobs, use_rsync, restore_snapshot=False, pre_command='',
-                 post_command='', archive_blob=False, alt_restore=False,
-                 rsync_options='', quick=True, zip_restore=False,
-                 blob_timestamps=False,
-                 **kwargs):
-    """Main method, gets called by generated bin/restore."""
+def check_blobs(
+        storages,
+        use_rsync,
+        restore_snapshot=False,
+        archive_blob=False,
+        alt_restore=False,
+        rsync_options='',
+        zip_restore=False,
+        blob_timestamps=False,
+        date=None,
+):
+    """Check that blobs can be restored.
+
+    In this check run, we check what the blob backup location is,
+    and set this as blob_backup_location, so we have to do this
+    only once.
+    """
+    for storage in storages:
+        blobdir = storage['blobdir']
+        if not blobdir:
+            logger.info('No blob dir defined for %s storage',
+                        storage['storage'])
+            continue
+        if restore_snapshot:
+            blob_backup_location = storage['blob_snapshot_location']
+        elif alt_restore:
+            blob_backup_location = storage['blob_alt_location']
+        elif zip_restore:
+            blob_backup_location = storage['blob_zip_location']
+        else:
+            blob_backup_location = storage['blob_backup_location']
+        if not blob_backup_location:
+            logger.error('No blob storage source specified')
+            sys.exit(1)
+        storage['blob_backup_location'] = blob_backup_location
+        result = copyblobs.restore_blobs(
+            blob_backup_location,
+            blobdir,
+            use_rsync=use_rsync,
+            date=date,
+            archive_blob=archive_blob,
+            rsync_options=rsync_options,
+            timestamps=blob_timestamps,
+            only_check=True,
+        )
+        if result:
+            logger.error('Halting execution: '
+                         'restoring blobstorages would fail.')
+            sys.exit(1)
+
+
+def restore_check(
+        bin_dir,
+        storages,
+        verbose,
+        backup_blobs,
+        only_blobs,
+        use_rsync,
+        restore_snapshot=False,
+        pre_command='',
+        post_command='',
+        archive_blob=False,
+        alt_restore=False,
+        rsync_options='',
+        quick=True,
+        zip_restore=False,
+        blob_timestamps=False,
+        **kwargs):
+    """Method to check that a restore will work.
+
+    Returns the chosen date, if any.
+    """
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
     if sum([1 for opt in explicit_restore_opts if opt]) > 1:
         logger.error('Must use at most one option of restore_snapshot, '
                      'alt_restore and zip_restore.')
         sys.exit(1)
-    date = None
     # Try to find a date in the command line arguments
-    for arg in sys.argv:
-        if arg in ('-q', '-n', '--quiet', '--no-prompt'):
-            continue
-        if arg.find('restore') != -1:
-            continue
-
-        # We can assume this argument is a date
-        date = arg
-        logger.debug('Argument passed to bin/restore, we assume it is '
-                     'a date that we have to pass to repozo: %s.', date)
-        logger.info('Date restriction: restoring state at %s.', date)
-        break
+    date = utils.get_date_from_args()
 
     if not kwargs.get('no_prompt'):
         question = '\n'
@@ -180,42 +233,57 @@ def restore_main(bin_dir, storages, verbose, backup_blobs,
                          'restoring filestorages would fail.')
             sys.exit(1)
     if backup_blobs:
-        # In this check run, we check what the blob backup location is,
-        # and set this as blob_backup_location, so we have to do this
-        # only once.
-        for storage in storages:
-            blobdir = storage['blobdir']
-            if not blobdir:
-                logger.info('No blob dir defined for %s storage',
-                            storage['storage'])
-                continue
-            if restore_snapshot:
-                blob_backup_location = storage['blob_snapshot_location']
-            elif alt_restore:
-                blob_backup_location = storage['blob_alt_location']
-            elif zip_restore:
-                blob_backup_location = storage['blob_zip_location']
-            else:
-                blob_backup_location = storage['blob_backup_location']
-            if not blob_backup_location:
-                logger.error('No blob storage source specified')
-                sys.exit(1)
-            storage['blob_backup_location'] = blob_backup_location
-            result = copyblobs.restore_blobs(
-                blob_backup_location,
-                blobdir,
-                use_rsync=use_rsync,
-                date=date,
-                archive_blob=archive_blob,
-                rsync_options=rsync_options,
-                timestamps=blob_timestamps,
-                only_check=True,
-            )
-            if result:
-                logger.error('Halting execution: '
-                             'restoring blobstorages would fail.')
-                sys.exit(1)
+        check_blobs(
+            storages,
+            use_rsync,
+            restore_snapshot=restore_snapshot,
+            archive_blob=archive_blob,
+            alt_restore=alt_restore,
+            rsync_options=rsync_options,
+            zip_restore=zip_restore,
+            blob_timestamps=blob_timestamps,
+            date=date,
+        )
+    return date
 
+
+def restore_main(
+        bin_dir,
+        storages,
+        verbose,
+        backup_blobs,
+        only_blobs,
+        use_rsync,
+        restore_snapshot=False,
+        pre_command='',
+        post_command='',
+        archive_blob=False,
+        alt_restore=False,
+        rsync_options='',
+        quick=True,
+        zip_restore=False,
+        blob_timestamps=False,
+        **kwargs):
+
+    """Main method, gets called by generated bin/restore."""
+    # First run several checks, and get the date that should be restored.
+    date = restore_check(
+        bin_dir,
+        storages,
+        verbose,
+        backup_blobs,
+        only_blobs,
+        use_rsync,
+        restore_snapshot=restore_snapshot,
+        pre_command=pre_command,
+        post_command=post_command,
+        archive_blob=archive_blob,
+        alt_restore=alt_restore,
+        rsync_options=rsync_options,
+        quick=quick,
+        zip_restore=zip_restore,
+        blob_timestamps=blob_timestamps,
+        **kwargs)
     # Checks have passed, now do the real restore.
     if not only_blobs:
         result = repozorunner.restore_main(

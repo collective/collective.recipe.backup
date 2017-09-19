@@ -201,3 +201,21 @@ def try_create_folder(pathdir):
         except OSError:
             logger.warning('WARNING: Not able to create %s', pathdir)
         return
+
+
+def get_date_from_args():
+    # Try to find a date in the command line arguments
+    date = None
+    for arg in sys.argv:
+        if arg in ('-q', '-n', '--quiet', '--no-prompt'):
+            continue
+        if arg.find('restore') != -1:
+            continue
+
+        # We can assume this argument is a date
+        date = arg
+        logger.debug('Argument passed to bin/restore, we assume it is '
+                     'a date that we have to pass to repozo: %s.', date)
+        logger.info('Date restriction: restoring state at %s.', date)
+        break
+    return date
