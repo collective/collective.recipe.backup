@@ -240,8 +240,30 @@ class Recipe(object):
             blob_snapshot_location = ''
             blob_zip_location = ''
 
-        additional = self.options['additional_filestorages']
+        storages = self.compute_storages(
+            buildout_dir,
+            backup_location=backup_location,
+            snapshot_location=snapshot_location,
+            zip_location=zip_location,
+            blob_backup_location=blob_backup_location,
+            blob_snapshot_location=blob_snapshot_location,
+            blob_zip_location=blob_zip_location,
+        )
+        generated = self.generate_scripts(storages)
+        return generated
+
+    def compute_storages(
+            self,
+            buildout_dir,
+            backup_location,
+            snapshot_location,
+            zip_location,
+            blob_backup_location,
+            blob_snapshot_location,
+            blob_zip_location,
+    ):
         storages = []
+        additional = self.options['additional_filestorages']
         datafs = construct_path(buildout_dir, self.options['datafs'])
         filestorage_dir = os.path.split(datafs)[0]
         if additional:
@@ -382,8 +404,12 @@ class Recipe(object):
                         key = 'Data'  # canonical spelling
                     raise zc.buildout.UserError(
                         'alternative_restore_sources is missing key {0!r}.'
-                        .format(key))
+                            .format(key))
 
+        return storages
+
+    def generate_scripts(self, storages):
+        """Generate scripts and return their names."""
         if to_bool(self.options['debug']):
             loglevel = 'DEBUG'
         else:
