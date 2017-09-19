@@ -613,9 +613,41 @@ def get_full_filestorage_timestamp(directory, timestamp=None):
         # We have found a timestamp of a full backup.  Now compare it.
         if timestamp is None:
             # Just return the oldest one.
-            return root
+            found = root
+            break
         if timestamp >= root:
             found = root
+        else:
+            break
+    return found
+
+
+def get_actual_snar(directory, base_name, timestamp=None):
+    """Get snapshot archive file name.
+
+    It may have exactly this timestamp, or earlier.
+    """
+    if not directory or not os.path.isdir(directory):
+        return
+    # oldest first
+    found = None
+    for fname in sorted(os.listdir(directory)):
+        root, ext = os.path.splitext(fname)
+        if ext != '.snar':
+            continue
+        base, stamp = os.path.splitext(root)
+        if base != base_name:
+            continue
+        stamp = stamp[1:]  # remove dot
+        if not is_time_stamp(stamp):
+            continue
+        # We have found a timestamp of a full backup.  Now compare it.
+        if timestamp is None:
+            # Just return the oldest one.
+            found = stamp
+            break
+        if timestamp >= stamp:
+            found = stamp
         else:
             break
     return found
@@ -626,6 +658,7 @@ def find_snapshot_archive(
         destination,
         base_name,
         timestamp,
+        full=False,
 ):
     """Find a snapshot archive (.snar).
 
@@ -644,17 +677,39 @@ def find_snapshot_archive(
     if timestamp is None:
         # Not supported. Programming error? Maybe raise an exception.
         return
-    fs_stamp = get_full_filestorage_timestamp(fs_backup_location, timestamp)
-    if fs_stamp is None:
-        # There is no proper Data.fs backup belonging to the timestamp.
-        # TODO: maybe we are only backing up blobs, and no Data.fs.
-        # Look for actual snars then.
-        return
-    # If the time stamps are the same, then a full backup is in progress.
-    full = timestamp == fs_stamp
+    # We want a timestamp belonging to a full backup.
+    # Get an initial value.
+    if full:
+        # The given timestamp seems fine.
+        full_stamp = timestamp
+    else:
+        full_stamp = None
+    # Try various ways of getting a better timestamp from the file system.
+    if fs_backup_location:
+        full_stamp = get_full_filestorage_timestamp(
+            fs_backup_location, timestamp)
+        if full_stamp is None:
+            # There is no proper Data.fs backup belonging to the timestamp.
+            # Give up.
+            return
+    elif not full:
+        # import pdb; pdb.set_trace()
+        # We are only backing up blobs, and no Data.fs.
+        # Look for actual snar files then, but only when we are not
+        # explicitly making a full backup.
+        full_stamp = get_actual_snar(destination, base_name, timestamp)
+        if full_stamp is None:
+            # This is the first backup since activating incrementals,
+            # so we fall back to the given timestamp.
+            full_stamp = timestamp
+
+    # We have determined a full timestamp, so now we can get a file name.
     snapshot_archive = os.path.join(
-        destination, '{0}.{1}.snar'.format(base_name, fs_stamp))
-    if not full and not os.path.exists(snapshot_archive):
+        destination, '{0}.{1}.snar'.format(base_name, full_stamp))
+    # If the time stamps are the same, then a full backup is in progress.
+    # This can be when full is explicitly true, or when a zeopack has made
+    # the previous full backup outdated.
+    if timestamp != full_stamp and not os.path.exists(snapshot_archive):
         # TODO: will this message get shown during restore? I hope not.
         logger.warning(
             'Not making incremental blob backup, because this is a '
@@ -927,6 +982,7 @@ def backup_blobs(
             fs_backup_location=fs_backup_location,
             compress_blob=compress_blob,
             incremental_blobs=incremental_blobs,
+            full=full,
         )
         return
 
@@ -1009,6 +1065,7 @@ def backup_blobs_archive(
         fs_backup_location=None,
         compress_blob=False,
         incremental_blobs=False,
+        full=False,
 ):
     """Make archive from blobs in source directory.
 
@@ -1167,11 +1224,10 @@ def backup_blobs_archive(
     -  blobs.2017-05-26-12-00-00.tar
     -  blobs.2017-05-26-13-00-00.delta.tar
 
-    Now remove the file storage backups.
+    Now without file storage backups.
 
-    >>> remove('fs')
     >>> backup_blobs_archive(
-    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
+    ...     'blobs', 'backups', fs_backup_location=None, timestamps=True,
     ...     compress_blob=False, incremental_blobs=True)
     >>> ls('backups')
     -  blobs.0.tar
@@ -1183,12 +1239,33 @@ def backup_blobs_archive(
     -  blobs.2017-05-26-12-00-00.snar
     -  blobs.2017-05-26-12-00-00.tar
     -  blobs.2017-05-26-13-00-00.delta.tar
+    -  blobs.20...-...-...-...-...-....delta.tar
+
+    And again, with a pause and with full backup.
+
+    >>> time.sleep(1)
+    >>> backup_blobs_archive(
+    ...     'blobs', 'backups', fs_backup_location=None, timestamps=True,
+    ...     compress_blob=False, incremental_blobs=True, full=True)
+    >>> ls('backups')
+    -  blobs.0.tar
+    -  blobs.1.tar.gz
+    -  blobs.2.tar
+    -  blobs.2017-05-24-11-54-39.tar.gz
+    -  blobs.2017-05-25-12-00-00.tar
+    -  blobs.2017-05-25-13-00-00.tar
+    -  blobs.2017-05-26-12-00-00.snar
+    -  blobs.2017-05-26-12-00-00.tar
+    -  blobs.2017-05-26-13-00-00.delta.tar
+    -  blobs.20...-...-...-...-...-....delta.tar
+    -  blobs.20...-...-...-...-...-....snar
     -  blobs.20...-...-...-...-...-....tar
 
     Cleanup:
 
     >>> remove('blobs')
     >>> remove('backups')
+    >>> remove('fs')
     """
     if incremental_blobs and not timestamps:
         # This should have been caught by buildout already,
@@ -1199,7 +1276,6 @@ def backup_blobs_archive(
     base_name = os.path.basename(source)
     if not os.path.exists(destination):
         os.makedirs(destination)
-    timestamp = None
     tar_options = ''
     if timestamps:
         timestamp = get_latest_filestorage_timestamp(fs_backup_location)
@@ -1229,7 +1305,8 @@ def backup_blobs_archive(
             # Get the timestamp of the latest full backup,
             # if we have a snapshot archive for it.
             snapshot_archive = find_snapshot_archive(
-                fs_backup_location, destination, base_name, timestamp)
+                fs_backup_location, destination, base_name, timestamp,
+                full=full)
             if snapshot_archive is not None:
                 tar_options = '--listed-incremental={0}'.format(
                     snapshot_archive)
