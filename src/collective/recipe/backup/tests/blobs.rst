@@ -162,11 +162,11 @@ Full cycle tests:
     -  snapshotbackup
     -  snapshotrestore
     >>> mkdir('var/blobstorage')
-    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
+    >>> write('var', 'blobstorage', 'blob1.txt', 'Sample blob 1.')
     >>> mkdir('var/blobstorage-foo')
-    >>> write('var', 'blobstorage-foo', 'blob-foo1.txt', "Sample blob foo 1.")
+    >>> write('var', 'blobstorage-foo', 'blob-foo1.txt', 'Sample blob foo 1.')
     >>> mkdir('var/blobstorage-bar')
-    >>> write('var', 'blobstorage-bar', 'blob-bar1.txt', "Sample blob bar 1.")
+    >>> write('var', 'blobstorage-bar', 'blob-bar1.txt', 'Sample blob bar 1.')
 
 Test the snapshotbackup first, as that should be easiest.
 
@@ -209,9 +209,9 @@ easily test restoring to a specific time later.
 
     >>> import time
     >>> time.sleep(2)
-    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
-    >>> write('var', 'blobstorage-foo', 'blob-foo2.txt', "Sample blob foo 2.")
-    >>> write('var', 'blobstorage-bar', 'blob-bar2.txt', "Sample blob bar 2.")
+    >>> write('var', 'blobstorage', 'blob2.txt', 'Sample blob 2.')
+    >>> write('var', 'blobstorage-foo', 'blob-foo2.txt', 'Sample blob foo 2.')
+    >>> write('var', 'blobstorage-bar', 'blob-bar2.txt', 'Sample blob bar 2.')
     >>> print(system('bin/snapshotbackup'))
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
@@ -348,7 +348,7 @@ Let's see how a bin/backup goes:
 We try again with an extra 'blob':
 
     >>> time.sleep(2)
-    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
+    >>> write('var', 'blobstorage', 'blob2.txt', 'Sample blob 2.')
     >>> print(system('bin/backup'))
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
@@ -625,7 +625,7 @@ When repozo quits with an error, we should not restore the blobs then either.
 We test that with a special bin/repozo script that simply quits::
 
     >>> import sys
-    >>> write('bin', 'repozo', "#!%s\nimport sys\nsys.exit(1)" % sys.executable)
+    >>> write('bin', 'repozo', '#!%s\nimport sys\nsys.exit(1)' % sys.executable)
     >>> dontcare = system('chmod u+x bin/repozo')
     >>> print(system('bin/snapshotrestore', input='yes\n'))
     <BLANKLINE>

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 # Backup methods.
 STANDARD_BACKUP = 1
 SNAPSHOT_BACKUP = 2

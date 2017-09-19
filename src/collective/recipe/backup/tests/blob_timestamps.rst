@@ -47,11 +47,11 @@ Write a buildout config::
     -  snapshotrestore
     >>> mkdir('var', 'filestorage')
     >>> mkdir('var', 'blobstorage')
-    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1.")
+    >>> write('var', 'blobstorage', 'blob1.txt', 'Sample blob 1.')
     >>> mkdir('var', 'blobstorage-foo')
-    >>> write('var', 'blobstorage-foo', 'blob-foo1.txt', "Sample blob foo 1.")
+    >>> write('var', 'blobstorage-foo', 'blob-foo1.txt', 'Sample blob foo 1.')
     >>> mkdir('var', 'blobstorage-bar')
-    >>> write('var', 'blobstorage-bar', 'blob-bar1.txt', "Sample blob bar 1.")
+    >>> write('var', 'blobstorage-bar', 'blob-bar1.txt', 'Sample blob bar 1.')
 
 Test the snapshotbackup first, as that should be easiest.
 
@@ -97,9 +97,9 @@ Note that due to the timestamps no renaming takes place from blobstorage.0 to bl
 
     >>> import time
     >>> time.sleep(2)
-    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
-    >>> write('var', 'blobstorage-foo', 'blob-foo2.txt', "Sample blob foo 2.")
-    >>> write('var', 'blobstorage-bar', 'blob-bar2.txt', "Sample blob bar 2.")
+    >>> write('var', 'blobstorage', 'blob2.txt', 'Sample blob 2.')
+    >>> write('var', 'blobstorage-foo', 'blob-foo2.txt', 'Sample blob foo 2.')
+    >>> write('var', 'blobstorage-bar', 'blob-bar2.txt', 'Sample blob bar 2.')
     >>> print(system('bin/snapshotbackup'))
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
@@ -158,7 +158,7 @@ But let's test it for good measure::
     >>> remove('var', 'blobstorage', 'blob2.txt')
     >>> remove('var', 'blobstorage-foo', 'blob-foo1.txt')
     >>> remove('var', 'blobstorage-bar', 'blob-bar1.txt')
-    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1 version 2.")
+    >>> write('var', 'blobstorage', 'blob1.txt', 'Sample blob 1 version 2.')
     >>> print(system('bin/snapshotbackup'))
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/snapshotbackups_foo
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/snapshotbackups_bar
@@ -262,8 +262,8 @@ Let's see how a bin/backup goes:
 We try again with an extra 'blob' and a changed 'blob':
 
     >>> time.sleep(2)
-    >>> write('var', 'blobstorage', 'blob2.txt', "Sample blob 2.")
-    >>> write('var', 'blobstorage', 'blob1.txt', "Sample blob 1 version 3.")
+    >>> write('var', 'blobstorage', 'blob2.txt', 'Sample blob 2.')
+    >>> write('var', 'blobstorage', 'blob1.txt', 'Sample blob 1 version 3.')
     >>> print(system('bin/backup'))
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/foo.fs to /sample-buildout/var/backups_foo
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/bar.fs to /sample-buildout/var/backups_bar
@@ -297,7 +297,7 @@ We try again with an extra 'blob' and a changed 'blob':
 
 Write a third file.
 
-    >>> write('var', 'blobstorage', 'blob3.txt', "Sample blob 3.")
+    >>> write('var', 'blobstorage', 'blob3.txt', 'Sample blob 3.')
     >>> ls('var/blobstorage')
     -  blob1.txt
     -  blob2.txt
@@ -356,7 +356,7 @@ The third file should be gone afterwards::
 
 With the ``no-prompt`` option we avoid the question::
 
-    >>> write('var', 'blobstorage', 'blob3.txt', "Sample blob 3.")
+    >>> write('var', 'blobstorage', 'blob3.txt', 'Sample blob 3.')
     >>> ls('var/blobstorage')
     -  blob1.txt
     -  blob2.txt

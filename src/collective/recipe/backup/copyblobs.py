@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 """
 The idea is to use rsync and hard links; this probably requires a
 unixy (Linux, Mac OS X) operating system.
@@ -25,6 +26,27 @@ BACKUP_DIR = 'backups'
 is_time_stamp = re.compile(r'\d{4}(?:-\d\d){5}$').match
 
 
+def find_suffixes(value, suffixes):
+    """Check that value contains ons of the suffixes.
+
+    If it does, return the value without suffix.
+    It it does not, return None.
+    """
+    if isinstance(suffixes, utils.stringtypes):
+        suffixes = [suffixes]
+    found = False
+    for suffix in suffixes:
+        if not suffix.startswith('.'):
+            suffix = '.' + suffix
+        if value.endswith(suffix):
+            found = True
+            break
+    if not found:
+        return
+    value = value[:-len(suffix)]
+    return value
+
+
 def get_prefix_and_number(value, prefix=None, suffixes=None):
     """Get prefix and number out of value.
 
@@ -46,18 +68,9 @@ def get_prefix_and_number(value, prefix=None, suffixes=None):
     but it would be hard to read.
     """
     if suffixes is not None:
-        if isinstance(suffixes, utils.stringtypes):
-            suffixes = [suffixes]
-        found = False
-        for suffix in suffixes:
-            if not suffix.startswith('.'):
-                suffix = '.' + suffix
-            if value.endswith(suffix):
-                found = True
-                break
-        if not found:
+        value = find_suffixes(value, suffixes)
+        if value is None:
             return
-        value = value[:-len(suffix)]
     if prefix is None:
         # number or anything.number.
         # But 'anything' should not contain dots: too tricky.
@@ -145,7 +158,7 @@ def part_of_same_backup(values):
         start2 = value.rsplit('.', 1)[0]
         if start != start2:
             raise ValueError(
-                "Not the same start for backups: {0} vs {1}".format(
+                'Not the same start for backups: {0} vs {1}'.format(
                     first, value))
 
 
@@ -207,7 +220,7 @@ def gen_timestamp(now=None):
     """
     if now is None or isinstance(now, (int, float)):
         now = time.gmtime(now)[:6]
-    return '%04d-%02d-%02d-%02d-%02d-%02d' % now
+    return '{0:04d}-{1:02d}-{2:02d}-{3:02d}-{4:02d}-{5:02d}'.format(*now)
 
 
 def gen_blobdir_name(prefix='blobstorage', now=None):
@@ -252,7 +265,7 @@ def get_valid_directories(container, name):
     We break when encountering a correct name that is a file where we
     expect a directory, as this will break the rotating functionality.
 
-    >>> write('dirtest', 'a.3', "Test file.")
+    >>> write('dirtest', 'a.3', 'Test file.')
     >>> get_valid_directories('dirtest', 'a')
     Traceback (most recent call last):
     ...
@@ -272,7 +285,7 @@ def get_valid_directories(container, name):
         entry_start, entry_num = entry.rsplit('.', 1)
         if entry_start != name:
             # Maybe something like 'blobstorage.break.me.0'
-            logger.warn("Ignoring entry %s in %s", entry, container)
+            logger.warning('Ignoring entry %s in %s', entry, container)
             continue
         try:
             entry_num = int(entry_num)
@@ -280,8 +293,9 @@ def get_valid_directories(container, name):
             continue
         # Looks like we have a winner.  It must be a directory though.
         if not os.path.isdir(os.path.join(container, entry)):
-            raise Exception("Refusing to rotate %s as it is not a directory." %
-                            entry)
+            raise Exception(
+                'Refusing to rotate {0} as it is not a directory.'.format(
+                    entry))
         valid_entries.append(entry)
     return valid_entries
 
@@ -306,7 +320,7 @@ def get_valid_archives(container, name):
     []
     >>> for gz in ['a.tar.gz', 'a.0.tar.gz', 'a.1.tar', 'a.bar.2.tar.gz',
     ...         'a.2017-01-02-03-04-05.tar.gz']:
-    ...     write('dirtest', gz, "Test file.")
+    ...     write('dirtest', gz, 'Test file.')
     >>> sorted(get_valid_archives('dirtest', 'a'))
     ['a.0.tar.gz', 'a.1.tar']
     >>> get_valid_archives('dirtest', 'bar')
@@ -329,7 +343,7 @@ def get_valid_archives(container, name):
     """
     valid_entries = []
     for entry in os.listdir(container):
-        matched = re.match("^%s\.(\d+)\.tar(\.gz)?$" % name, entry)
+        matched = re.match('^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
         if matched is None:
             continue
         match = matched.groups()[0]
@@ -338,8 +352,8 @@ def get_valid_archives(container, name):
         except (ValueError, TypeError):
             continue
         if not os.path.isfile(os.path.join(container, entry)):
-            raise Exception("Refusing to rotate %s as it is not a file." %
-                            entry)
+            raise Exception(
+                'Refusing to rotate {0} as it is not a file.'.format(entry))
         valid_entries.append(entry)
     return valid_entries
 
@@ -384,8 +398,8 @@ def rotate_directories(container, name):
     # Rotate the directories.
     for directory in sorted_backups:
         new_num = int(directory.split('.')[-1]) + 1
-        new_name = '%s.%s' % (name, new_num)
-        logger.info("Renaming %s to %s.", directory, new_name)
+        new_name = '{0}.{1}'.format(name, new_num)
+        logger.info('Renaming %s to %s.', directory, new_name)
         os.rename(os.path.join(container, directory),
                   os.path.join(container, new_name))
 
@@ -403,7 +417,7 @@ def rotate_archives(container, name):
     >>> mkdir('dirtest')
     >>> rotate_archives('dirtest', 'a')
     >>> for gz in ['a.0.tar', 'a.1.tar.gz', 'a.2.tar', 'a.9.tar.gz']:
-    ...     write('dirtest', gz, "File content.")
+    ...     write('dirtest', gz, 'File content.')
     >>> ls('dirtest')
     -  a.0.tar
     -  a.1.tar.gz
@@ -431,13 +445,13 @@ def rotate_archives(container, name):
     sorted_backups = sorted(previous_backups, key=archive_backup_key)
     # Rotate the directories.
     for entry in sorted_backups:
-        matched = re.match("^%s\.(\d+)\.tar(\.gz)?$" % name, entry)
+        matched = re.match('^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
         old_num, gz = matched.groups()
         new_num = int(old_num) + 1
         if gz is None:
-            gz = ""
-        new_name = "%s.%s.tar%s" % (name, new_num, gz)
-        logger.info("Renaming %s to %s.", entry, new_name)
+            gz = ''
+        new_name = '{0}.{1}.tar{2}'.format(name, new_num, gz)
+        logger.info('Renaming %s to %s.', entry, new_name)
         os.rename(os.path.join(container, entry),
                   os.path.join(container, new_name))
 
@@ -449,7 +463,7 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
     That is useful when restoring.
     """
     filenames = os.listdir(backup_location)
-    logger.debug("Looked up filenames in the target dir: %s found. %r.",
+    logger.debug('Looked up filenames in the target dir: %s found. %r.',
                  len(filenames), filenames)
     backup_dirs = []
     prefix = ''
@@ -473,10 +487,10 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
         if prefix:
             if parts[0] != prefix:
                 logger.error(
-                    "Different backup prefixes found in %s (%s, %s). Are you "
-                    "mixing two backups in one directory? For safety we will "
-                    "exit, because we cannot get a correct sort order." % (
-                        backup_location, prefix, parts[0]))
+                    'Different backup prefixes found in %s (%s, %s). Are you '
+                    'mixing two backups in one directory? For safety we will '
+                    'exit, because we cannot get a correct sort order.',
+                    backup_location, prefix, parts[0])
                 sys.exit(1)
         else:
             prefix = parts[0]
@@ -487,9 +501,9 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
     # Check if this is the same as sorting by modification time:
     mod_times = sorted(backup_dirs, key=itemgetter(1), reverse=True)
     if backup_dirs != mod_times:
-        logger.warn("Sorting blob backups by number gives other result than "
-                    "reverse sorting by last modification time.")
-    logger.debug("Found %d blob backups: %r.", len(backup_dirs),
+        logger.warn('Sorting blob backups by number gives other result than '
+                    'reverse sorting by last modification time.')
+    logger.debug('Found %d blob backups: %r.', len(backup_dirs),
                  [d[1] for d in backup_dirs])
     return backup_dirs
 
@@ -503,7 +517,7 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     That is useful when restoring.
     """
     filenames = os.listdir(backup_location)
-    logger.debug("Looked up filenames in the target dir: %s found. %r.",
+    logger.debug('Looked up filenames in the target dir: %s found. %r.',
                  len(filenames), filenames)
     backup_archives = []
     suffixes = ['tar', '.tar.gz']
@@ -524,10 +538,10 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
         if prefix:
             if parts[0] != prefix:
                 logger.error(
-                    "Different backup prefixes found in %s (%s, %s). Are you "
-                    "mixing two backups in one directory? For safety we will "
-                    "exit, because we cannot get a correct sort order." % (
-                        backup_location, prefix, parts[0]))
+                    'Different backup prefixes found in %s (%s, %s). Are you '
+                    'mixing two backups in one directory? For safety we will '
+                    'exit, because we cannot get a correct sort order.',
+                    backup_location, prefix, parts[0])
                 sys.exit(1)
         else:
             prefix = parts[0]
@@ -541,9 +555,10 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     # Check if this is the same as reverse sorting by modification time:
     mod_times = sorted(backup_archives, key=itemgetter(1), reverse=True)
     if backup_archives != mod_times:
-        logger.warn("Sorting blob backups by number gives other result than "
-                    "reverse sorting by last modification time.")
-    logger.debug("Found %d blob backups: %r.", len(backup_archives),
+        logger.warning(
+            'Sorting blob backups by number gives other result than '
+            'reverse sorting by last modification time.')
+    logger.debug('Found %d blob backups: %r.', len(backup_archives),
                  [d[1] for d in backup_archives])
     return backup_archives
 
@@ -631,9 +646,9 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     Again, let's test this using the tools from zc.buildout:
 
     >>> mkdir('blobs')
-    >>> write('blobs', 'one.txt', "File One")
-    >>> write('blobs', 'two.txt', "File Two")
-    >>> write('blobs', 'three.txt', "File Three")
+    >>> write('blobs', 'one.txt', 'File One')
+    >>> write('blobs', 'two.txt', 'File Two')
+    >>> write('blobs', 'three.txt', 'File Three')
     >>> mkdir('blobs', 'dir')
     >>> mkdir('backups')
     >>> backup_blobs('blobs', 'backups')
@@ -649,8 +664,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
 
     Change some stuff.
 
-    >>> write('blobs', 'one.txt', "Changed File One")
-    >>> write('blobs', 'four.txt', "File Four")
+    >>> write('blobs', 'one.txt', 'Changed File One')
+    >>> write('blobs', 'four.txt', 'File Four')
     >>> remove('blobs', 'two.txt')
     >>> backup_blobs('blobs/', 'backups')
     >>> ls('backups')
@@ -770,9 +785,9 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     We do mostly the same as above, but now using full backups.
 
     >>> mkdir('blobs')
-    >>> write('blobs', 'one.txt', "File One")
-    >>> write('blobs', 'two.txt', "File Two")
-    >>> write('blobs', 'three.txt', "File Three")
+    >>> write('blobs', 'one.txt', 'File One')
+    >>> write('blobs', 'two.txt', 'File Two')
+    >>> write('blobs', 'three.txt', 'File Three')
     >>> mkdir('blobs', 'dir')
     >>> mkdir('backups')
     >>> backup_blobs('blobs', 'backups', full=True)
@@ -788,8 +803,8 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
 
     Change some stuff.
 
-    >>> write('blobs', 'one.txt', "Changed File One")
-    >>> write('blobs', 'four.txt', "File Four")
+    >>> write('blobs', 'one.txt', 'Changed File One')
+    >>> write('blobs', 'four.txt', 'File Four')
     >>> remove('blobs', 'two.txt')
     >>> backup_blobs('blobs', 'backups', full=True)
     >>> ls('backups')
@@ -878,19 +893,22 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             # not.
             if not os.path.isdir(prev):
                 # Should have been caught already.
-                raise Exception("%s must be a directory" % prev)
+                raise Exception('{0} must be a directory'.format(prev))
             # Hardlink against the previous directory.  Done by hand it
             # would be:
             # rsync -a  --delete --link-dest=../blobstorage.1 blobstorage/
             #     backups/blobstorage.0
             prev_link = os.path.relpath(prev, dest)
-            cmd = ('rsync -a %(options)s --delete --link-dest=%(link)s '
-                   '%(source)s %(dest)s' % dict(
-                       options=rsync_options, link=prev_link,
-                       source=source, dest=dest))
+            cmd = (
+                'rsync -a {options} --delete --link-dest={link} {source} '
+                '{dest}'.format(
+                    options=rsync_options,
+                    link=prev_link,
+                    source=source,
+                    dest=dest))
         else:
             # No previous directory to hardlink against.
-            cmd = 'rsync -a %(options)s %(source)s %(dest)s' % dict(
+            cmd = 'rsync -a {options} {source} {dest}'.format(
                 options=rsync_options, source=source, dest=dest)
         logger.info(cmd)
         output, failed = utils.system(cmd)
@@ -904,7 +922,7 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
             # in python2.4.
             os.makedirs(dest)
         dest = os.path.join(dest, base_name)
-        logger.info("Copying %s to %s", source, dest)
+        logger.info('Copying %s to %s', source, dest)
         shutil.copytree(source, dest)
     # Now possibly remove old backups.
     cleanup(destination, full, keep, keep_blob_days,
@@ -927,9 +945,9 @@ def backup_blobs_archive(
     Again, let's test this using the tools from zc.buildout:
 
     >>> mkdir('blobs')
-    >>> write('blobs', 'one.txt', "File One")
-    >>> write('blobs', 'two.txt', "File Two")
-    >>> write('blobs', 'three.txt', "File Three")
+    >>> write('blobs', 'one.txt', 'File One')
+    >>> write('blobs', 'two.txt', 'File Two')
+    >>> write('blobs', 'three.txt', 'File Three')
     >>> mkdir('blobs', 'dir')
     >>> mkdir('backups')
     >>> backup_blobs_archive('blobs', 'backups', keep=0)
@@ -938,8 +956,8 @@ def backup_blobs_archive(
 
     Change some stuff and compress.
 
-    >>> write('blobs', 'one.txt', "Changed File One")
-    >>> write('blobs', 'four.txt', "File Four")
+    >>> write('blobs', 'one.txt', 'Changed File One')
+    >>> write('blobs', 'four.txt', 'File Four')
     >>> remove('blobs', 'two.txt')
     >>> backup_blobs_archive('blobs/', 'backups', compress_blob=True)
     >>> ls('backups')
@@ -948,7 +966,7 @@ def backup_blobs_archive(
 
     Change some stuff and no longer compress.
 
-    >>> write('blobs', 'one.txt', "Changed File One Again")
+    >>> write('blobs', 'one.txt', 'Changed File One Again')
     >>> backup_blobs_archive('blobs', 'backups')
     >>> ls('backups')
     -  blobs.0.tar
@@ -958,7 +976,7 @@ def backup_blobs_archive(
     Use timestamps with a fs_backup_location.
 
     >>> mkdir('fs')
-    >>> write('fs', '2017-05-24-11-54-39.fsz', "Dummy filestorage backup")
+    >>> write('fs', '2017-05-24-11-54-39.fsz', 'Dummy filestorage backup')
     >>> backup_blobs_archive(
     ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
     ...     compress_blob=True)
@@ -992,7 +1010,7 @@ def backup_blobs_archive(
 
     Same settings, now with a newer filestorage backup.
 
-    >>> write('fs', '2017-05-24-12-00-00.fsz', "Dummy filestorage backup 2")
+    >>> write('fs', '2017-05-24-12-00-00.fsz', 'Dummy filestorage backup 2')
     >>> backup_blobs_archive(
     ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
     ...     compress_blob=False)
@@ -1044,12 +1062,12 @@ def backup_blobs_archive(
         dest = os.path.join(destination, base_name + '.0.tar')
     if compress_blob:
         dest += '.gz'
-        tar_command = "tar czf"
+        tar_command = 'tar czf'
     else:
-        tar_command = "tar cf"
+        tar_command = 'tar cf'
     if os.path.exists(dest):
-        raise Exception("Path already exists: %s" % dest)
-    cmd = "%s %s -C %s ." % (tar_command, dest, source)
+        raise Exception('Path already exists: {0}'.format(dest))
+    cmd = '{0} {1} -C {2} .'.format(tar_command, dest, source)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -1084,7 +1102,7 @@ def find_backup_to_restore(source, date_string='', archive=False,
         backup_getter = get_blob_backup_dirs
     current_backups = backup_getter(source)
     if not current_backups:
-        logger.error("There are no backups in %s.", source)
+        logger.error('There are no backups in %s.', source)
         return
     if not date_string:
         # The most recent is the default.
@@ -1094,8 +1112,8 @@ def find_backup_to_restore(source, date_string='', archive=False,
     # We want the backup for a specific date.
     try:
         date_args = [int(num) for num in date_string.split('-')]
-    except:
-        logger.error("Could not parse date argument to restore blobs: %r",
+    except (AttributeError, ValueError, TypeError):
+        logger.error('Could not parse date argument to restore blobs: %r',
                      date_string)
         return
     # Is this a valid datetime?  So not for example 99 seconds?
@@ -1122,7 +1140,7 @@ def find_backup_to_restore(source, date_string='', archive=False,
         if backup_time <= target_datetime:
             return directory
 
-    logger.error("Could not find backup of %r or earlier.", date_string)
+    logger.error('Could not find backup of %r or earlier.', date_string)
 
 
 def restore_blobs(source, destination, use_rsync=True,
@@ -1175,7 +1193,7 @@ def restore_blobs(source, destination, use_rsync=True,
     # You should end up with something like this:
     # rsync -a  --delete var/blobstoragebackups/blobstorage.0/blobstorage var/
     if use_rsync:
-        cmd = 'rsync -a %(options)s --delete %(source)s %(dest)s' % dict(
+        cmd = 'rsync -a {options} --delete {source} {dest}'.format(
             options=rsync_options,
             source=backup_source,
             dest=dest_dir)
@@ -1187,9 +1205,9 @@ def restore_blobs(source, destination, use_rsync=True,
             return
     else:
         if os.path.exists(destination):
-            logger.info("Removing %s", destination)
+            logger.info('Removing %s', destination)
             shutil.rmtree(destination)
-        logger.info("Copying %s to %s", backup_source, destination)
+        logger.info('Copying %s to %s', backup_source, destination)
         shutil.copytree(backup_source, destination)
 
 
@@ -1200,9 +1218,9 @@ def restore_blobs_archive(source, destination, date=None, timestamps=False,
     Prepare backup for test:
 
     >>> mkdir('blobs')
-    >>> write('blobs', 'one.txt', "File One")
-    >>> write('blobs', 'two.txt', "File Two")
-    >>> write('blobs', 'three.txt', "File Three")
+    >>> write('blobs', 'one.txt', 'File One')
+    >>> write('blobs', 'two.txt', 'File Two')
+    >>> write('blobs', 'three.txt', 'File Three')
     >>> mkdir('blobs', 'dir')
     >>> mkdir('backups')
     >>> backup_blobs_archive('blobs', 'backups', keep=2)
@@ -1222,7 +1240,7 @@ def restore_blobs_archive(source, destination, date=None, timestamps=False,
 
     Test restore of compressed archive.
 
-    >>> write('blobs', 'four.txt', "File Four")
+    >>> write('blobs', 'four.txt', 'File Four')
     >>> backup_blobs_archive('blobs', 'backups', keep=2, compress_blob=True)
     >>> ls('backups')
     -  blobs.0.tar.gz
@@ -1251,15 +1269,15 @@ def restore_blobs_archive(source, destination, date=None, timestamps=False,
     if only_check:
         return
     if os.path.exists(destination):
-        logger.info("Removing %s", destination)
+        logger.info('Removing %s', destination)
         shutil.rmtree(destination)
     os.mkdir(destination)
-    logger.info("Extracting %s to %s", backup_source, destination)
+    logger.info('Extracting %s to %s', backup_source, destination)
     if backup_source.endswith('gz'):
-        tar_command = "tar xzf"
+        tar_command = 'tar xzf'
     else:
-        tar_command = "tar xf"
-    cmd = "%s %s -C %s" % (tar_command, backup_source, destination)
+        tar_command = 'tar xf'
+    cmd = '{0} {1} -C {2}'.format(tar_command, backup_source, destination)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -1308,11 +1326,11 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
         else:
             shutil.rmtree(directory)
         deleted += 1
-        logger.debug("Deleted %s.", directory)
+        logger.debug('Deleted %s.', directory)
     if deleted:
-        logger.info("Removed %d blob backup(s), all backups "
-                    "belonging to remaining filestorage backups have "
-                    "been kept.", deleted)
+        logger.info('Removed %d blob backup(s), all backups '
+                    'belonging to remaining filestorage backups have '
+                    'been kept.', deleted)
     # We are done.
     return True
 
@@ -1476,7 +1494,7 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
         # For full backups we do not need to count days.
         keep_blob_days = 0
     if (not keep) and (not keep_blob_days):
-        logger.debug("We do not want to remove anything.")
+        logger.debug('We do not want to remove anything.')
         return
     if keep_blob_days and not full:
         # For partial backups we ignore the 'keep' in favour of
@@ -1485,21 +1503,21 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
         # logic somehow fails, like when modification dates have been
         # tampered with.
         keep = 1
-    logger.debug("Trying to clean up old backups.")
+    logger.debug('Trying to clean up old backups.')
     backup_dirs = get_blob_backup_dirs(backup_location)
     if full:
-        logger.debug("This is a full backup.")
-        logger.debug("Max number of backups: %d.", keep)
-        logger.debug("Number of blob days to keep: %d (ignored).",
+        logger.debug('This is a full backup.')
+        logger.debug('Max number of backups: %d.', keep)
+        logger.debug('Number of blob days to keep: %d (ignored).',
                      keep_blob_days)
     else:
-        logger.debug("This is a partial backup.")
-        logger.debug("Minimum number of backups to keep: %d.", keep)
-        logger.debug("Number of blob days to keep: %d.", keep_blob_days)
+        logger.debug('This is a partial backup.')
+        logger.debug('Minimum number of backups to keep: %d.', keep)
+        logger.debug('Number of blob days to keep: %d.', keep_blob_days)
     if len(backup_dirs) > keep and keep != 0:
-        logger.debug("There are older backups that we can remove.")
+        logger.debug('There are older backups that we can remove.')
         possibly_remove = backup_dirs[keep:]
-        logger.debug("Will possibly remove: %r", possibly_remove)
+        logger.debug('Will possibly remove: %r', possibly_remove)
         deleted = 0
         now = time.time()
         for num, mod_time, directory in possibly_remove:
@@ -1510,17 +1528,17 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
                     continue
             shutil.rmtree(directory)
             deleted += 1
-            logger.debug("Deleted %s.", directory)
+            logger.debug('Deleted %s.', directory)
         if deleted:
             if full:
-                logger.info("Removed %d blob backup(s), the latest "
-                            "%d backup(s) have been kept.", deleted, keep)
+                logger.info('Removed %d blob backup(s), the latest '
+                            '%d backup(s) have been kept.', deleted, keep)
             else:
-                logger.info("Removed %d blob backup(s), the latest "
-                            "%d day(s) of backups have been kept.", deleted,
+                logger.info('Removed %d blob backup(s), the latest '
+                            '%d day(s) of backups have been kept.', deleted,
                             keep_blob_days)
     else:
-        logger.debug("Not removing backups.")
+        logger.debug('Not removing backups.')
 
 
 def cleanup_archives(
@@ -1640,21 +1658,21 @@ def cleanup_archives(
 
     # Making sure we use integers.
     keep = int(keep)
-    logger.debug("Trying to clean up old backups.")
+    logger.debug('Trying to clean up old backups.')
     backup_archives = get_blob_backup_archives(backup_location)
-    logger.debug("This is a full backup.")
-    logger.debug("Max number of backups: %d.", keep)
+    logger.debug('This is a full backup.')
+    logger.debug('Max number of backups: %d.', keep)
     if len(backup_archives) > keep and keep != 0:
-        logger.debug("There are older backups that we can remove.")
+        logger.debug('There are older backups that we can remove.')
         possibly_remove = backup_archives[keep:]
-        logger.debug("Will possibly remove: %r", possibly_remove)
+        logger.debug('Will possibly remove: %r', possibly_remove)
         deleted = 0
         for num, mod_time, archive_file in possibly_remove:
             os.remove(archive_file)
             deleted += 1
-            logger.debug("Deleted %s.", archive_file)
+            logger.debug('Deleted %s.', archive_file)
         if deleted:
-            logger.info("Removed %d blob backup(s), the latest "
-                        "%d backup(s) have been kept.", deleted, keep)
+            logger.info('Removed %d blob backup(s), the latest '
+                        '%d backup(s) have been kept.', deleted, keep)
     else:
-        logger.debug("Not removing backups.")
+        logger.debug('Not removing backups.')
