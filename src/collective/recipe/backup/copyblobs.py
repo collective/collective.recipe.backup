@@ -490,8 +490,9 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
     # Check if this is the same as sorting by modification time:
     mod_times = sorted(backup_dirs, key=itemgetter(1), reverse=True)
     if backup_dirs != mod_times:
-        logger.warn('Sorting blob backups by number gives other result than '
-                    'reverse sorting by last modification time.')
+        logger.warning(
+            'Sorting blob backups by number gives other result than '
+            'reverse sorting by last modification time.')
     logger.debug('Found %d blob backups: %r.', len(backup_dirs),
                  [d[1] for d in backup_dirs])
     return backup_dirs
