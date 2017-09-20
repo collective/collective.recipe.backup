@@ -34,6 +34,10 @@ def find_suffixes(value, suffixes):
     """
     if isinstance(suffixes, utils.stringtypes):
         suffixes = [suffixes]
+    # Order the suffixes from large to small.
+    # Otherwise looking for 'tar' will find 'delta.tar' too,
+    # which will trip up our logic.
+    suffixes = sorted(suffixes, key=len, reverse=True)
     found = False
     for suffix in suffixes:
         if not suffix.startswith('.'):
@@ -511,7 +515,9 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
 def get_blob_backup_archives(backup_location, only_timestamps=False):
     """Get blob backup archive files from this location.
 
-    Archives may be .tar or .tar.gz files.  We return both.
+    Archives may be .tar or .tar.gz files.
+    Or delta.tar or delta.tar.gz files.
+    We return all.
 
     If only_timestamps is True, we only return backups that have timestamps.
     That is useful when restoring.
@@ -520,12 +526,13 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     logger.debug('Looked up filenames in the target dir: %s found. %r.',
                  len(filenames), filenames)
     backup_archives = []
-    suffixes = ['tar', '.tar.gz']
+    suffixes = ['delta.tar.gz', 'delta.tar', 'tar.gz', 'tar']
     prefix = ''
     for filename in filenames:
         # We only want files of the form prefix.X.tar.gz, where X is an
         # integer or a timestamp.  There should not be anything else,
         # but we like to be safe.
+        # For the deltas, there can be only timestamps, so we might optimize.
         full_path = os.path.join(backup_location, filename)
         if not os.path.isfile(full_path):
             continue
@@ -563,7 +570,7 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     return backup_archives
 
 
-# Copy of is_data_filein ZODB / scripts / repozo.py.
+# Copy of is_data_file in ZODB / scripts / repozo.py.
 is_data_file = re.compile(r'\d{4}(?:-\d\d){5}\.(?:delta)?fsz?$').match
 
 
@@ -693,7 +700,6 @@ def find_snapshot_archive(
             # Give up.
             return
     elif not full:
-        # import pdb; pdb.set_trace()
         # We are only backing up blobs, and no Data.fs.
         # Look for actual snar files then, but only when we are not
         # explicitly making a full backup.
@@ -710,7 +716,9 @@ def find_snapshot_archive(
     # This can be when full is explicitly true, or when a zeopack has made
     # the previous full backup outdated.
     if timestamp != full_stamp and not os.path.exists(snapshot_archive):
-        # TODO: will this message get shown during restore? I hope not.
+        # This message should only get shown during backup, not during
+        # restore. But during restore it can only happen if a .snar file
+        # has been removed, which seems unlikely.
         logger.warning(
             'Not making incremental blob backup, because this is a '
             'partial backup, and there is no snapshot file yet. '
@@ -1207,7 +1215,11 @@ def backup_blobs_archive(
     -  blobs.2017-05-26-12-00-00.tar
 
     Again, with a delta.
+    We sleep, because --listed-incremental compares timestamps,
+    and this goes per second.
+    In practice, blobs do not get changed, only added or deleted.
 
+    >>> time.sleep(1)
     >>> write('blobs', 'one.txt', '26.1')
     >>> write('fs', '2017-05-26-13-00-00.deltafsz', 'Delta fs backup 26.1')
     >>> backup_blobs_archive(
@@ -1241,9 +1253,36 @@ def backup_blobs_archive(
     -  blobs.2017-05-26-13-00-00.delta.tar
     -  blobs.20...-...-...-...-...-....delta.tar
 
-    And again, with a pause and with full backup.
+    Change one file, and remove another.
+
+    >>> write('blobs', 'one.txt', '26.2')
+    >>> ls('blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    >>> ls('blobs', 'dir')
+    >>> cat('blobs', 'one.txt')
+    26.2
+    >>> remove('blobs', 'three.txt')
+
+    Test a restore. This should restore the previous blob contents.
+
+    >>> restore_blobs_archive('backups', 'blobs', timestamps=True)
+    >>> ls('blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    >>> ls('blobs', 'dir')
+    >>> cat('blobs', 'one.txt')
+    26.1
+
+    Backup again, with a pause and with full backup.
 
     >>> time.sleep(1)
+    >>> remove('blobs', 'four.txt')
+    >>> write('blobs', 'one.txt', 'new')
     >>> backup_blobs_archive(
     ...     'blobs', 'backups', fs_backup_location=None, timestamps=True,
     ...     compress_blob=False, incremental_blobs=True, full=True)
@@ -1260,6 +1299,37 @@ def backup_blobs_archive(
     -  blobs.20...-...-...-...-...-....delta.tar
     -  blobs.20...-...-...-...-...-....snar
     -  blobs.20...-...-...-...-...-....tar
+
+    Test restores to several timestamps.
+
+    >>> restore_blobs_archive('backups', 'blobs', timestamps=True)
+    >>> ls('blobs')
+    d  dir
+    -  one.txt
+    -  three.txt
+    >>> ls('blobs', 'dir')
+    >>> cat('blobs', 'one.txt')
+    new
+    >>> restore_blobs_archive(
+    ...     'backups', 'blobs', timestamps=True, date='2017-05-26-13-00-00')
+    >>> ls('blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    >>> ls('blobs', 'dir')
+    >>> cat('blobs', 'one.txt')
+    26.1
+    >>> restore_blobs_archive(
+    ...    'backups', 'blobs', timestamps=True, date='2017-05-26-12-00-00')
+    >>> ls('blobs')
+    d  dir
+    -  four.txt
+    -  one.txt
+    -  three.txt
+    >>> ls('blobs', 'dir')
+    >>> cat('blobs', 'one.txt')
+    26
 
     Cleanup:
 
@@ -1340,8 +1410,12 @@ def backup_blobs_archive(
         fs_backup_location=fs_backup_location)
 
 
-def find_backup_to_restore(source, date_string='', archive=False,
-                           timestamps=False):
+def find_backup_to_restore(
+        source,
+        date_string='',
+        archive=False,
+        timestamps=False,
+):
     """Find backup to restore.
 
     This determines whether blobstorage.0 or blobstorage.1 is taken, etc.
@@ -1355,6 +1429,7 @@ def find_backup_to_restore(source, date_string='', archive=False,
     If timestamps is True, we prefer those.
 
     We return nothing or a directory or file name.
+    It may be a list in case of delta archives.
     """
     if archive:
         backup_getter = get_blob_backup_archives
@@ -1367,7 +1442,15 @@ def find_backup_to_restore(source, date_string='', archive=False,
     if not date_string:
         # The most recent is the default.
         # We only need the directory or filename.
-        return current_backups[0][2]
+        # It might be a delta though, which means we need to return more.
+        directories = []
+        for num, mod_time, directory in current_backups:
+            directories.append(directory)
+            if '.delta.' not in directory:
+                # we have found a full backup
+                break
+        directories.reverse()
+        return directories
 
     # We want the backup for a specific date.
     try:
@@ -1385,20 +1468,36 @@ def find_backup_to_restore(source, date_string='', archive=False,
     # blobstorage backups may be a few seconds apart.  If the user
     # specifies a timestamp in between, this is an error of the user.
     if timestamps:
-        backup_dirs = backup_getter(
-            source, only_timestamps=True)
+        # We could get deltas, and then we should return several.
+        directories = []
+        backup_dirs = backup_getter(source, only_timestamps=True)
         # Note: the most recent timestamp is listed first.
         for num, mod_time, directory in backup_dirs:
             # Since both num and date are timestamps, we can compare them.
-            if num <= date_string:
-                return directory
+            if num > date_string:
+                continue
+            directories.append(directory)
+            if '.delta.' not in directory:
+                # we have found a full backup
+                break
+        if directories:
+            directories.reverse()
+            return directories
 
     # Compare modification times.
-    backup_dirs = backup_getter(source)
-    for num, mod_time, directory in backup_dirs:
+    # Note that in tests, the modification times will be very close together.
+    directories = []
+    for num, mod_time, directory in current_backups:
         backup_time = datetime.utcfromtimestamp(mod_time)
-        if backup_time <= target_datetime:
-            return directory
+        if backup_time > target_datetime:
+            continue
+        directories.append(directory)
+        if '.delta.' not in directory:
+            # we have found a full backup
+            break
+    if directories:
+        directories.reverse()
+        return directories
 
     logger.error('Could not find backup of %r or earlier.', date_string)
 
@@ -1449,6 +1548,15 @@ def restore_blobs(
         source, date_string=date, timestamps=timestamps)
     if not backup_source:
         return True
+    # We probably get a list of one.  For tar archives there may be more,
+    # but that does not happen for us.
+    if isinstance(backup_source, list):
+        if len(backup_source) > 1:
+            logger.error(
+                'Got %d backup directories to restore, which is more than 1, '
+                'which makes no sense: %r', len(backup_source), backup_source)
+            sys.exit(1)
+        backup_source = backup_source[0]
     if only_check:
         return
 
@@ -1535,9 +1643,9 @@ def restore_blobs_archive(
 
     """
     # Determine the source (blob backup) that should be restored.
-    backup_source = find_backup_to_restore(
+    backup_sources = find_backup_to_restore(
         source, date_string=date, archive=True, timestamps=timestamps)
-    if not backup_source:
+    if not backup_sources:
         # Signal error by returning a true value.
         return True
     if only_check:
@@ -1546,18 +1654,27 @@ def restore_blobs_archive(
         logger.info('Removing %s', destination)
         shutil.rmtree(destination)
     os.mkdir(destination)
-    logger.info('Extracting %s to %s', backup_source, destination)
-    if backup_source.endswith('gz'):
-        tar_command = 'tar xzf'
-    else:
-        tar_command = 'tar xf'
-    cmd = '{0} {1} -C {2}'.format(tar_command, backup_source, destination)
-    logger.info(cmd)
-    output, failed = utils.system(cmd)
-    if output:
-        print(output)
-    if failed:
-        return
+    tar_options = ''
+    if not isinstance(backup_sources, list):
+        backup_sources = [backup_sources]
+    if len(backup_sources) > 1:
+        logger.info(
+            'Found %d incremental backups to restore.', len(backup_sources))
+        tar_options = ' --incremental'
+    for backup_source in backup_sources:
+        logger.info('Extracting %s to %s', backup_source, destination)
+        if backup_source.endswith('gz'):
+            tar_command = 'tar xzf'
+        else:
+            tar_command = 'tar xf'
+        cmd = '{0} {1}{2} -C {3}'.format(
+            tar_command, backup_source, tar_options, destination)
+        logger.info(cmd)
+        output, failed = utils.system(cmd)
+        if output:
+            print(output)
+        if failed:
+            return
 
 
 def remove_orphaned_blob_backups(

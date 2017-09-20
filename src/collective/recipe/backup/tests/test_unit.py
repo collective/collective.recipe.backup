@@ -172,6 +172,15 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(gpn('a.1.tar', suffixes=['tar', 'tar.gz']),
                          ('a', '1'))
         self.assertFalse(gpn('a.1.tar.gz', suffixes=['tar', 'tgz']))
+        # The order of the suffixes should not matter.
+        self.assertEqual(
+            gpn('a.1.delta.tar.gz',
+                suffixes=['delta.tar.gz', 'delta.tar', 'tar', 'tar.gz']),
+            ('a', '1'))
+        self.assertEqual(
+            gpn('a.1.delta.tar.gz',
+                suffixes=['tar', 'tar.gz', 'delta.tar.gz', 'delta.tar']),
+            ('a', '1'))
 
     def test_number_key(self):
         from collective.recipe.backup.copyblobs import number_key
