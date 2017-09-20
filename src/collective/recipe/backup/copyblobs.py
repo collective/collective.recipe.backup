@@ -1292,6 +1292,9 @@ def cleanup(
         # logic somehow fails, like when modification dates have been
         # tampered with.
         keep = 1
+    if keep == 0:
+        logger.debug('keep=0, so not removing backups.')
+        return
     logger.debug('Trying to clean up old backups.')
     backup_dirs = get_blob_backup_dirs(backup_location)
     if full:
@@ -1303,31 +1306,33 @@ def cleanup(
         logger.debug('This is a partial backup.')
         logger.debug('Minimum number of backups to keep: %d.', keep)
         logger.debug('Number of blob days to keep: %d.', keep_blob_days)
-    if len(backup_dirs) > keep and keep != 0:
-        logger.debug('There are older backups that we can remove.')
-        possibly_remove = backup_dirs[keep:]
-        logger.debug('Will possibly remove: %r', possibly_remove)
-        deleted = 0
-        now = time.time()
-        for num, mod_time, directory in possibly_remove:
-            if keep_blob_days:
-                mod_days = (now - mod_time) / 86400  # 24 * 60 * 60
-                if mod_days < keep_blob_days:
-                    # I'm too young to die!
-                    continue
-            shutil.rmtree(directory)
-            deleted += 1
-            logger.debug('Deleted %s.', directory)
-        if deleted:
-            if full:
-                logger.info('Removed %d blob backup(s), the latest '
-                            '%d backup(s) have been kept.', deleted, keep)
-            else:
-                logger.info('Removed %d blob backup(s), the latest '
-                            '%d day(s) of backups have been kept.', deleted,
-                            keep_blob_days)
-    else:
+    if len(backup_dirs) <= keep:
         logger.debug('Not removing backups.')
+        return
+    logger.debug('There are older backups that we can remove.')
+    possibly_remove = backup_dirs[keep:]
+    logger.debug('Will possibly remove: %r', possibly_remove)
+    deleted = 0
+    now = time.time()
+    for num, mod_time, directory in possibly_remove:
+        if keep_blob_days:
+            mod_days = (now - mod_time) / 86400  # 24 * 60 * 60
+            if mod_days < keep_blob_days:
+                # I'm too young to die!
+                continue
+        shutil.rmtree(directory)
+        deleted += 1
+        logger.debug('Deleted %s.', directory)
+    if not deleted:
+        logger.debug('Nothing removed.')
+        return
+    if full:
+        logger.info('Removed %d blob backup(s), the latest '
+                    '%d backup(s) have been kept.', deleted, keep)
+    else:
+        logger.info('Removed %d blob backup(s), the latest '
+                    '%d day(s) of backups have been kept.', deleted,
+                    keep_blob_days)
 
 
 def cleanup_archives(
@@ -1352,21 +1357,24 @@ def cleanup_archives(
 
     # Making sure we use integers.
     keep = int(keep)
+    if keep == 0:
+        logger.debug('keep=0, so not removing backups.')
+        return
     logger.debug('Trying to clean up old backups.')
     backup_archives = get_blob_backup_archives(backup_location)
     logger.debug('This is a full backup.')
     logger.debug('Max number of backups: %d.', keep)
-    if len(backup_archives) > keep and keep != 0:
-        logger.debug('There are older backups that we can remove.')
-        possibly_remove = backup_archives[keep:]
-        logger.debug('Will possibly remove: %r', possibly_remove)
-        deleted = 0
-        for num, mod_time, archive_file in possibly_remove:
-            os.remove(archive_file)
-            deleted += 1
-            logger.debug('Deleted %s.', archive_file)
-        if deleted:
-            logger.info('Removed %d blob backup(s), the latest '
-                        '%d backup(s) have been kept.', deleted, keep)
-    else:
+    if len(backup_archives) <= keep:
         logger.debug('Not removing backups.')
+        return
+    logger.debug('There are older backups that we can remove.')
+    possibly_remove = backup_archives[keep:]
+    logger.debug('Will possibly remove: %r', possibly_remove)
+    deleted = 0
+    for num, mod_time, archive_file in possibly_remove:
+        os.remove(archive_file)
+        deleted += 1
+        logger.debug('Deleted %s.', archive_file)
+    if deleted:
+        logger.info('Removed %d blob backup(s), the latest '
+                    '%d backup(s) have been kept.', deleted, keep)
