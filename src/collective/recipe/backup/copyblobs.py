@@ -1410,6 +1410,22 @@ def backup_blobs_archive(
         fs_backup_location=fs_backup_location)
 
 
+def find_conditional_backups_to_restore(backups, tester=None):
+    # We could get deltas, and then we should return several,
+    # so we keep a list.
+    paths = []
+    # Note: the most recent backup is listed first.
+    for num, mod_time, path in backups:
+        if tester is not None and not tester(num, mod_time, path):
+            continue
+        paths.append(path)
+        if '.delta.' not in path:
+            # we have found a full backup
+            break
+    paths.reverse()
+    return paths
+
+
 def find_backup_to_restore(
         source,
         date_string='',
@@ -1441,16 +1457,7 @@ def find_backup_to_restore(
         return
     if not date_string:
         # The most recent is the default.
-        # We only need the directory or filename.
-        # It might be a delta though, which means we need to return more.
-        directories = []
-        for num, mod_time, directory in current_backups:
-            directories.append(directory)
-            if '.delta.' not in directory:
-                # we have found a full backup
-                break
-        directories.reverse()
-        return directories
+        return find_conditional_backups_to_restore(current_backups)
 
     # We want the backup for a specific date.
     try:
@@ -1468,36 +1475,25 @@ def find_backup_to_restore(
     # blobstorage backups may be a few seconds apart.  If the user
     # specifies a timestamp in between, this is an error of the user.
     if timestamps:
-        # We could get deltas, and then we should return several.
-        directories = []
-        backup_dirs = backup_getter(source, only_timestamps=True)
-        # Note: the most recent timestamp is listed first.
-        for num, mod_time, directory in backup_dirs:
-            # Since both num and date are timestamps, we can compare them.
-            if num > date_string:
-                continue
-            directories.append(directory)
-            if '.delta.' not in directory:
-                # we have found a full backup
-                break
-        if directories:
-            directories.reverse()
-            return directories
+        ts_backups = backup_getter(source, only_timestamps=True)
 
-    # Compare modification times.
+        def tester(num, mod_time, directory):
+            # Both num and date_string are timestamps, so we can compare them.
+            return num <= date_string
+        paths = find_conditional_backups_to_restore(ts_backups, tester)
+        if paths:
+            return paths
+
+    # If timestamps are not used, or do not give a result,
+    # we fall back to comparing modification times.
     # Note that in tests, the modification times will be very close together.
-    directories = []
-    for num, mod_time, directory in current_backups:
+    def tester(num, mod_time, directory):
         backup_time = datetime.utcfromtimestamp(mod_time)
-        if backup_time > target_datetime:
-            continue
-        directories.append(directory)
-        if '.delta.' not in directory:
-            # we have found a full backup
-            break
-    if directories:
-        directories.reverse()
-        return directories
+        return backup_time <= target_datetime
+
+    paths = find_conditional_backups_to_restore(current_backups, tester)
+    if paths:
+        return paths
 
     logger.error('Could not find backup of %r or earlier.', date_string)
 
