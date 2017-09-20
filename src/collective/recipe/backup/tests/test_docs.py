@@ -91,6 +91,8 @@ def test_suite():
 
     docfiles = [
         'altrestore.rst',
+        'backup_blobs_archive.rst',
+        'backup_blobs_dir.rst',
         'base.rst',
         'blobs.rst',
         'blob_timestamps.rst',
