@@ -498,11 +498,16 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
     return backup_dirs
 
 
-def get_blob_backup_archives(backup_location, only_timestamps=False):
+def get_blob_backup_archives(
+        backup_location,
+        only_timestamps=False,
+        include_snapshot_files=False,
+):
     """Get blob backup archive files from this location.
 
     Archives may be .tar or .tar.gz files.
     Or delta.tar or delta.tar.gz files.
+    If include_snapshot_files is true, it can be .snar files.
     We return all.
 
     If only_timestamps is True, we only return backups that have timestamps.
@@ -513,6 +518,8 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
                  len(filenames), filenames)
     backup_archives = []
     suffixes = ['delta.tar.gz', 'delta.tar', 'tar.gz', 'tar']
+    if include_snapshot_files:
+        suffixes += ['snar']
     prefix = ''
     for filename in filenames:
         # We only want files of the form prefix.X.tar.gz, where X is an
@@ -554,6 +561,18 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     logger.debug('Found %d blob backups: %r.', len(backup_archives),
                  [d[1] for d in backup_archives])
     return backup_archives
+
+
+def get_blob_backup_all_archive_files(backup_location):
+    """Get blob backup archive files including snapshot files.
+
+    This is only for cleanup.
+    """
+    return get_blob_backup_archives(
+        backup_location,
+        only_timestamps=False,
+        include_snapshot_files=True
+    )
 
 
 # Copy of is_data_file in ZODB / scripts / repozo.py.
@@ -1225,7 +1244,7 @@ def remove_orphaned_blob_backups(
     logger.debug('Removing blob backups with timestamp before %s from %s',
                  oldest_timestamp, backup_location)
     if archive:
-        backup_getter = get_blob_backup_archives
+        backup_getter = get_blob_backup_all_archive_files
     else:
         backup_getter = get_blob_backup_dirs
     current_backups = backup_getter(backup_location)
@@ -1362,8 +1381,7 @@ def cleanup_archives(
         logger.debug('keep=0, so not removing backups.')
         return
     logger.debug('Trying to clean up old backups.')
-    backup_archives = get_blob_backup_archives(backup_location)
-    logger.debug('This is a full backup.')
+    backup_archives = get_blob_backup_all_archive_files(backup_location)
     logger.debug('Max number of backups: %d.', keep)
     if len(backup_archives) <= keep:
         logger.debug('Not removing backups.')

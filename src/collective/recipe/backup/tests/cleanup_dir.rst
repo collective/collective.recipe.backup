@@ -22,7 +22,6 @@ time.
     >>> import time
     >>> import os
     >>> def add_backup(name, days=0):
-    ...     global next_mod_time
     ...     mkdir(backup_dir, name)
     ...     write(backup_dir, name, 'dummyfile', 'dummycontents')
     ...     # Change modification time to 'days' days old.

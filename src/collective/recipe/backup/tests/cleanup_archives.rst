@@ -19,7 +19,6 @@ us and that also sets the file modification dates to a meaningful
 time.
 
     >>> def add_backup(name, days=0):
-    ...     global next_mod_time
     ...     write(backup_dir, name, 'dummycontents')
     ...     # Change modification time to 'days' days old.
     ...     mod_time = time.time() - (86400 * days)
@@ -54,7 +53,7 @@ as unless someone has been messing manually with the names and
 modification dates we only expect blob.0, blob.1, blob.2, etc, as
 names, with blob.0 being the most recent.
 
-Any files are ignored and any directories that do not match
+Any directories are ignored and any files that do not match
 prefix.X get ignored:
 
     >>> add_backup('myblob.tar.gz')
@@ -98,6 +97,89 @@ We keep the last 4 backups:
     -  blob.1.tar
     -  blob.2.tar
     -  blob.3.tar
+
+Now test with timestamps.
+
+We create a helper function that gives us a fresh directory with
+some blob backup directories, where 'num' backups are made once a day,
+where the first one is full, and the others incremental.
+We create snapshot archive files too.
+
+    >>> def fresh_backups(days, num, compress=False):
+    ...     remove(backup_dir)
+    ...     mkdir(backup_dir)
+    ...     for day in range(1, days + 1):
+    ...         for hour in range(num):
+    ...             base = 'blob.2016-12-{0:02d}-{1:02d}-00-00'.format(day, hour)
+    ...             if hour == 0:
+    ...                 name = '{0}.tar'.format(base)
+    ...             else:
+    ...                 name = '{0}.delta.tar'.format(base)
+    ...             if compress:
+    ...                 name += '.gz'
+    ...             write(backup_dir, name, 'dummycontents')
+    ...             if hour == 0:
+    ...                 # Create snapshot archive file too.
+    ...                 name = name.replace('tar', 'snar').replace('.gz', '')
+    ...                 write(backup_dir, name, 'dummycontents')
+
+Now use it.
+
+    >>> fresh_backups(1, 1)
+    >>> ls(backup_dir)
+    -  blob.2016-12-01-00-00-00.snar
+    -  blob.2016-12-01-00-00-00.tar
+    >>> cleanup_archives(backup_dir, keep=1)
+    >>> ls(backup_dir)
+    -  blob.2016-12-01-00-00-00.snar
+    -  blob.2016-12-01-00-00-00.tar
+
+Again.
+
+    >>> fresh_backups(1, 2)
+    >>> ls(backup_dir)
+    -  blob.2016-12-01-00-00-00.snar
+    -  blob.2016-12-01-00-00-00.tar
+    -  blob.2016-12-01-01-00-00.delta.tar
+    >>> cleanup_archives(backup_dir, keep=1)
+    >>> ls(backup_dir)
+    -  blob.2016-12-01-00-00-00.snar
+    -  blob.2016-12-01-00-00-00.tar
+    -  blob.2016-12-01-01-00-00.delta.tar
+
+Again.
+
+    >>> fresh_backups(1, 3, compress=True)
+    >>> ls(backup_dir)
+    -  blob.2016-12-01-00-00-00.snar
+    -  blob.2016-12-01-00-00-00.tar.gz
+    -  blob.2016-12-01-01-00-00.delta.tar.gz
+    -  blob.2016-12-01-02-00-00.delta.tar.gz
+    >>> cleanup_archives(backup_dir, keep=1)
+    >>> ls(backup_dir)
+    -  blob.2016-12-01-00-00-00.snar
+    -  blob.2016-12-01-00-00-00.tar.gz
+    -  blob.2016-12-01-01-00-00.delta.tar.gz
+    -  blob.2016-12-01-02-00-00.delta.tar.gz
+
+Again with two days.
+
+    >>> fresh_backups(2, 3, compress=True)
+    >>> ls(backup_dir)
+    -  blob.2016-12-01-00-00-00.snar
+    -  blob.2016-12-01-00-00-00.tar.gz
+    -  blob.2016-12-01-01-00-00.delta.tar.gz
+    -  blob.2016-12-01-02-00-00.delta.tar.gz
+    -  blob.2016-12-02-00-00-00.snar
+    -  blob.2016-12-02-00-00-00.tar.gz
+    -  blob.2016-12-02-01-00-00.delta.tar.gz
+    -  blob.2016-12-02-02-00-00.delta.tar.gz
+    >>> cleanup_archives(backup_dir, keep=1)
+    >>> ls(backup_dir)
+    -  blob.2016-12-02-00-00-00.snar
+    -  blob.2016-12-02-00-00-00.tar.gz
+    -  blob.2016-12-02-01-00-00.delta.tar.gz
+    -  blob.2016-12-02-02-00-00.delta.tar.gz
 
 Cleanup after the test.
 
