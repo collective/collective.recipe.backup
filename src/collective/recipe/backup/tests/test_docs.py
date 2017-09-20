@@ -96,6 +96,8 @@ def test_suite():
         'base.rst',
         'blobs.rst',
         'blob_timestamps.rst',
+        'cleanup_archives.rst',
+        'cleanup_dir.rst',
         'gzip.rst',
         'location.rst',
         'multiple.rst',
