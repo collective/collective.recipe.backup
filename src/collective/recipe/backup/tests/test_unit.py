@@ -112,19 +112,6 @@ class UtilsTestCase(unittest.TestCase):
 class CopyBlobsTestCase(unittest.TestCase):
     """Test the code in copyblobs.py."""
 
-    def test_gen_blobdir_name(self):
-        from collective.recipe.backup.copyblobs import gen_blobdir_name
-        # The name starts with blobstorage and a time.
-        # We only check that the century is okay.
-        self.assertTrue(gen_blobdir_name().startswith('blobstorage.20'))
-        # We can pass a time tuple.
-        self.assertEqual(gen_blobdir_name(now=(1999, 12, 31, 23, 59, 30)),
-                         'blobstorage.1999-12-31-23-59-30')
-        # We can pass a different prefix.
-        self.assertEqual(
-            gen_blobdir_name(prefix='foo', now=(1999, 12, 31, 23, 59, 30)),
-            'foo.1999-12-31-23-59-30')
-
     def test_gen_timestamp(self):
         from collective.recipe.backup.copyblobs import gen_timestamp
         self.assertTrue(gen_timestamp().startswith('20'))

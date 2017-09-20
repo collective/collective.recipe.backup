@@ -227,21 +227,6 @@ def gen_timestamp(now=None):
     return '{0:04d}-{1:02d}-{2:02d}-{3:02d}-{4:02d}-{5:02d}'.format(*now)
 
 
-def gen_blobdir_name(prefix='blobstorage', now=None):
-    """Generate directory name for blobstorage.
-
-    This is adapted from gen_filename from ZODB/scripts/repozo.py.
-
-    With 'now' you can set a different time for testing.
-    It should be a tuple of year, month, day, hour, minute, second.
-    """
-    if now is None:
-        now = time.gmtime()[:6]
-    t = now
-    ts = gen_timestamp(t)
-    return '{0}.{1}'.format(prefix, ts)
-
-
 def get_valid_directories(container, name):
     """Get subdirectories in container that start with 'name'.
 
