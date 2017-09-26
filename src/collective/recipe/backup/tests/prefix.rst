@@ -183,7 +183,7 @@ And run the scripts::
     INFO: Created /sample-buildout/backuplocation/snapshots/zipblobs
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/snapshots/zip
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/backuplocation/snapshots/zipblobs
-    INFO: tar cf /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar  -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/zip -F --gzip
@@ -220,7 +220,7 @@ And run the scripts::
     INFO: Restoring blobs from /sample-buildout/backuplocation/snapshots/zipblobs to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Extracting /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar to /sample-buildout/var/blobstorage
-    INFO: tar xf /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/backuplocation/snapshots/zipblobs/blobstorage.0.tar  -C /sample-buildout/var/blobstorage
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/zip

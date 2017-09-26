@@ -577,7 +577,7 @@ Now we test it::
     INFO: Created /sample-buildout/var/blobstoragezips
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
-    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar  -C /sample-buildout/var/blobstorage .
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
@@ -592,7 +592,7 @@ Pause a short time to avoid getting an error for overwriting the previous file::
     >>> print(system('bin/zipbackup'))
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
-    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar  -C /sample-buildout/var/blobstorage .
     INFO: Removed 1 full blob backup(s), with 1 file(s). The latest 1 backup(s) have been kept.
     <BLANKLINE>
     >>> check_repozo_output()
@@ -616,7 +616,7 @@ Now test the ziprestore script::
     INFO: Restoring blobs from /sample-buildout/var/blobstoragezips to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Extracting /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar to /sample-buildout/var/blobstorage
-    INFO: tar xf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar  -C /sample-buildout/var/blobstorage
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups
