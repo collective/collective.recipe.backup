@@ -593,7 +593,7 @@ Pause a short time to avoid getting an error for overwriting the previous file::
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar -C /sample-buildout/var/blobstorage .
-    INFO: Removed 1 blob backup(s), the latest 1 backup(s) have been kept.
+    INFO: Removed 1 full blob backup(s), with 1 file(s). The latest 1 backup(s) have been kept.
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip

@@ -960,6 +960,116 @@ def backup_blobs_archive(
         fs_backup_location=fs_backup_location)
 
 
+def is_full_tarball(path):
+    """Is this a full tarball?
+
+    We do not care if there are deltas belonging to this tarball.
+    """
+    if '.delta.' in path:
+        return False
+    if path.endswith('.tar') or path.endswith('.tar.gz'):
+        return True
+    return False
+
+
+def is_snar(path):
+    """Is this a snapshot archive file?"""
+    return path.endswith('.snar')
+
+
+def is_delta(path):
+    """Is this a delta archive file?"""
+    return '.delta.' in path
+
+
+def combine_backups(backups):
+    """Combine deltas, tars and snars that belong together.
+
+    Return a list of lists.
+    This is only useful for archives.
+    It is used to see which files can be deleted.
+    Really, it is only useful if you backup blobs without filestorage,
+    because with filestorage we can simply look for orphaned blobs.
+
+    Note: the most recent backup is listed first.
+    We assume the sort order is correct.
+    So in case of incrementals, we get:
+    delta 2, delta 1, tar, snar.
+    Or delta 2, delta 1, snar, tar...
+    Without incrementals it may be tar, tar, tar.
+    There may be gzips.
+    Or it may be directory names.
+    Or a combination of all of the above.
+    """
+    if not backups:
+        return []
+    # This function is only useful if there are incremental archives.
+    has_incremental = any(
+        [1 for x in backups if is_snar(x[2]) or is_delta(x[2])])
+    if not has_incremental:
+        # Put each item in a separate list.
+        result = []
+        for num, mod_time, path in backups:
+            result.append([(num, mod_time, path)])
+        return result
+    result = [[]]
+    for num, mod_time, path in backups:
+        current = (num, mod_time, path)
+        # Does this belong to the previous one?
+        previous = result[-1]
+        if not previous:
+            # obviously not
+            previous.append(current)
+            continue
+        if os.path.isdir(path):
+            # A directory is always on its own.
+            result.append([current])
+            continue
+        # So we have a previous list, and the current item is a file.
+        # Does the previous list have a tarball?
+        has_tar = any([1 for x in previous if is_full_tarball(x[2])])
+        # And a snapshot archive file?
+        has_snar = any([1 for x in previous if is_snar(x[2])])
+        if has_tar and has_snar:
+            # Must be the beginning of a new list.
+            result.append([current])
+            continue
+        if is_delta(path) and (has_tar or has_snar):
+            # Must be an older delta, so start a new list.
+            result.append([current])
+            continue
+        if path.endswith('.snar'):
+            if has_snar:
+                # Strange.  Start a new list.
+                previous = []
+                result.append(previous)
+            elif has_tar:
+                pass
+            previous.append(current)
+            continue
+        if is_full_tarball(path):
+            # Does the previous list have a tarball?
+            if has_tar:
+                # Yes, so we start a new list.
+                result.append([])
+                previous = result[-1]
+            previous.append(current)
+            continue
+        # We should have only deltas now.
+        if '.delta.' not in path:
+            logger.warning('Expected .delta. in path %r.', path)
+            # This at least happens in tests, when using names
+            # for directories that do not exist.
+            # Best to keep this separate.
+            result.append([current])
+            continue
+        previous.append(current)
+
+    # Filter out any empty lists.
+    result = [x for x in result if x]
+    return result
+
+
 def find_conditional_backups_to_restore(backups, tester=None):
     # We could get deltas, and then we should return several,
     # so we keep a list.
@@ -1330,11 +1440,11 @@ def cleanup(
         logger.debug('Not removing backups.')
         return
     logger.debug('There are older backups that we can remove.')
-    possibly_remove = backup_dirs[keep:]
-    logger.debug('Will possibly remove: %r', possibly_remove)
+    remove = backup_dirs[keep:]
+    logger.debug('Will possibly remove: %r', remove)
     deleted = 0
     now = time.time()
-    for num, mod_time, directory in possibly_remove:
+    for num, mod_time, directory in remove:
         if keep_blob_days:
             mod_days = (now - mod_time) / 86400  # 24 * 60 * 60
             if mod_days < keep_blob_days:
@@ -1382,18 +1492,23 @@ def cleanup_archives(
         return
     logger.debug('Trying to clean up old backups.')
     backup_archives = get_blob_backup_all_archive_files(backup_location)
+    combined_archives = combine_backups(backup_archives)
     logger.debug('Max number of backups: %d.', keep)
-    if len(backup_archives) <= keep:
+    if len(combined_archives) <= keep:
         logger.debug('Not removing backups.')
         return
     logger.debug('There are older backups that we can remove.')
-    possibly_remove = backup_archives[keep:]
-    logger.debug('Will possibly remove: %r', possibly_remove)
-    deleted = 0
-    for num, mod_time, archive_file in possibly_remove:
-        os.remove(archive_file)
-        deleted += 1
-        logger.debug('Deleted %s.', archive_file)
-    if deleted:
-        logger.info('Removed %d blob backup(s), the latest '
-                    '%d backup(s) have been kept.', deleted, keep)
+    remove = combined_archives[keep:]
+    logger.debug('Will remove: %r', remove)
+    deleted_full = 0
+    deleted_files = 0
+    for archive in remove:
+        for num, mod_time, archive_file in archive:
+            os.remove(archive_file)
+            deleted_files += 1
+            logger.debug('Deleted %s.', archive_file)
+        deleted_full += 1
+    logger.info(
+        'Removed %d full blob backup(s), with %d file(s). '
+        'The latest %d backup(s) have been kept.',
+        deleted_full, deleted_files, keep)

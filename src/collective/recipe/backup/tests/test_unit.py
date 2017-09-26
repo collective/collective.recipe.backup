@@ -324,3 +324,97 @@ class CopyBlobsTestCase(unittest.TestCase):
                 'foo.0.tar.gz',
                 'foo.1999-12-31-23-59-30.tar.gz',
                 'foo.2017-01-02-03-04-05.tar.gz'])
+
+    def test_combine_backups(self):
+        from collective.recipe.backup.copyblobs import combine_backups as cb
+        self.assertEqual(cb([]), [])
+        # The list should have lists/tuples of (num, mod_time, path).
+        # Modification times are not relevant here.
+        # Num can be 0, 1, etc, or a timestamp.
+        # They are already sorted with most recent first.
+        # They can be tars, deltas, snars, directories,
+        # although the function should not be needed for directories.
+        self.assertEqual(
+            cb([(0, 0, 'a.tar')]), [[(0, 0, 'a.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.tar'),
+            (0, 0, 'b.tar.gz'),
+            (0, 0, 'a.tar.gz'),
+            (0, 0, 'b.tar'),
+        ]), [
+            [(0, 0, 'a.tar')],
+            [(0, 0, 'b.tar.gz')],
+            [(0, 0, 'a.tar.gz')],
+            [(0, 0, 'b.tar')],
+        ])
+        self.assertEqual(
+            cb([(0, 0, 'a.tar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.tar')], [(0, 0, 'b.tar')]])
+        self.assertEqual(
+            cb([(0, 0, 'dir1'), (0, 0, 'dir2')]),
+            [[(0, 0, 'dir1')], [(0, 0, 'dir2')]])
+        # Deltas and tars are combined:
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.delta.tar'),
+            (0, 0, 'b.tar'),
+            (0, 0, 'c.delta.tar'),
+            (0, 0, 'd.delta.tar'),
+            (0, 0, 'e.tar')
+        ]), [
+            [(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')],
+            [(0, 0, 'c.delta.tar'), (0, 0, 'd.delta.tar'), (0, 0, 'e.tar')]
+        ])
+        # Snars (snapshot archives) and tars are combined:
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.snar'),
+            (0, 0, 'b.tar'),
+            # lonely snar, which is strange but should not break:
+            (0, 0, 'c.snar'),
+            (0, 0, 'd.snar'),
+            (0, 0, 'e.tar'),
+        ]), [
+            [(0, 0, 'a.snar'), (0, 0, 'b.tar')],
+            [(0, 0, 'c.snar')],
+            [(0, 0, 'd.snar'), (0, 0, 'e.tar')]
+        ])
+        # The order of snar and tar should not matter:
+        # two that belong together are expected to have the same base name,
+        # which means they have the same sort key.
+        self.assertEqual(cb([
+            (0, 0, 'a.tar'),
+            (0, 0, 'b.snar'),
+            # lonely tar, which is strange but should not break:
+            (0, 0, 'c.tar'),
+            (0, 0, 'd.tar'),
+            (0, 0, 'e.snar'),
+        ]), [
+            [(0, 0, 'a.tar'), (0, 0, 'b.snar')],
+            [(0, 0, 'c.tar')],
+            [(0, 0, 'd.tar'), (0, 0, 'e.snar')]
+        ])
+        # Deltas, tars and snars are combined:
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.tar'), (0, 0, 'b.snar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.tar'), (0, 0, 'b.snar')]])
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.snar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.snar'), (0, 0, 'b.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.delta.tar'),
+            (0, 0, 'b.tar'),
+            (0, 0, 'c.snar'),
+            (0, 0, 'd.delta.tar'),
+            (0, 0, 'e.delta.tar.gz'),
+            (0, 0, 'f.snar'),
+            (0, 0, 'g.tar.gz'),
+        ]), [
+            [(0, 0, 'a.delta.tar'), (0, 0, 'b.tar'), (0, 0, 'c.snar')],
+            [(0, 0, 'd.delta.tar'), (0, 0, 'e.delta.tar.gz'),
+             (0, 0, 'f.snar'), (0, 0, 'g.tar.gz')]
+        ])
