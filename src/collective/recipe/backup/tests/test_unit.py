@@ -235,6 +235,72 @@ class CopyBlobsTestCase(unittest.TestCase):
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05'])
 
+    def test_first_number_key(self):
+        from collective.recipe.backup.copyblobs import first_number_key
+        from collective.recipe.backup.copyblobs import mod_time_number_key
+        # Values should be (number, modification time, ignored extra).
+        # Number is either a number or a timestamp.
+        self.assertGreater(
+            first_number_key(('0', 0)),
+            first_number_key(('1', 0)))
+        self.assertEqual(
+            first_number_key(('0', 0)),
+            first_number_key(('0', 0)))
+        self.assertLess(
+            first_number_key(('1', 0)),
+            first_number_key(('0', 0)))
+        self.assertGreater(
+            first_number_key(('9', 0)),
+            first_number_key(('10', 0)))
+        self.assertLess(
+            first_number_key(('99', 0)),
+            first_number_key(('10', 0)))
+
+        # When the number is the same, the modification time becomes relevant.
+        self.assertGreater(
+            first_number_key(('0', 1)),
+            first_number_key(('0', 0)))
+        self.assertLess(
+            first_number_key(('0', 0)),
+            first_number_key(('0', 1)))
+
+        # Check the effect on a complete sort.
+        # We usually want it reversed.
+        # Use some actual data from a test that used to fail.
+        data = [
+            ('2016-12-25-00-00-00',
+             1506465957.3800716,
+             'blobstorage.2016-12-25-00-00-00.tar'),
+            ('2016-12-25-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-25-00-00-00.snar'),
+            ('2016-12-26-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-26-00-00-00.delta.tar'),
+        ]
+        correct_order = [
+            # First the delta, which has the latest timestamp number.
+            ('2016-12-26-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-26-00-00-00.delta.tar'),
+            # Then the snar, was was created at the same as the full tar,
+            # but was modified at the same time as the delta.
+            ('2016-12-25-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-25-00-00-00.snar'),
+            # Lastly the tar, which has the oldest timestamp number,
+            # just like the snar, but has an older modification time.
+            ('2016-12-25-00-00-00',
+             1506465957.3800716,
+             'blobstorage.2016-12-25-00-00-00.tar'),
+        ]
+        self.assertEqual(
+            sorted(data, key=first_number_key, reverse=True),
+            correct_order)
+        self.assertEqual(
+            sorted(data, key=mod_time_number_key, reverse=True),
+            correct_order)
+
     def test_backup_key(self):
         from collective.recipe.backup.copyblobs import backup_key
         self.assertGreater(backup_key('foo.0'), backup_key('foo.1'))

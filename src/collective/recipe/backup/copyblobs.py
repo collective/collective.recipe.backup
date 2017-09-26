@@ -138,10 +138,11 @@ def number_key(value):
 def first_number_key(value):
     """Key for comparing backup numbers.
 
-    value MUST be (number, something).
-    We are only interested in the number.
+    value MUST be (number, modification_time, ...).
+    We are primarily interested in the number.
+    But if that is the same, we look at the modification time.
     """
-    return number_key(value[0])
+    return number_key(value[0]), value[1]
 
 
 def mod_time_number_key(value):
