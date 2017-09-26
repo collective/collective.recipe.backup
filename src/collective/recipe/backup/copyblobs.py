@@ -145,6 +145,18 @@ def first_number_key(value):
     return number_key(value[0])
 
 
+def mod_time_number_key(value):
+    """Key for comparing backups.
+
+    value MUST be (number, modification_time, ...).
+    We are primarily interested in the modification time.
+    But in tests this may not be unique enough,
+    as lots of backups are made quickly after each other,
+    so use the number key as extra.
+    """
+    return value[1], number_key(value[0])
+
+
 def part_of_same_backup(values):
     """Validate that values belong to the same backup.
 
@@ -488,12 +500,12 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
     # We always sort by backup number:
     backup_dirs = sorted(backup_dirs, key=first_number_key, reverse=True)
     # Check if this is the same as sorting by modification time:
-    mod_times = sorted(backup_dirs, key=itemgetter(1), reverse=True)
+    mod_times = sorted(backup_dirs, key=mod_time_number_key, reverse=True)
     if backup_dirs != mod_times:
         logger.warning(
             'Sorting blob backups by number gives other result than '
-            'reverse sorting by last modification time. '
-            'By number: %r. By mod time: %r', backup_dirs, mod_times,
+            'reverse sorting by last modification time. By number: %r. '
+            'By mod time: %r', backup_dirs, mod_times,
         )
     logger.debug('Found %d blob backups: %r.', len(backup_dirs),
                  [d[1] for d in backup_dirs])
