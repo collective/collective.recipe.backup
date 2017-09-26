@@ -62,7 +62,7 @@ Keep is ignored by zipbackup, always using 1 as value::
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: Renaming blobstorage.0.tar to blobstorage.1.tar.
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.0.tar  -C /sample-buildout/var/blobstorage .
-    INFO: Removed 1 full blob backup(s), with 1 file(s). The latest 1 backup(s) have been kept.
+    INFO: Removed 1 full blob backup, with 1 file. The latest 1 backup has been kept.
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip

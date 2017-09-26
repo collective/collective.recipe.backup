@@ -1378,9 +1378,10 @@ def remove_orphaned_blob_backups(
         deleted += 1
         logger.debug('Deleted %s.', directory)
     if deleted:
-        logger.info('Removed %d blob backup(s), all backups '
+        logger.info('Removed %d blob %s, all backups '
                     'belonging to remaining filestorage backups have '
-                    'been kept.', deleted)
+                    'been kept.', deleted,
+                    'backup' if deleted == 1 else 'backups')
     # We are done.
     return True
 
@@ -1457,12 +1458,17 @@ def cleanup(
         logger.debug('Nothing removed.')
         return
     if full:
-        logger.info('Removed %d blob backup(s), the latest '
-                    '%d backup(s) have been kept.', deleted, keep)
+        logger.info(
+            'Removed %d blob %s, the latest '
+            '%d %s been kept.',
+            deleted, 'backup' if deleted == 1 else 'backups',
+            keep, 'backup has' if keep == 1 else 'backups have')
     else:
-        logger.info('Removed %d blob backup(s), the latest '
-                    '%d day(s) of backups have been kept.', deleted,
-                    keep_blob_days)
+        logger.info(
+            'Removed %d blob %s. The backups of the latest '
+            '%d %s been kept.',
+            deleted, 'backup' if deleted == 1 else 'backups',
+            keep_blob_days, 'day has' if keep_blob_days == 1 else 'days have')
 
 
 def cleanup_archives(
@@ -1509,6 +1515,8 @@ def cleanup_archives(
             logger.debug('Deleted %s.', archive_file)
         deleted_full += 1
     logger.info(
-        'Removed %d full blob backup(s), with %d file(s). '
-        'The latest %d backup(s) have been kept.',
-        deleted_full, deleted_files, keep)
+        'Removed %d full blob %s, with %d %s. '
+        'The latest %d %s been kept.',
+        deleted_full, 'backup' if deleted_full == 1 else 'backups',
+        deleted_files, 'file' if deleted_files == 1 else 'files',
+        keep, 'backup has' if keep == 1 else 'backups have')
