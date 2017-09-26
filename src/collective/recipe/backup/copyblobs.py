@@ -702,7 +702,7 @@ def find_snapshot_archive(
             fs_backup_location, timestamp)
         if full_stamp is None:
             # There is no proper Data.fs backup belonging to the timestamp.
-            # Give up.
+            # We must return None, as incrementals have no use here.
             return
     elif not full:
         # We are only backing up blobs, and no Data.fs.
@@ -928,7 +928,11 @@ def backup_blobs_archive(
                 fs_backup_location, destination, base_name, timestamp,
                 full=full)
             if snapshot_archive is not None:
-                tar_options = '--listed-incremental={0}'.format(
+                # We need to use the raw format, otherwise
+                # '--listed-incremental=/dir' gets normalized to '/dir'
+                # by zc.buildout during testing. Strange, but it should
+                # be no problem to have quotes here.
+                tar_options = '--listed-incremental={0!r}'.format(
                     snapshot_archive)
                 if os.path.exists(snapshot_archive):
                     # The snapshot archive exists, so this is a delta backup.

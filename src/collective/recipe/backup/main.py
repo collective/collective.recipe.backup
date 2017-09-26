@@ -113,6 +113,7 @@ def fullbackup_main(*args, **kwargs):
 def snapshot_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     kwargs['full'] = True
+    kwargs['incremental_blobs'] = False
     kwargs['backup_method'] = config.SNAPSHOT_BACKUP
     return backup_main(*args, **kwargs)
 
@@ -123,6 +124,7 @@ def zipbackup_main(*args, **kwargs):
     kwargs['full'] = True
     kwargs['gzip'] = True
     kwargs['archive_blob'] = True
+    kwargs['incremental_blobs'] = False
     kwargs['keep'] = 1
     return backup_main(*args, **kwargs)
 

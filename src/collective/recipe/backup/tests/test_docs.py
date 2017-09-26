@@ -99,6 +99,7 @@ def test_suite():
         'cleanup_archives.rst',
         'cleanup_dir.rst',
         'gzip.rst',
+        'incremental_blobs.rst',
         'location.rst',
         'multiple.rst',
         'no_rsync.rst',
