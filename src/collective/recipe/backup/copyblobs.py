@@ -9,7 +9,6 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 
 from collective.recipe.backup import utils
 from datetime import datetime
-from operator import itemgetter
 
 import logging
 import os
@@ -499,13 +498,13 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
         backup_dirs.append((num, mod_time, full_path))
     # We always sort by backup number:
     backup_dirs = sorted(backup_dirs, key=first_number_key, reverse=True)
-    # Check if this is the same as sorting by modification time:
+    # Check if this is the same as reverse sorting by modification time:
     mod_times = sorted(backup_dirs, key=mod_time_number_key, reverse=True)
     if backup_dirs != mod_times:
         logger.warning(
             'Sorting blob backups by number gives other result than '
-            'reverse sorting by last modification time. By number: %r. '
-            'By mod time: %r', backup_dirs, mod_times,
+            'reverse sorting by last modification time. '
+            'By number: %r. By mod time: %r', backup_dirs, mod_times,
         )
     logger.debug('Found %d blob backups: %r.', len(backup_dirs),
                  [d[1] for d in backup_dirs])
@@ -567,11 +566,13 @@ def get_blob_backup_archives(
     backup_archives = sorted(
         backup_archives, key=first_number_key, reverse=True)
     # Check if this is the same as reverse sorting by modification time:
-    mod_times = sorted(backup_archives, key=itemgetter(1), reverse=True)
+    mod_times = sorted(backup_archives, key=mod_time_number_key, reverse=True)
     if backup_archives != mod_times:
         logger.warning(
-            'Sorting blob backups by number gives other result than '
-            'reverse sorting by last modification time.')
+            'Sorting blob archive backups by number gives other result than '
+            'reverse sorting by last modification time. '
+            'By number: %r. By mod time: %r', backup_archives, mod_times,
+        )
     logger.debug('Found %d blob backups: %r.', len(backup_archives),
                  [d[1] for d in backup_archives])
     return backup_archives
