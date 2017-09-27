@@ -566,13 +566,20 @@ def get_blob_backup_archives(
     # We always sort by backup number:
     backup_archives = sorted(
         backup_archives, key=first_number_key, reverse=True)
-    # Check if this is the same as reverse sorting by modification time:
-    mod_times = sorted(backup_archives, key=mod_time_number_key, reverse=True)
-    if backup_archives != mod_times:
+    # Check if this is the same as reverse sorting by modification time.
+    # This might indicate a problem.  We must ignore snapshot files here,
+    # because they have the timestamp of the full tar they belong too,
+    # and the modification time of the latest delta.
+    if include_snapshot_files:
+        tars = [x for x in backup_archives if not is_snar(x[2])]
+    else:
+        tars = list(backup_archives)  # makes a copy
+    mod_times = sorted(tars, key=mod_time_number_key, reverse=True)
+    if tars != mod_times:
         logger.warning(
             'Sorting blob archive backups by number gives other result than '
             'reverse sorting by last modification time. '
-            'By number: %r. By mod time: %r', backup_archives, mod_times,
+            'By number: %r. By mod time: %r', tars, mod_times,
         )
     logger.debug('Found %d blob backups: %r.', len(backup_archives),
                  [d[1] for d in backup_archives])

@@ -237,6 +237,7 @@ class CopyBlobsTestCase(unittest.TestCase):
 
     def test_first_number_key(self):
         from collective.recipe.backup.copyblobs import first_number_key
+        from collective.recipe.backup.copyblobs import is_snar
         from collective.recipe.backup.copyblobs import mod_time_number_key
         # Values should be (number, modification time, ignored extra).
         # Number is either a number or a timestamp.
@@ -300,6 +301,71 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(
             sorted(data, key=mod_time_number_key, reverse=True),
             correct_order)
+
+        # And another one.
+        data = [
+            ('2017-09-27-13-00-58',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-00-58.snar'),
+            ('2017-09-27-13-00-58',
+             1506517561.0,
+             '/blobstorage.2017-09-27-13-00-58.tar'),
+            ('2017-09-27-13-08-04',
+             1506517684.0,
+             '/blobstorage.2017-09-27-13-08-04.delta.tar'),
+            ('2017-09-27-13-10-17',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-10-17.delta.tar'),
+        ]
+        correct_order_by_number = [
+            # delta 2: highest number, last modified
+            ('2017-09-27-13-10-17',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-10-17.delta.tar'),
+            # delta 1: all in between
+            ('2017-09-27-13-08-04',
+             1506517684.0,
+             '/blobstorage.2017-09-27-13-08-04.delta.tar'),
+            # snar: lowest number, last modified
+            ('2017-09-27-13-00-58',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-00-58.snar'),
+            # tar: lowest number, oldest modified
+            ('2017-09-27-13-00-58',
+             1506517561.0,
+             '/blobstorage.2017-09-27-13-00-58.tar'),
+        ]
+        correct_order_by_mod_time = [
+            # delta 2: last modified, highest number
+            ('2017-09-27-13-10-17',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-10-17.delta.tar'),
+            # snar: last modified, lowest number
+            ('2017-09-27-13-00-58',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-00-58.snar'),
+            # delta 1: all in between
+            ('2017-09-27-13-08-04',
+             1506517684.0,
+             '/blobstorage.2017-09-27-13-08-04.delta.tar'),
+            # tar: oldest modified, lowest number
+            ('2017-09-27-13-00-58',
+             1506517561.0,
+             '/blobstorage.2017-09-27-13-00-58.tar'),
+        ]
+        # We use this in a part of the code that wants these to be the same,
+        # but that is not the case.  Without snapshot archives it is
+        # the same though.
+        self.assertNotEqual(correct_order_by_number, correct_order_by_mod_time)
+        self.assertEqual(
+            [x for x in correct_order_by_number if not is_snar(x[2])],
+            [x for x in correct_order_by_mod_time if not is_snar(x[2])])
+        self.assertEqual(
+            sorted(data, key=first_number_key, reverse=True),
+            correct_order_by_number)
+        self.assertEqual(
+            sorted(data, key=mod_time_number_key, reverse=True),
+            correct_order_by_mod_time)
 
     def test_backup_key(self):
         from collective.recipe.backup.copyblobs import backup_key
