@@ -1,4 +1,4 @@
-4.0b5 (unreleased)
+4.0b5 (2017-11-17)
 ==================
 
 - Added ``incremental_blobs`` option.
