@@ -18,7 +18,7 @@ zeoserver recipe) when it is used::
     ... """
     ... [buildout]
     ... # For some reason this is now needed:
-    ... index = http://pypi.python.org/simple
+    ... index = https://pypi.python.org/simple
     ... # Avoid suddenly updating zc.buildout or other packages:
     ... newest = false
     ... parts = instance backup
@@ -95,7 +95,7 @@ Without explicit blob-storage option, it defaults to ``blobstorage`` in the var 
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
-    ... index = http://pypi.python.org/simple
+    ... index = https://pypi.python.org/simple
     ... # Avoid suddenly updating zc.buildout or other packages:
     ... newest = false
     ... parts = instance backup

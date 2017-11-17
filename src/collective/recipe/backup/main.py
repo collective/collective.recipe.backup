@@ -32,6 +32,7 @@ def backup_main(
         quick=True,
         blob_timestamps=False,
         backup_method=config.STANDARD_BACKUP,
+        incremental_blobs=False,
         **kwargs):
     """Main method, gets called by generated bin/backup."""
     if backup_method not in config.BACKUP_METHODS:
@@ -97,6 +98,7 @@ def backup_main(
             rsync_options=rsync_options,
             timestamps=blob_timestamps,
             fs_backup_location=fs_backup_location,
+            incremental_blobs=incremental_blobs,
         )
     utils.execute_or_fail(post_command)
 
@@ -111,6 +113,7 @@ def fullbackup_main(*args, **kwargs):
 def snapshot_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     kwargs['full'] = True
+    kwargs['incremental_blobs'] = False
     kwargs['backup_method'] = config.SNAPSHOT_BACKUP
     return backup_main(*args, **kwargs)
 
@@ -121,6 +124,7 @@ def zipbackup_main(*args, **kwargs):
     kwargs['full'] = True
     kwargs['gzip'] = True
     kwargs['archive_blob'] = True
+    kwargs['incremental_blobs'] = False
     kwargs['keep'] = 1
     return backup_main(*args, **kwargs)
 
@@ -263,6 +267,7 @@ def restore_main(
         quick=True,
         zip_restore=False,
         blob_timestamps=False,
+        incremental_blobs=False,
         **kwargs):
 
     """Main method, gets called by generated bin/restore."""
@@ -283,6 +288,7 @@ def restore_main(
         quick=quick,
         zip_restore=zip_restore,
         blob_timestamps=blob_timestamps,
+        incremental_blobs=incremental_blobs,
         **kwargs)
     # Checks have passed, now do the real restore.
     if not only_blobs:

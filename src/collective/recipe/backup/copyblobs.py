@@ -9,7 +9,6 @@ http://www.mikerubel.org/computers/rsync_snapshots/
 
 from collective.recipe.backup import utils
 from datetime import datetime
-from operator import itemgetter
 
 import logging
 import os
@@ -34,6 +33,10 @@ def find_suffixes(value, suffixes):
     """
     if isinstance(suffixes, utils.stringtypes):
         suffixes = [suffixes]
+    # Order the suffixes from large to small.
+    # Otherwise looking for 'tar' will find 'delta.tar' too,
+    # which will trip up our logic.
+    suffixes = sorted(suffixes, key=len, reverse=True)
     found = False
     for suffix in suffixes:
         if not suffix.startswith('.'):
@@ -135,10 +138,23 @@ def number_key(value):
 def first_number_key(value):
     """Key for comparing backup numbers.
 
-    value MUST be (number, something).
-    We are only interested in the number.
+    value MUST be (number, modification_time, ...).
+    We are primarily interested in the number.
+    But if that is the same, we look at the modification time.
     """
-    return number_key(value[0])
+    return number_key(value[0]), value[1]
+
+
+def mod_time_number_key(value):
+    """Key for comparing backups.
+
+    value MUST be (number, modification_time, ...).
+    We are primarily interested in the modification time.
+    But in tests this may not be unique enough,
+    as lots of backups are made quickly after each other,
+    so use the number key as extra.
+    """
+    return value[1], number_key(value[0])
 
 
 def part_of_same_backup(values):
@@ -221,21 +237,6 @@ def gen_timestamp(now=None):
     if now is None or isinstance(now, (int, float)):
         now = time.gmtime(now)[:6]
     return '{0:04d}-{1:02d}-{2:02d}-{3:02d}-{4:02d}-{5:02d}'.format(*now)
-
-
-def gen_blobdir_name(prefix='blobstorage', now=None):
-    """Generate directory name for blobstorage.
-
-    This is adapted from gen_filename from ZODB/scripts/repozo.py.
-
-    With 'now' you can set a different time for testing.
-    It should be a tuple of year, month, day, hour, minute, second.
-    """
-    if now is None:
-        now = time.gmtime()[:6]
-    t = now
-    ts = gen_timestamp(t)
-    return '{0}.{1}'.format(prefix, ts)
 
 
 def get_valid_directories(container, name):
@@ -498,20 +499,30 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
         backup_dirs.append((num, mod_time, full_path))
     # We always sort by backup number:
     backup_dirs = sorted(backup_dirs, key=first_number_key, reverse=True)
-    # Check if this is the same as sorting by modification time:
-    mod_times = sorted(backup_dirs, key=itemgetter(1), reverse=True)
+    # Check if this is the same as reverse sorting by modification time:
+    mod_times = sorted(backup_dirs, key=mod_time_number_key, reverse=True)
     if backup_dirs != mod_times:
-        logger.warn('Sorting blob backups by number gives other result than '
-                    'reverse sorting by last modification time.')
+        logger.warning(
+            'Sorting blob backups by number gives other result than '
+            'reverse sorting by last modification time. '
+            'By number: %r. By mod time: %r', backup_dirs, mod_times,
+        )
     logger.debug('Found %d blob backups: %r.', len(backup_dirs),
                  [d[1] for d in backup_dirs])
     return backup_dirs
 
 
-def get_blob_backup_archives(backup_location, only_timestamps=False):
+def get_blob_backup_archives(
+        backup_location,
+        only_timestamps=False,
+        include_snapshot_files=False,
+):
     """Get blob backup archive files from this location.
 
-    Archives may be .tar or .tar.gz files.  We return both.
+    Archives may be .tar or .tar.gz files.
+    Or delta.tar or delta.tar.gz files.
+    If include_snapshot_files is true, it can be .snar files.
+    We return all.
 
     If only_timestamps is True, we only return backups that have timestamps.
     That is useful when restoring.
@@ -520,12 +531,15 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     logger.debug('Looked up filenames in the target dir: %s found. %r.',
                  len(filenames), filenames)
     backup_archives = []
-    suffixes = ['tar', '.tar.gz']
+    suffixes = ['delta.tar.gz', 'delta.tar', 'tar.gz', 'tar']
+    if include_snapshot_files:
+        suffixes += ['snar']
     prefix = ''
     for filename in filenames:
         # We only want files of the form prefix.X.tar.gz, where X is an
         # integer or a timestamp.  There should not be anything else,
         # but we like to be safe.
+        # For the deltas, there can be only timestamps, so we might optimize.
         full_path = os.path.join(backup_location, filename)
         if not os.path.isfile(full_path):
             continue
@@ -552,18 +566,39 @@ def get_blob_backup_archives(backup_location, only_timestamps=False):
     # We always sort by backup number:
     backup_archives = sorted(
         backup_archives, key=first_number_key, reverse=True)
-    # Check if this is the same as reverse sorting by modification time:
-    mod_times = sorted(backup_archives, key=itemgetter(1), reverse=True)
-    if backup_archives != mod_times:
+    # Check if this is the same as reverse sorting by modification time.
+    # This might indicate a problem.  We must ignore snapshot files here,
+    # because they have the timestamp of the full tar they belong too,
+    # and the modification time of the latest delta.
+    if include_snapshot_files:
+        tars = [x for x in backup_archives if not is_snar(x[2])]
+    else:
+        tars = list(backup_archives)  # makes a copy
+    mod_times = sorted(tars, key=mod_time_number_key, reverse=True)
+    if tars != mod_times:
         logger.warning(
-            'Sorting blob backups by number gives other result than '
-            'reverse sorting by last modification time.')
+            'Sorting blob archive backups by number gives other result than '
+            'reverse sorting by last modification time. '
+            'By number: %r. By mod time: %r', tars, mod_times,
+        )
     logger.debug('Found %d blob backups: %r.', len(backup_archives),
                  [d[1] for d in backup_archives])
     return backup_archives
 
 
-# Copy of is_data_filein ZODB / scripts / repozo.py.
+def get_blob_backup_all_archive_files(backup_location):
+    """Get blob backup archive files including snapshot files.
+
+    This is only for cleanup.
+    """
+    return get_blob_backup_archives(
+        backup_location,
+        only_timestamps=False,
+        include_snapshot_files=True
+    )
+
+
+# Copy of is_data_file in ZODB / scripts / repozo.py.
 is_data_file = re.compile(r'\d{4}(?:-\d\d){5}\.(?:delta)?fsz?$').match
 
 
@@ -588,29 +623,152 @@ def get_latest_filestorage_timestamp(directory):
     logger.debug('No data files found in directory: %s', directory)
 
 
-def get_oldest_filestorage_timestamp(directory):
-    """Get timestamp of oldest full filestorage backup file in directory.
+def get_full_filestorage_timestamp(directory, timestamp=None):
+    """Get timestamp of full filestorage backup file in directory.
+
+    When timestamp is None, we return the oldest.
+    We can remove any older blob backups.
+
+    With a specific timestamp, we return the timestamp of the
+    full backup belonging to this timestamp.
 
     Adapted from find_files in ZODB/scripts/repozo.py.
-
-    We can remove any older blob backups.
     """
     if not directory or not os.path.isdir(directory):
         return
     # oldest first
+    found = None
     for fname in sorted(os.listdir(directory)):
         if not is_data_file(fname):
             continue
         root, ext = os.path.splitext(fname)
-        if ext in ('.fs', '.fsz'):
-            return root
+        if ext not in ('.fs', '.fsz'):
+            # We are not interested in deltas.
+            continue
+        # We have found a timestamp of a full backup.  Now compare it.
+        if timestamp is None:
+            # Just return the oldest one.
+            found = root
+            break
+        if timestamp >= root:
+            found = root
+        else:
+            break
+    return found
 
 
-def backup_blobs(source, destination, full=False, use_rsync=True,
-                 keep=0, keep_blob_days=0, archive_blob=False,
-                 rsync_options='',
-                 timestamps=False, fs_backup_location=None,
-                 compress_blob=False):
+def get_actual_snar(directory, base_name, timestamp=None):
+    """Get snapshot archive file name.
+
+    It may have exactly this timestamp, or earlier.
+    """
+    if not directory or not os.path.isdir(directory):
+        return
+    # oldest first
+    found = None
+    for fname in sorted(os.listdir(directory)):
+        root, ext = os.path.splitext(fname)
+        if ext != '.snar':
+            continue
+        base, stamp = os.path.splitext(root)
+        if base != base_name:
+            continue
+        stamp = stamp[1:]  # remove dot
+        if not is_time_stamp(stamp):
+            continue
+        # We have found a timestamp of a full backup.  Now compare it.
+        if timestamp is None:
+            # Just return the oldest one.
+            found = stamp
+            break
+        if timestamp >= stamp:
+            found = stamp
+        else:
+            break
+    return found
+
+
+def find_snapshot_archive(
+        fs_backup_location,
+        destination,
+        base_name,
+        timestamp,
+        full=False,
+):
+    """Find a snapshot archive (.snar).
+
+    This is a file used by tar --listed-incremental to record where each
+    backed up file ended up.
+
+    A snapshot archive must always have the same timestamp
+    as the full filestorage backup it belongs to: it has file pointers
+    to the full backup and the incremental backups.
+    This will usually be the case, but not when you first make a full
+    backup, and only later enable incremental_blobs.
+
+    It might not exist yet, but may be created by the upcoming tar command,
+    *if* this is a full backup.
+    """
+    if timestamp is None:
+        # Not supported. Programming error? Maybe raise an exception.
+        return
+    # We want a timestamp belonging to a full backup.
+    # Get an initial value.
+    if full:
+        # The given timestamp seems fine.
+        full_stamp = timestamp
+    else:
+        full_stamp = None
+    # Try various ways of getting a better timestamp from the file system.
+    if fs_backup_location:
+        full_stamp = get_full_filestorage_timestamp(
+            fs_backup_location, timestamp)
+        if full_stamp is None:
+            # There is no proper Data.fs backup belonging to the timestamp.
+            # We must return None, as incrementals have no use here.
+            return
+    elif not full:
+        # We are only backing up blobs, and no Data.fs.
+        # Look for actual snar files then, but only when we are not
+        # explicitly making a full backup.
+        full_stamp = get_actual_snar(destination, base_name, timestamp)
+        if full_stamp is None:
+            # This is the first backup since activating incrementals,
+            # so we fall back to the given timestamp.
+            full_stamp = timestamp
+
+    # We have determined a full timestamp, so now we can get a file name.
+    snapshot_archive = os.path.join(
+        destination, '{0}.{1}.snar'.format(base_name, full_stamp))
+    # If the time stamps are the same, then a full backup is in progress.
+    # This can be when full is explicitly true, or when a zeopack has made
+    # the previous full backup outdated.
+    if timestamp != full_stamp and not os.path.exists(snapshot_archive):
+        # This message should only get shown during backup, not during
+        # restore. But during restore it can only happen if a .snar file
+        # has been removed, which seems unlikely.
+        logger.warning(
+            'Not making incremental blob backup, because this is a '
+            'partial backup, and there is no snapshot file yet. '
+            'Incremental backups will be created with the next full backup.')
+        return
+    return snapshot_archive
+
+
+def backup_blobs(
+        source,
+        destination,
+        full=False,
+        use_rsync=True,
+        keep=0,
+        keep_blob_days=0,
+        archive_blob=False,
+        rsync_options='',
+        timestamps=False,
+        fs_backup_location=None,
+        compress_blob=False,
+        incremental_blobs=False,
+):
     """Copy blobs from source to destination.
 
     Source is usually something like var/blobstorage and destination
@@ -643,219 +801,22 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
     With timestamps True, we do not make blobstorage.0, but use timestamps,
     for example blobstorage.2017-01-02-03-04-05.
 
-    Again, let's test this using the tools from zc.buildout:
-
-    >>> mkdir('blobs')
-    >>> write('blobs', 'one.txt', 'File One')
-    >>> write('blobs', 'two.txt', 'File Two')
-    >>> write('blobs', 'three.txt', 'File Three')
-    >>> mkdir('blobs', 'dir')
-    >>> mkdir('backups')
-    >>> backup_blobs('blobs', 'backups')
-    >>> ls('backups')
-    d  blobs.0
-    >>> ls('backups', 'blobs.0')
-    d  blobs
-    >>> ls('backups', 'blobs.0', 'blobs')
-    d  dir
-    -  one.txt
-    -  three.txt
-    -  two.txt
-
-    Change some stuff.
-
-    >>> write('blobs', 'one.txt', 'Changed File One')
-    >>> write('blobs', 'four.txt', 'File Four')
-    >>> remove('blobs', 'two.txt')
-    >>> backup_blobs('blobs/', 'backups')
-    >>> ls('backups')
-    d  blobs.0
-    d  blobs.1
-    >>> ls('backups', 'blobs.1', 'blobs')
-    d  dir
-    -  one.txt
-    -  three.txt
-    -  two.txt
-    >>> ls('backups', 'blobs.0', 'blobs')
-    d  dir
-    -  four.txt
-    -  one.txt
-    -  three.txt
-    >>> cat('backups', 'blobs.1', 'blobs', 'one.txt')
-    File One
-    >>> cat('backups', 'blobs.0', 'blobs', 'one.txt')
-    Changed File One
-
-    Check the file stats to see if they are really hard links:
-
-    >>> import os
-    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs',
-    ...                               'three.txt'))
-    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs',
-    ...                               'three.txt'))
-    >>> stat_0.st_ino == stat_1.st_ino
-    True
-
-    Now cleanup and try with filestamps.
-
-    >>> remove('backups')
-    >>> mkdir('backups')
-    >>> backup_blobs('blobs', 'backups', timestamps=True)
-    >>> ls('backups')
-    d  blobs.20...-...-...-...-...
-    >>> backup0 = os.listdir('backups')[0]
-    >>> timestamp0 = backup0[len('blobs.'):]
-    >>> ls('backups', backup0, 'blobs')
-    d  dir
-    -  four.txt
-    -  one.txt
-    -  three.txt
-
-    Wait a while, so we get a different timestamp, and then change some stuff.
-
-    >>> import time
-    >>> time.sleep(1)
-    >>> remove('blobs', 'three.txt')
-    >>> remove('blobs', 'four.txt')
-    >>> backup_blobs('blobs', 'backups', timestamps=True)
-    >>> ls('backups')
-    d  blobs.20...-...-...-...-...
-    d  blobs.20...-...-...-...-...
-    >>> backup1 = os.listdir('backups')[-1]
-    >>> timestamp1 = backup1[len('blobs.'):]
-    >>> timestamp0 < timestamp1
-    True
-    >>> ls('backups', backup1, 'blobs')
-    d  dir
-    -  one.txt
-
-    Now we pretend that there is a filestorage backup from the time that
-    the most recent backup was made.
-    Pass that to the backup_blobs function.
-    It should not make a new blob backup, because there is one matching
-    the most recent filestorage backup.
-    This actually cleans up the oldest backup, because it does not belong
-    to any filestorage backup.
-
-    >>> mkdir('fs')
-    >>> write('fs', '{0}.fsz'.format(timestamp1), 'dummy fs' )
-    >>> backup_blobs('blobs', 'backups', timestamps=True,
-    ...     fs_backup_location='fs')
-    >>> ls('backups')
-    d  blobs.20...-...-...-...-...
-    >>> len(os.listdir('backups'))  # The dots could shadow other backups.
-    1
-    >>> backup1 == os.listdir('backups')[0]
-    True
-    >>> ls('backups', backup1, 'blobs')
-    d  dir
-    -  one.txt
-
-    Pretend there is a newer filestorage backup and a blob change.
-
-    >>> write('blobs', 'two.txt', 'File two')
-    >>> write('fs', '2100-01-01-00-00-00.fsz', 'dummy fs')
-    >>> backup_blobs('blobs', 'backups', timestamps=True,
-    ...    fs_backup_location='fs')
-    >>> ls('backups')
-    d  blobs.20...-...-...-...-...
-    d  blobs.2100-01-01-00-00-00
-    >>> len(os.listdir('backups'))  # The dots could shadow a third backup
-    2
-    >>> ls('backups', 'blobs.2100-01-01-00-00-00', 'blobs')
-    d  dir
-    -  one.txt
-    -  two.txt
-
-    Remove the oldest filestorage backup.
-
-    >>> remove('fs', '{0}.fsz'.format(timestamp1))
-    >>> backup_blobs('blobs', 'backups', timestamps=True,
-    ...    fs_backup_location='fs')
-    >>> ls('backups')
-    d  blobs.2100-01-01-00-00-00
-    >>> len(os.listdir('backups'))
-    1
-
-    Cleanup:
-
-    >>> remove('blobs')
-    >>> remove('backups')
-
-    We do mostly the same as above, but now using full backups.
-
-    >>> mkdir('blobs')
-    >>> write('blobs', 'one.txt', 'File One')
-    >>> write('blobs', 'two.txt', 'File Two')
-    >>> write('blobs', 'three.txt', 'File Three')
-    >>> mkdir('blobs', 'dir')
-    >>> mkdir('backups')
-    >>> backup_blobs('blobs', 'backups', full=True)
-    >>> ls('backups')
-    d  blobs.0
-    >>> ls('backups', 'blobs.0')
-    d  blobs
-    >>> ls('backups', 'blobs.0', 'blobs')
-    d  dir
-    -  one.txt
-    -  three.txt
-    -  two.txt
-
-    Change some stuff.
-
-    >>> write('blobs', 'one.txt', 'Changed File One')
-    >>> write('blobs', 'four.txt', 'File Four')
-    >>> remove('blobs', 'two.txt')
-    >>> backup_blobs('blobs', 'backups', full=True)
-    >>> ls('backups')
-    d  blobs.0
-    d  blobs.1
-    >>> ls('backups', 'blobs.1', 'blobs')
-    d  dir
-    -  one.txt
-    -  three.txt
-    -  two.txt
-    >>> ls('backups', 'blobs.0', 'blobs')
-    d  dir
-    -  four.txt
-    -  one.txt
-    -  three.txt
-    >>> cat('backups', 'blobs.1', 'blobs', 'one.txt')
-    File One
-    >>> cat('backups', 'blobs.0', 'blobs', 'one.txt')
-    Changed File One
-
-    Check the file stats.  We did full copies, but these should still
-    be hard links.
-
-    >>> import os
-    >>> stat_0 = os.stat(os.path.join('backups', 'blobs.0', 'blobs',
-    ...                               'three.txt'))
-    >>> stat_1 = os.stat(os.path.join('backups', 'blobs.1', 'blobs',
-    ...                               'three.txt'))
-    >>> stat_0.st_ino == stat_1.st_ino
-    True
-
-    >>> backup_blobs('blobs', 'backups', timestamps=True)
-    >>> ls('backups')
-    d  blobs.0
-    d  blobs.1
-    d  blobs.20...
-
-    Cleanup:
-
-    >>> remove('blobs')
-    >>> remove('backups')
-
+    For tests, see tests/backup_blobs_dir.rst.
     """
     source = source.rstrip(os.sep)
     base_name = os.path.basename(source)
 
     if archive_blob:
         backup_blobs_archive(
-            source, destination, keep, timestamps=timestamps,
+            source,
+            destination,
+            keep,
+            timestamps=timestamps,
             fs_backup_location=fs_backup_location,
-            compress_blob=compress_blob)
+            compress_blob=compress_blob,
+            incremental_blobs=incremental_blobs,
+            full=full,
+        )
         return
 
     if timestamps:
@@ -930,9 +891,14 @@ def backup_blobs(source, destination, full=False, use_rsync=True,
 
 
 def backup_blobs_archive(
-    source, destination, keep=0, timestamps=False,
-    fs_backup_location=None,
-    compress_blob=False,
+        source,
+        destination,
+        keep=0,
+        timestamps=False,
+        fs_backup_location=None,
+        compress_blob=False,
+        incremental_blobs=False,
+        full=False,
 ):
     """Make archive from blobs in source directory.
 
@@ -942,102 +908,26 @@ def backup_blobs_archive(
 
     We use 'keep' to simply keep the last X backups.
 
-    Again, let's test this using the tools from zc.buildout:
-
-    >>> mkdir('blobs')
-    >>> write('blobs', 'one.txt', 'File One')
-    >>> write('blobs', 'two.txt', 'File Two')
-    >>> write('blobs', 'three.txt', 'File Three')
-    >>> mkdir('blobs', 'dir')
-    >>> mkdir('backups')
-    >>> backup_blobs_archive('blobs', 'backups', keep=0)
-    >>> ls('backups')
-    -  blobs.0.tar
-
-    Change some stuff and compress.
-
-    >>> write('blobs', 'one.txt', 'Changed File One')
-    >>> write('blobs', 'four.txt', 'File Four')
-    >>> remove('blobs', 'two.txt')
-    >>> backup_blobs_archive('blobs/', 'backups', compress_blob=True)
-    >>> ls('backups')
-    -  blobs.0.tar.gz
-    -  blobs.1.tar
-
-    Change some stuff and no longer compress.
-
-    >>> write('blobs', 'one.txt', 'Changed File One Again')
-    >>> backup_blobs_archive('blobs', 'backups')
-    >>> ls('backups')
-    -  blobs.0.tar
-    -  blobs.1.tar.gz
-    -  blobs.2.tar
-
-    Use timestamps with a fs_backup_location.
-
-    >>> mkdir('fs')
-    >>> write('fs', '2017-05-24-11-54-39.fsz', 'Dummy filestorage backup')
-    >>> backup_blobs_archive(
-    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
-    ...     compress_blob=True)
-    >>> ls('backups')
-    -  blobs.0.tar
-    -  blobs.1.tar.gz
-    -  blobs.2.tar
-    -  blobs.2017-05-24-11-54-39.tar.gz
-
-    And again with the same settings, as I saw something go wrong once.
-
-    >>> backup_blobs_archive(
-    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
-    ...     compress_blob=True)
-    >>> ls('backups')
-    -  blobs.0.tar
-    -  blobs.1.tar.gz
-    -  blobs.2.tar
-    -  blobs.2017-05-24-11-54-39.tar.gz
-
-    Same without compressing, which accepts previous compressed tarballs too.
-
-    >>> backup_blobs_archive(
-    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
-    ...     compress_blob=False)
-    >>> ls('backups')
-    -  blobs.0.tar
-    -  blobs.1.tar.gz
-    -  blobs.2.tar
-    -  blobs.2017-05-24-11-54-39.tar.gz
-
-    Same settings, now with a newer filestorage backup.
-
-    >>> write('fs', '2017-05-24-12-00-00.fsz', 'Dummy filestorage backup 2')
-    >>> backup_blobs_archive(
-    ...     'blobs', 'backups', fs_backup_location='fs', timestamps=True,
-    ...     compress_blob=False)
-    >>> ls('backups')
-    -  blobs.0.tar
-    -  blobs.1.tar.gz
-    -  blobs.2.tar
-    -  blobs.2017-05-24-11-54-39.tar.gz
-    -  blobs.2017-05-24-12-00-00.tar
-
-    Cleanup:
-
-    >>> remove('blobs')
-    >>> remove('backups')
-    >>> remove('fs')
+    For tests, see tests/backup_blobs_archive.rst.
     """
+    if incremental_blobs and not timestamps:
+        # This should have been caught by buildout already,
+        # but we may trigger it in tests.
+        raise Exception(
+            'Cannot have incremental_blobs without timestamps.')
     source = source.rstrip(os.sep)
     base_name = os.path.basename(source)
     if not os.path.exists(destination):
         os.makedirs(destination)
+    tar_options = ''
     if timestamps:
         timestamp = get_latest_filestorage_timestamp(fs_backup_location)
         if timestamp:
-            filename = base_name + '.' + timestamp + '.tar'
+            filename = '{0}.{1}'.format(base_name, timestamp)
             # compress_blob may be on now, or may have been on in the past.
-            # Look for both.
-            for fname in (filename, filename + '.gz'):
+            # Look for both.  And look for deltas too.
+            for suffix in ('tar', 'tar.gz', 'delta.tar', 'delta.tar.gz'):
+                fname = '{0}.{1}'.format(filename, suffix)
                 dest = os.path.join(destination, fname)
                 # If a backup already exists, then apparently there were no
                 # database changes since the last backup, so we don't need
@@ -1051,11 +941,28 @@ def backup_blobs_archive(
                         destination, keep=keep,
                         fs_backup_location=fs_backup_location)
                     return
-            # Use the .tar filename as initial destination.
-            dest = os.path.join(destination, filename)
         else:
-            filename = base_name + '.' + gen_timestamp() + '.tar'
-            dest = os.path.join(destination, filename)
+            timestamp = gen_timestamp()
+            filename = '{0}.{1}'.format(base_name, timestamp)
+        if incremental_blobs:
+            # Get the timestamp of the latest full backup,
+            # if we have a snapshot archive for it.
+            snapshot_archive = find_snapshot_archive(
+                fs_backup_location, destination, base_name, timestamp,
+                full=full)
+            if snapshot_archive is not None:
+                # We need to use the raw format, otherwise
+                # '--listed-incremental=/dir' gets normalized to '/dir'
+                # by zc.buildout during testing. Strange, but it should
+                # be no problem to have quotes here.
+                tar_options = '--listed-incremental={0!r}'.format(
+                    snapshot_archive)
+                if os.path.exists(snapshot_archive):
+                    # The snapshot archive exists, so this is a delta backup.
+                    # File name should be blobs.timestamp.delta.tar(.gz).
+                    filename += '.delta'
+        filename += '.tar'  # .gz may be added a few lines later.
+        dest = os.path.join(destination, filename)
     else:
         # Without timestamps we need to rotate backups.
         rotate_archives(destination, base_name)
@@ -1067,7 +974,7 @@ def backup_blobs_archive(
         tar_command = 'tar cf'
     if os.path.exists(dest):
         raise Exception('Path already exists: {0}'.format(dest))
-    cmd = '{0} {1} -C {2} .'.format(tar_command, dest, source)
+    cmd = '{0} {1} {2} -C {3} .'.format(tar_command, dest, tar_options, source)
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -1080,8 +987,138 @@ def backup_blobs_archive(
         fs_backup_location=fs_backup_location)
 
 
-def find_backup_to_restore(source, date_string='', archive=False,
-                           timestamps=False):
+def is_full_tarball(path):
+    """Is this a full tarball?
+
+    We do not care if there are deltas belonging to this tarball.
+    """
+    if '.delta.' in path:
+        return False
+    if path.endswith('.tar') or path.endswith('.tar.gz'):
+        return True
+    return False
+
+
+def is_snar(path):
+    """Is this a snapshot archive file?"""
+    return path.endswith('.snar')
+
+
+def is_delta(path):
+    """Is this a delta archive file?"""
+    return '.delta.' in path
+
+
+def combine_backups(backups):
+    """Combine deltas, tars and snars that belong together.
+
+    Return a list of lists.
+    This is only useful for archives.
+    It is used to see which files can be deleted.
+    Really, it is only useful if you backup blobs without filestorage,
+    because with filestorage we can simply look for orphaned blobs.
+
+    Note: the most recent backup is listed first.
+    We assume the sort order is correct.
+    So in case of incrementals, we get:
+    delta 2, delta 1, tar, snar.
+    Or delta 2, delta 1, snar, tar...
+    Without incrementals it may be tar, tar, tar.
+    There may be gzips.
+    Or it may be directory names.
+    Or a combination of all of the above.
+    """
+    if not backups:
+        return []
+    # This function is only useful if there are incremental archives.
+    has_incremental = any(
+        [1 for x in backups if is_snar(x[2]) or is_delta(x[2])])
+    if not has_incremental:
+        # Put each item in a separate list.
+        result = []
+        for num, mod_time, path in backups:
+            result.append([(num, mod_time, path)])
+        return result
+    result = [[]]
+    for num, mod_time, path in backups:
+        current = (num, mod_time, path)
+        # Does this belong to the previous one?
+        previous = result[-1]
+        if not previous:
+            # obviously not
+            previous.append(current)
+            continue
+        if os.path.isdir(path):
+            # A directory is always on its own.
+            result.append([current])
+            continue
+        # So we have a previous list, and the current item is a file.
+        # Does the previous list have a tarball?
+        has_tar = any([1 for x in previous if is_full_tarball(x[2])])
+        # And a snapshot archive file?
+        has_snar = any([1 for x in previous if is_snar(x[2])])
+        if has_tar and has_snar:
+            # Must be the beginning of a new list.
+            result.append([current])
+            continue
+        if is_delta(path) and (has_tar or has_snar):
+            # Must be an older delta, so start a new list.
+            result.append([current])
+            continue
+        if path.endswith('.snar'):
+            if has_snar:
+                # Strange.  Start a new list.
+                previous = []
+                result.append(previous)
+            elif has_tar:
+                pass
+            previous.append(current)
+            continue
+        if is_full_tarball(path):
+            # Does the previous list have a tarball?
+            if has_tar:
+                # Yes, so we start a new list.
+                result.append([])
+                previous = result[-1]
+            previous.append(current)
+            continue
+        # We should have only deltas now.
+        if '.delta.' not in path:
+            logger.warning('Expected .delta. in path %r.', path)
+            # This at least happens in tests, when using names
+            # for directories that do not exist.
+            # Best to keep this separate.
+            result.append([current])
+            continue
+        previous.append(current)
+
+    # Filter out any empty lists.
+    result = [x for x in result if x]
+    return result
+
+
+def find_conditional_backups_to_restore(backups, tester=None):
+    # We could get deltas, and then we should return several,
+    # so we keep a list.
+    paths = []
+    # Note: the most recent backup is listed first.
+    for num, mod_time, path in backups:
+        if tester is not None and not tester(num, mod_time, path):
+            continue
+        paths.append(path)
+        if '.delta.' not in path:
+            # we have found a full backup
+            break
+    paths.reverse()
+    return paths
+
+
+def find_backup_to_restore(
+        source,
+        date_string='',
+        archive=False,
+        timestamps=False,
+):
     """Find backup to restore.
 
     This determines whether blobstorage.0 or blobstorage.1 is taken, etc.
@@ -1095,6 +1132,7 @@ def find_backup_to_restore(source, date_string='', archive=False,
     If timestamps is True, we prefer those.
 
     We return nothing or a directory or file name.
+    It may be a list in case of delta archives.
     """
     if archive:
         backup_getter = get_blob_backup_archives
@@ -1106,8 +1144,7 @@ def find_backup_to_restore(source, date_string='', archive=False,
         return
     if not date_string:
         # The most recent is the default.
-        # We only need the directory or filename.
-        return current_backups[0][2]
+        return find_conditional_backups_to_restore(current_backups)
 
     # We want the backup for a specific date.
     try:
@@ -1125,27 +1162,40 @@ def find_backup_to_restore(source, date_string='', archive=False,
     # blobstorage backups may be a few seconds apart.  If the user
     # specifies a timestamp in between, this is an error of the user.
     if timestamps:
-        backup_dirs = backup_getter(
-            source, only_timestamps=True)
-        # Note: the most recent timestamp is listed first.
-        for num, mod_time, directory in backup_dirs:
-            # Since both num and date are timestamps, we can compare them.
-            if num <= date_string:
-                return directory
+        ts_backups = backup_getter(source, only_timestamps=True)
 
-    # Compare modification times.
-    backup_dirs = backup_getter(source)
-    for num, mod_time, directory in backup_dirs:
+        def tester(num, mod_time, directory):
+            # Both num and date_string are timestamps, so we can compare them.
+            return num <= date_string
+        paths = find_conditional_backups_to_restore(ts_backups, tester)
+        if paths:
+            return paths
+
+    # If timestamps are not used, or do not give a result,
+    # we fall back to comparing modification times.
+    # Note that in tests, the modification times will be very close together.
+    def tester(num, mod_time, directory):
         backup_time = datetime.utcfromtimestamp(mod_time)
-        if backup_time <= target_datetime:
-            return directory
+        return backup_time <= target_datetime
+
+    paths = find_conditional_backups_to_restore(current_backups, tester)
+    if paths:
+        return paths
 
     logger.error('Could not find backup of %r or earlier.', date_string)
 
 
-def restore_blobs(source, destination, use_rsync=True,
-                  date=None, archive_blob=False, rsync_options='',
-                  timestamps=False, only_check=False):
+def restore_blobs(
+        source,
+        destination,
+        use_rsync=True,
+        date=None,
+        archive_blob=False,
+        rsync_options='',
+        timestamps=False,
+        only_check=False,
+        incremental_blobs=False,
+):
     """Restore blobs from source to destination.
 
     With 'use_rsync' at the default True, we use rsync to copy,
@@ -1181,6 +1231,15 @@ def restore_blobs(source, destination, use_rsync=True,
         source, date_string=date, timestamps=timestamps)
     if not backup_source:
         return True
+    # We probably get a list of one.  For tar archives there may be more,
+    # but that does not happen for us.
+    if isinstance(backup_source, list):
+        if len(backup_source) > 1:
+            logger.error(
+                'Got %d backup directories to restore, which is more than 1, '
+                'which makes no sense: %r', len(backup_source), backup_source)
+            sys.exit(1)
+        backup_source = backup_source[0]
     if only_check:
         return
 
@@ -1211,8 +1270,14 @@ def restore_blobs(source, destination, use_rsync=True,
         shutil.copytree(backup_source, destination)
 
 
-def restore_blobs_archive(source, destination, date=None, timestamps=False,
-                          only_check=False):
+def restore_blobs_archive(
+        source,
+        destination,
+        date=None,
+        timestamps=False,
+        only_check=False,
+        incremental_blobs=False,
+):
     """Restore blobs from source to destination.
 
     Prepare backup for test:
@@ -1261,9 +1326,9 @@ def restore_blobs_archive(source, destination, date=None, timestamps=False,
 
     """
     # Determine the source (blob backup) that should be restored.
-    backup_source = find_backup_to_restore(
+    backup_sources = find_backup_to_restore(
         source, date_string=date, archive=True, timestamps=timestamps)
-    if not backup_source:
+    if not backup_sources:
         # Signal error by returning a true value.
         return True
     if only_check:
@@ -1272,22 +1337,34 @@ def restore_blobs_archive(source, destination, date=None, timestamps=False,
         logger.info('Removing %s', destination)
         shutil.rmtree(destination)
     os.mkdir(destination)
-    logger.info('Extracting %s to %s', backup_source, destination)
-    if backup_source.endswith('gz'):
-        tar_command = 'tar xzf'
-    else:
-        tar_command = 'tar xf'
-    cmd = '{0} {1} -C {2}'.format(tar_command, backup_source, destination)
-    logger.info(cmd)
-    output, failed = utils.system(cmd)
-    if output:
-        print(output)
-    if failed:
-        return
+    tar_options = ''
+    if not isinstance(backup_sources, list):
+        backup_sources = [backup_sources]
+    if len(backup_sources) > 1:
+        logger.info(
+            'Found %d incremental backups to restore.', len(backup_sources))
+        tar_options = ' --incremental'
+    for backup_source in backup_sources:
+        logger.info('Extracting %s to %s', backup_source, destination)
+        if backup_source.endswith('gz'):
+            tar_command = 'tar xzf'
+        else:
+            tar_command = 'tar xf'
+        cmd = '{0} {1}{2} -C {3}'.format(
+            tar_command, backup_source, tar_options, destination)
+        logger.info(cmd)
+        output, failed = utils.system(cmd)
+        if output:
+            print(output)
+        if failed:
+            return
 
 
-def remove_orphaned_blob_backups(backup_location, fs_backup_location,
-                                 archive=False):
+def remove_orphaned_blob_backups(
+        backup_location,
+        fs_backup_location,
+        archive=False,
+):
     """Remove orphaned blob backups.
 
     This means: blob backups that have a timestamp older than the oldest
@@ -1298,13 +1375,13 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
     """
     if not fs_backup_location:
         return
-    oldest_timestamp = get_oldest_filestorage_timestamp(fs_backup_location)
+    oldest_timestamp = get_full_filestorage_timestamp(fs_backup_location)
     if not oldest_timestamp:
         return
     logger.debug('Removing blob backups with timestamp before %s from %s',
                  oldest_timestamp, backup_location)
     if archive:
-        backup_getter = get_blob_backup_archives
+        backup_getter = get_blob_backup_all_archive_files
     else:
         backup_getter = get_blob_backup_dirs
     current_backups = backup_getter(backup_location)
@@ -1328,15 +1405,21 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location,
         deleted += 1
         logger.debug('Deleted %s.', directory)
     if deleted:
-        logger.info('Removed %d blob backup(s), all backups '
+        logger.info('Removed %d blob %s, all backups '
                     'belonging to remaining filestorage backups have '
-                    'been kept.', deleted)
+                    'been kept.', deleted,
+                    'backup' if deleted == 1 else 'backups')
     # We are done.
     return True
 
 
-def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
-            fs_backup_location=None):
+def cleanup(
+        backup_location,
+        full=False,
+        keep=0,
+        keep_blob_days=0,
+        fs_backup_location=None,
+):
     """Clean up old blob backups.
 
     When fs_backup_location is passed and we find filestorage backups there,
@@ -1344,143 +1427,7 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
     We remove any blob backups that are older than the oldest
     filestorage backup.
 
-    For the test, we create a backup dir using buildout's test support methods:
-
-      >>> backup_dir = 'back'
-      >>> mkdir(backup_dir)
-
-    And we'll make a function that creates a blob backup directory for
-    us and that also sets the file modification dates to a meaningful
-    time.
-
-      >>> import time
-      >>> import os
-      >>> def add_backup(name, days=0):
-      ...     global next_mod_time
-      ...     mkdir(backup_dir, name)
-      ...     write(backup_dir, name, 'dummyfile', 'dummycontents')
-      ...     # Change modification time to 'days' days old.
-      ...     mod_time = time.time() - (86400 * days)
-      ...     os.utime(join(backup_dir, name), (mod_time, mod_time))
-
-    Calling 'cleanup' without a keep arguments will just return without doing
-    anything.
-
-      >>> cleanup(backup_dir)
-
-    Cleaning an empty directory won't do a thing.
-
-      >>> cleanup(backup_dir, keep=1)
-      >>> cleanup(backup_dir, keep_blob_days=1)
-
-    Adding one backup file and cleaning the directory won't remove it either:
-
-      >>> add_backup('blob.1', days=1)
-      >>> cleanup(backup_dir, keep=1)
-      >>> ls(backup_dir)
-      d  blob.1
-
-    When we add a second backup directory and we keep only one then
-    this means the first one gets removed.
-
-      >>> add_backup('blob.0', days=0)
-      >>> cleanup(backup_dir, keep=1)
-      >>> ls(backup_dir)
-      d  blob.0
-
-    Note that we do keep an eye on the name of the blob directories,
-    as unless someone has been messing manually with the names and
-    modification dates we only expect blob.0, blob.1, blob.2, etc, as
-    names, with blob.0 being the most recent.
-
-    Any files are ignored and any directories that do not match
-    prefix.X get ignored:
-
-      >>> add_backup('myblob')
-      >>> add_backup('blob.some.3')
-      >>> write(backup_dir, 'blob.4', 'just a file')
-      >>> write(backup_dir, 'blob5.txt', 'just a file')
-      >>> cleanup(backup_dir, keep=1)
-      >>> ls(backup_dir)
-      d  blob.0
-      -  blob.4
-      d  blob.some.3
-      -  blob5.txt
-      d  myblob
-
-    We do not mind what the prefix is, as long as there is only one prefix:
-
-      >>> add_backup('myblob.4')
-      >>> cleanup(backup_dir, keep=1)
-      Traceback (most recent call last):
-      ...
-      SystemExit: 1
-      >>> cleanup(backup_dir, keep_blob_days=1)
-      Traceback (most recent call last):
-      ...
-      SystemExit: 1
-      >>> ls(backup_dir)
-      d  blob.0
-      -  blob.4
-      d  blob.some.3
-      -  blob5.txt
-      d  myblob
-      d  myblob.4
-
-    We create a helper function that gives us a fresh directory with
-    some blob backup directories, where backups are made twice a day:
-
-      >>> def fresh_backups(num):
-      ...     remove(backup_dir)
-      ...     mkdir(backup_dir)
-      ...     for b in range(num):
-      ...         name = 'blob.%d' % b
-      ...         add_backup(name, days=b / 2.0)
-
-    We keep the last 4 backups:
-
-      >>> fresh_backups(10)
-      >>> cleanup(backup_dir, keep=4)
-      >>> ls(backup_dir)
-      d  blob.0
-      d  blob.1
-      d  blob.2
-      d  blob.3
-      >>> fresh_backups(10)
-
-    We keep the last 4 days of backups:
-
-      >>> cleanup(backup_dir, keep_blob_days=4)
-      >>> ls(backup_dir)
-      d  blob.0
-      d  blob.1
-      d  blob.2
-      d  blob.3
-      d  blob.4
-      d  blob.5
-      d  blob.6
-      d  blob.7
-
-    With full=False (the default) we ignore the keep option:
-
-      >>> cleanup(backup_dir, full=False, keep=2, keep_blob_days=2)
-      >>> ls(backup_dir)
-      d  blob.0
-      d  blob.1
-      d  blob.2
-      d  blob.3
-
-    With full=True we ignore the keep_blob_days option:
-
-      >>> cleanup(backup_dir, full=True, keep=2, keep_blob_days=2)
-      >>> ls(backup_dir)
-      d  blob.0
-      d  blob.1
-
-    Cleanup after the test.
-
-      >>> remove(backup_dir)
-
+    For tests, see tests/cleanup_dir.rst.
     """
     logger.debug('Starting cleanup of blob backups from %s', backup_location)
     if remove_orphaned_blob_backups(backup_location, fs_backup_location):
@@ -1503,6 +1450,9 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
         # logic somehow fails, like when modification dates have been
         # tampered with.
         keep = 1
+    if keep == 0:
+        logger.debug('keep=0, so not removing backups.')
+        return
     logger.debug('Trying to clean up old backups.')
     backup_dirs = get_blob_backup_dirs(backup_location)
     if full:
@@ -1514,37 +1464,44 @@ def cleanup(backup_location, full=False, keep=0, keep_blob_days=0,
         logger.debug('This is a partial backup.')
         logger.debug('Minimum number of backups to keep: %d.', keep)
         logger.debug('Number of blob days to keep: %d.', keep_blob_days)
-    if len(backup_dirs) > keep and keep != 0:
-        logger.debug('There are older backups that we can remove.')
-        possibly_remove = backup_dirs[keep:]
-        logger.debug('Will possibly remove: %r', possibly_remove)
-        deleted = 0
-        now = time.time()
-        for num, mod_time, directory in possibly_remove:
-            if keep_blob_days:
-                mod_days = (now - mod_time) / 86400  # 24 * 60 * 60
-                if mod_days < keep_blob_days:
-                    # I'm too young to die!
-                    continue
-            shutil.rmtree(directory)
-            deleted += 1
-            logger.debug('Deleted %s.', directory)
-        if deleted:
-            if full:
-                logger.info('Removed %d blob backup(s), the latest '
-                            '%d backup(s) have been kept.', deleted, keep)
-            else:
-                logger.info('Removed %d blob backup(s), the latest '
-                            '%d day(s) of backups have been kept.', deleted,
-                            keep_blob_days)
-    else:
+    if len(backup_dirs) <= keep:
         logger.debug('Not removing backups.')
+        return
+    logger.debug('There are older backups that we can remove.')
+    remove = backup_dirs[keep:]
+    logger.debug('Will possibly remove: %r', remove)
+    deleted = 0
+    now = time.time()
+    for num, mod_time, directory in remove:
+        if keep_blob_days:
+            mod_days = (now - mod_time) / 86400  # 24 * 60 * 60
+            if mod_days < keep_blob_days:
+                # I'm too young to die!
+                continue
+        shutil.rmtree(directory)
+        deleted += 1
+        logger.debug('Deleted %s.', directory)
+    if not deleted:
+        logger.debug('Nothing removed.')
+        return
+    if full:
+        logger.info(
+            'Removed %d blob %s, the latest '
+            '%d %s been kept.',
+            deleted, 'backup' if deleted == 1 else 'backups',
+            keep, 'backup has' if keep == 1 else 'backups have')
+    else:
+        logger.info(
+            'Removed %d blob %s. The backups of the latest '
+            '%d %s been kept.',
+            deleted, 'backup' if deleted == 1 else 'backups',
+            keep_blob_days, 'day has' if keep_blob_days == 1 else 'days have')
 
 
 def cleanup_archives(
-    backup_location,
-    keep=0,
-    fs_backup_location=None
+        backup_location,
+        keep=0,
+        fs_backup_location=None
 ):
     """Clean up old blob backups.
 
@@ -1553,102 +1510,7 @@ def cleanup_archives(
     We remove any blob backups that are older than the oldest
     filestorage backup.
 
-    For the test, we create a backup dir using buildout's test support methods:
-
-      >>> backup_dir = 'back'
-      >>> mkdir(backup_dir)
-
-    And we'll make a function that creates a blob backup directory for
-    us and that also sets the file modification dates to a meaningful
-    time.
-
-      >>> import time
-      >>> import os
-      >>> def add_backup(name, days=0):
-      ...     global next_mod_time
-      ...     write(backup_dir, name, 'dummycontents')
-      ...     # Change modification time to 'days' days old.
-      ...     mod_time = time.time() - (86400 * days)
-      ...     os.utime(join(backup_dir, name), (mod_time, mod_time))
-
-    Calling 'cleanup_archives' without a keep arguments will just return
-    without doing anything.
-
-      >>> cleanup_archives(backup_dir)
-
-    Cleaning an empty directory won't do a thing.
-
-      >>> cleanup_archives(backup_dir, keep=1)
-
-    Adding one backup file and cleaning the directory won't remove it either:
-
-      >>> add_backup('blob.1.tar', days=1)
-      >>> cleanup_archives(backup_dir, keep=1)
-      >>> ls(backup_dir)
-      -  blob.1.tar
-
-    When we add a second backup directory and we keep only one then
-    this means the first one gets removed.
-
-      >>> add_backup('blob.0.tar.gz', days=0)
-      >>> cleanup_archives(backup_dir, keep=1)
-      >>> ls(backup_dir)
-      -  blob.0.tar.gz
-
-    Note that we do keep an eye on the name of the blob directories,
-    as unless someone has been messing manually with the names and
-    modification dates we only expect blob.0, blob.1, blob.2, etc, as
-    names, with blob.0 being the most recent.
-
-    Any files are ignored and any directories that do not match
-    prefix.X get ignored:
-
-      >>> add_backup('myblob.tar.gz')
-      >>> add_backup('blob.some.3.tar')
-      >>> mkdir(backup_dir, 'blob.4.tar')
-      >>> write(backup_dir, 'blob5.txt', 'just a file')
-      >>> cleanup_archives(backup_dir, keep=1)
-      >>> ls(backup_dir)
-      -  blob.0.tar.gz
-      d  blob.4.tar
-      -  blob.some.3.tar
-      -  blob5.txt
-      -  myblob.tar.gz
-
-    We create a helper function that gives us a fresh directory with
-    some blob backup directories, where backups are made twice a day:
-
-      >>> def fresh_backups(num, compress=False):
-      ...     remove(backup_dir)
-      ...     mkdir(backup_dir)
-      ...     for b in range(num):
-      ...         name = 'blob.%d.tar' % b
-      ...         if compress:
-      ...             name += '.gz'
-      ...         add_backup(name, days=b / 2.0)
-
-    We keep the last 4 backups:
-
-      >>> fresh_backups(10, compress=True)
-      >>> cleanup_archives(backup_dir, keep=4)
-      >>> ls(backup_dir)
-      -  blob.0.tar.gz
-      -  blob.1.tar.gz
-      -  blob.2.tar.gz
-      -  blob.3.tar.gz
-
-      >>> fresh_backups(10)
-      >>> cleanup_archives(backup_dir, keep=4)
-      >>> ls(backup_dir)
-      -  blob.0.tar
-      -  blob.1.tar
-      -  blob.2.tar
-      -  blob.3.tar
-
-    Cleanup after the test.
-
-      >>> remove(backup_dir)
-
+    For tests, see tests/cleanup_archives.rst.
     """
     logger.debug('Starting cleanup of blob archives from %s', backup_location)
     if remove_orphaned_blob_backups(backup_location, fs_backup_location,
@@ -1658,21 +1520,30 @@ def cleanup_archives(
 
     # Making sure we use integers.
     keep = int(keep)
+    if keep == 0:
+        logger.debug('keep=0, so not removing backups.')
+        return
     logger.debug('Trying to clean up old backups.')
-    backup_archives = get_blob_backup_archives(backup_location)
-    logger.debug('This is a full backup.')
+    backup_archives = get_blob_backup_all_archive_files(backup_location)
+    combined_archives = combine_backups(backup_archives)
     logger.debug('Max number of backups: %d.', keep)
-    if len(backup_archives) > keep and keep != 0:
-        logger.debug('There are older backups that we can remove.')
-        possibly_remove = backup_archives[keep:]
-        logger.debug('Will possibly remove: %r', possibly_remove)
-        deleted = 0
-        for num, mod_time, archive_file in possibly_remove:
-            os.remove(archive_file)
-            deleted += 1
-            logger.debug('Deleted %s.', archive_file)
-        if deleted:
-            logger.info('Removed %d blob backup(s), the latest '
-                        '%d backup(s) have been kept.', deleted, keep)
-    else:
+    if len(combined_archives) <= keep:
         logger.debug('Not removing backups.')
+        return
+    logger.debug('There are older backups that we can remove.')
+    remove = combined_archives[keep:]
+    logger.debug('Will remove: %r', remove)
+    deleted_full = 0
+    deleted_files = 0
+    for archive in remove:
+        for num, mod_time, archive_file in archive:
+            os.remove(archive_file)
+            deleted_files += 1
+            logger.debug('Deleted %s.', archive_file)
+        deleted_full += 1
+    logger.info(
+        'Removed %d full blob %s, with %d %s. '
+        'The latest %d %s been kept.',
+        deleted_full, 'backup' if deleted_full == 1 else 'backups',
+        deleted_files, 'file' if deleted_files == 1 else 'files',
+        keep, 'backup has' if keep == 1 else 'backups have')

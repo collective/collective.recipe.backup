@@ -1,6 +1,11 @@
 4.0b5 (unreleased)
 ==================
 
+- Added ``incremental_blobs`` option.
+  This creates tarballs with only the changes compared to the previous blob backups.
+  This option is ignored when the ``archive_blob`` option is false.
+  [maurits]
+
 - Improved code quality, reducing complexity.  [maurits]
 
 - Refactored the main functions to not have so much code duplication.

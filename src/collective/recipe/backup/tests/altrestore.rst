@@ -296,7 +296,7 @@ When archive_blob is true, we use it::
     INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: tar cf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/blobstoragebackups/blobstorage.0.tar  -C /sample-buildout/var/blobstorage .
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
     >>> remove('alt', 'data')
@@ -315,7 +315,7 @@ When archive_blob is true, we use it::
     INFO: Restoring blobs from /sample-buildout/alt/blobs to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
     INFO: Extracting /sample-buildout/alt/blobs/blobstorage.0.tar to /sample-buildout/var/blobstorage
-    INFO: tar xf /sample-buildout/alt/blobs/blobstorage.0.tar -C /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/alt/blobs/blobstorage.0.tar  -C /sample-buildout/var/blobstorage
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/alt/data
     >>> ls('var', 'blobstorage')

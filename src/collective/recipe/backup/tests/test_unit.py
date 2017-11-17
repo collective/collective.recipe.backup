@@ -112,19 +112,6 @@ class UtilsTestCase(unittest.TestCase):
 class CopyBlobsTestCase(unittest.TestCase):
     """Test the code in copyblobs.py."""
 
-    def test_gen_blobdir_name(self):
-        from collective.recipe.backup.copyblobs import gen_blobdir_name
-        # The name starts with blobstorage and a time.
-        # We only check that the century is okay.
-        self.assertTrue(gen_blobdir_name().startswith('blobstorage.20'))
-        # We can pass a time tuple.
-        self.assertEqual(gen_blobdir_name(now=(1999, 12, 31, 23, 59, 30)),
-                         'blobstorage.1999-12-31-23-59-30')
-        # We can pass a different prefix.
-        self.assertEqual(
-            gen_blobdir_name(prefix='foo', now=(1999, 12, 31, 23, 59, 30)),
-            'foo.1999-12-31-23-59-30')
-
     def test_gen_timestamp(self):
         from collective.recipe.backup.copyblobs import gen_timestamp
         self.assertTrue(gen_timestamp().startswith('20'))
@@ -172,6 +159,15 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(gpn('a.1.tar', suffixes=['tar', 'tar.gz']),
                          ('a', '1'))
         self.assertFalse(gpn('a.1.tar.gz', suffixes=['tar', 'tgz']))
+        # The order of the suffixes should not matter.
+        self.assertEqual(
+            gpn('a.1.delta.tar.gz',
+                suffixes=['delta.tar.gz', 'delta.tar', 'tar', 'tar.gz']),
+            ('a', '1'))
+        self.assertEqual(
+            gpn('a.1.delta.tar.gz',
+                suffixes=['tar', 'tar.gz', 'delta.tar.gz', 'delta.tar']),
+            ('a', '1'))
 
     def test_number_key(self):
         from collective.recipe.backup.copyblobs import number_key
@@ -238,6 +234,138 @@ class CopyBlobsTestCase(unittest.TestCase):
                 '0',
                 '1999-12-31-23-59-30',
                 '2017-01-02-03-04-05'])
+
+    def test_first_number_key(self):
+        from collective.recipe.backup.copyblobs import first_number_key
+        from collective.recipe.backup.copyblobs import is_snar
+        from collective.recipe.backup.copyblobs import mod_time_number_key
+        # Values should be (number, modification time, ignored extra).
+        # Number is either a number or a timestamp.
+        self.assertGreater(
+            first_number_key(('0', 0)),
+            first_number_key(('1', 0)))
+        self.assertEqual(
+            first_number_key(('0', 0)),
+            first_number_key(('0', 0)))
+        self.assertLess(
+            first_number_key(('1', 0)),
+            first_number_key(('0', 0)))
+        self.assertGreater(
+            first_number_key(('9', 0)),
+            first_number_key(('10', 0)))
+        self.assertLess(
+            first_number_key(('99', 0)),
+            first_number_key(('10', 0)))
+
+        # When the number is the same, the modification time becomes relevant.
+        self.assertGreater(
+            first_number_key(('0', 1)),
+            first_number_key(('0', 0)))
+        self.assertLess(
+            first_number_key(('0', 0)),
+            first_number_key(('0', 1)))
+
+        # Check the effect on a complete sort.
+        # We usually want it reversed.
+        # Use some actual data from a test that used to fail.
+        data = [
+            ('2016-12-25-00-00-00',
+             1506465957.3800716,
+             'blobstorage.2016-12-25-00-00-00.tar'),
+            ('2016-12-25-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-25-00-00-00.snar'),
+            ('2016-12-26-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-26-00-00-00.delta.tar'),
+        ]
+        correct_order = [
+            # First the delta, which has the latest timestamp number.
+            ('2016-12-26-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-26-00-00-00.delta.tar'),
+            # Then the snar, was was created at the same as the full tar,
+            # but was modified at the same time as the delta.
+            ('2016-12-25-00-00-00',
+             1506465958.8960717,
+             'blobstorage.2016-12-25-00-00-00.snar'),
+            # Lastly the tar, which has the oldest timestamp number,
+            # just like the snar, but has an older modification time.
+            ('2016-12-25-00-00-00',
+             1506465957.3800716,
+             'blobstorage.2016-12-25-00-00-00.tar'),
+        ]
+        self.assertEqual(
+            sorted(data, key=first_number_key, reverse=True),
+            correct_order)
+        self.assertEqual(
+            sorted(data, key=mod_time_number_key, reverse=True),
+            correct_order)
+
+        # And another one.
+        data = [
+            ('2017-09-27-13-00-58',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-00-58.snar'),
+            ('2017-09-27-13-00-58',
+             1506517561.0,
+             '/blobstorage.2017-09-27-13-00-58.tar'),
+            ('2017-09-27-13-08-04',
+             1506517684.0,
+             '/blobstorage.2017-09-27-13-08-04.delta.tar'),
+            ('2017-09-27-13-10-17',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-10-17.delta.tar'),
+        ]
+        correct_order_by_number = [
+            # delta 2: highest number, last modified
+            ('2017-09-27-13-10-17',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-10-17.delta.tar'),
+            # delta 1: all in between
+            ('2017-09-27-13-08-04',
+             1506517684.0,
+             '/blobstorage.2017-09-27-13-08-04.delta.tar'),
+            # snar: lowest number, last modified
+            ('2017-09-27-13-00-58',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-00-58.snar'),
+            # tar: lowest number, oldest modified
+            ('2017-09-27-13-00-58',
+             1506517561.0,
+             '/blobstorage.2017-09-27-13-00-58.tar'),
+        ]
+        correct_order_by_mod_time = [
+            # delta 2: last modified, highest number
+            ('2017-09-27-13-10-17',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-10-17.delta.tar'),
+            # snar: last modified, lowest number
+            ('2017-09-27-13-00-58',
+             1506517817.0,
+             '/blobstorage.2017-09-27-13-00-58.snar'),
+            # delta 1: all in between
+            ('2017-09-27-13-08-04',
+             1506517684.0,
+             '/blobstorage.2017-09-27-13-08-04.delta.tar'),
+            # tar: oldest modified, lowest number
+            ('2017-09-27-13-00-58',
+             1506517561.0,
+             '/blobstorage.2017-09-27-13-00-58.tar'),
+        ]
+        # We use this in a part of the code that wants these to be the same,
+        # but that is not the case.  Without snapshot archives it is
+        # the same though.
+        self.assertNotEqual(correct_order_by_number, correct_order_by_mod_time)
+        self.assertEqual(
+            [x for x in correct_order_by_number if not is_snar(x[2])],
+            [x for x in correct_order_by_mod_time if not is_snar(x[2])])
+        self.assertEqual(
+            sorted(data, key=first_number_key, reverse=True),
+            correct_order_by_number)
+        self.assertEqual(
+            sorted(data, key=mod_time_number_key, reverse=True),
+            correct_order_by_mod_time)
 
     def test_backup_key(self):
         from collective.recipe.backup.copyblobs import backup_key
@@ -328,3 +456,97 @@ class CopyBlobsTestCase(unittest.TestCase):
                 'foo.0.tar.gz',
                 'foo.1999-12-31-23-59-30.tar.gz',
                 'foo.2017-01-02-03-04-05.tar.gz'])
+
+    def test_combine_backups(self):
+        from collective.recipe.backup.copyblobs import combine_backups as cb
+        self.assertEqual(cb([]), [])
+        # The list should have lists/tuples of (num, mod_time, path).
+        # Modification times are not relevant here.
+        # Num can be 0, 1, etc, or a timestamp.
+        # They are already sorted with most recent first.
+        # They can be tars, deltas, snars, directories,
+        # although the function should not be needed for directories.
+        self.assertEqual(
+            cb([(0, 0, 'a.tar')]), [[(0, 0, 'a.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.tar'),
+            (0, 0, 'b.tar.gz'),
+            (0, 0, 'a.tar.gz'),
+            (0, 0, 'b.tar'),
+        ]), [
+            [(0, 0, 'a.tar')],
+            [(0, 0, 'b.tar.gz')],
+            [(0, 0, 'a.tar.gz')],
+            [(0, 0, 'b.tar')],
+        ])
+        self.assertEqual(
+            cb([(0, 0, 'a.tar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.tar')], [(0, 0, 'b.tar')]])
+        self.assertEqual(
+            cb([(0, 0, 'dir1'), (0, 0, 'dir2')]),
+            [[(0, 0, 'dir1')], [(0, 0, 'dir2')]])
+        # Deltas and tars are combined:
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.delta.tar'),
+            (0, 0, 'b.tar'),
+            (0, 0, 'c.delta.tar'),
+            (0, 0, 'd.delta.tar'),
+            (0, 0, 'e.tar')
+        ]), [
+            [(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')],
+            [(0, 0, 'c.delta.tar'), (0, 0, 'd.delta.tar'), (0, 0, 'e.tar')]
+        ])
+        # Snars (snapshot archives) and tars are combined:
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.snar'),
+            (0, 0, 'b.tar'),
+            # lonely snar, which is strange but should not break:
+            (0, 0, 'c.snar'),
+            (0, 0, 'd.snar'),
+            (0, 0, 'e.tar'),
+        ]), [
+            [(0, 0, 'a.snar'), (0, 0, 'b.tar')],
+            [(0, 0, 'c.snar')],
+            [(0, 0, 'd.snar'), (0, 0, 'e.tar')]
+        ])
+        # The order of snar and tar should not matter:
+        # two that belong together are expected to have the same base name,
+        # which means they have the same sort key.
+        self.assertEqual(cb([
+            (0, 0, 'a.tar'),
+            (0, 0, 'b.snar'),
+            # lonely tar, which is strange but should not break:
+            (0, 0, 'c.tar'),
+            (0, 0, 'd.tar'),
+            (0, 0, 'e.snar'),
+        ]), [
+            [(0, 0, 'a.tar'), (0, 0, 'b.snar')],
+            [(0, 0, 'c.tar')],
+            [(0, 0, 'd.tar'), (0, 0, 'e.snar')]
+        ])
+        # Deltas, tars and snars are combined:
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.tar'), (0, 0, 'b.snar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.tar'), (0, 0, 'b.snar')]])
+        self.assertEqual(
+            cb([(0, 0, 'a.delta.tar'), (0, 0, 'b.snar'), (0, 0, 'b.tar')]),
+            [[(0, 0, 'a.delta.tar'), (0, 0, 'b.snar'), (0, 0, 'b.tar')]])
+        self.assertEqual(cb([
+            (0, 0, 'a.delta.tar'),
+            (0, 0, 'b.tar'),
+            (0, 0, 'c.snar'),
+            (0, 0, 'd.delta.tar'),
+            (0, 0, 'e.delta.tar.gz'),
+            (0, 0, 'f.snar'),
+            (0, 0, 'g.tar.gz'),
+        ]), [
+            [(0, 0, 'a.delta.tar'), (0, 0, 'b.tar'), (0, 0, 'c.snar')],
+            [(0, 0, 'd.delta.tar'), (0, 0, 'e.delta.tar.gz'),
+             (0, 0, 'f.snar'), (0, 0, 'g.tar.gz')]
+        ])
