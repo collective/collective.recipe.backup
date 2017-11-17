@@ -260,6 +260,10 @@ site.")  You need to explicitly type 'yes'::
     This will replace the blobstorage.
     Are you sure? (yes/No)?
 
+Note that for large filestorages and blobstorages it may take long to restore.
+You should do a test restore and check how long it takes.
+Seconds?  Minutes?  Hours?
+Is that time acceptable or should you take other measures?
 
 Names of created scripts
 ========================
@@ -431,6 +435,8 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     This option *requires* the ``blob_timestamps`` option to be true,
     because it needs the tarball names to be stable, instead of getting rotated.
     If you have explicitly set ``blob_timestamps`` to false, buildout will exit with an error.
+    For large blobstorages it may take long to restore, so do test it out.
+    But that is wise in all cases.
 
 ``keep``
     Number of full backups to keep. Defaults to ``2``, which means that the
