@@ -22,8 +22,11 @@ add a new section in your ``buildout.cfg`` (do not forget to add it in the
 
   [repozo]
   recipe = zc.recipe.egg
-  eggs = ZODB3
+  eggs = ZODB
+  # or this for an older version:
+  # eggs = ZODB3
   scripts = repozo
+  dependent-scripts = true
 
 ``bin/repozo`` is a Zope script to make backups of your ``Data.fs``.
 Looking up the settings can be a chore. And you have to pick a
