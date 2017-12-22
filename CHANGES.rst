@@ -1,5 +1,5 @@
-4.0b6.0 (unreleased)
-====================
+4.0 (2017-12-22)
+================
 
 - Updated readme and added sponsorship note.  [maurits]
 
