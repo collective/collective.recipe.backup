@@ -11,6 +11,13 @@ The fullbackup script was added by `Tom 'Spanky' Kapanka`_.
 Archive blob backups feature added by `Matej Cotman`_ (niteoweb_).
 
 
+Sponsorship
+===========
+
+Work on collective.recipe.backup has been made possible by Ghent University, or UGent.
+See https://www.ugent.be.
+Ghent University is a top 100 university and one of the major universities in Belgium.
+
 .. Links used above.
 
 .. _Zest software: http://zestsoftware.nl/
