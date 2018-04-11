@@ -1,0 +1,4 @@
+Start using towncrier for CHANGES.rst.  [maurits]
+
+Note: the random id from this news snippet comes from:
+$ echo "Start using towncrier for CHANGES.rst.  [maurits]" > news/$(uuid).trivial
