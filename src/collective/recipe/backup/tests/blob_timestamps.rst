@@ -78,17 +78,17 @@ Test the snapshotbackup first, as that should be easiest.
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     >>> ls('var', 'blobstoragesnapshots')
     d  blobstorage.20...-...-...-...-...-...
-    >>> timestamp0 = os.listdir('var/blobstoragesnapshots/')[0]
+    >>> timestamp0 = sorted(os.listdir('var/blobstoragesnapshots/'))[0]
     >>> ls('var', 'blobstoragesnapshots', timestamp0)
     d  blobstorage
     >>> ls('var', 'blobstoragesnapshots_foo')
     d  blobstorage-foo.20...-...-...-...-...-...
-    >>> foo_timestamp0 = os.listdir('var/blobstoragesnapshots_foo/')[0]
+    >>> foo_timestamp0 = sorted(os.listdir('var/blobstoragesnapshots_foo/'))[0]
     >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp0)
     d  blobstorage-foo
     >>> ls('var', 'blobstoragesnapshots_bar')
     d  blobstorage-bar.20...-...-...-...-...-...
-    >>> bar_timestamp0 = os.listdir('var/blobstoragesnapshots_bar/')[0]
+    >>> bar_timestamp0 = sorted(os.listdir('var/blobstoragesnapshots_bar/'))[0]
     >>> ls('var', 'blobstoragesnapshots_bar', bar_timestamp0)
     d  blobstorage-bar
 
@@ -118,9 +118,9 @@ Note that due to the timestamps no renaming takes place from blobstorage.0 to bl
     >>> ls('var/blobstoragesnapshots')
     d  blobstorage.20...-...-...-...-...-...
     d  blobstorage.20...-...-...-...-...-...
-    >>> timestamp0 == os.listdir('var/blobstoragesnapshots/')[0]
+    >>> timestamp0 == sorted(os.listdir('var/blobstoragesnapshots/'))[0]
     True
-    >>> timestamp1 = os.listdir('var/blobstoragesnapshots/')[1]
+    >>> timestamp1 = sorted(os.listdir('var/blobstoragesnapshots/'))[1]
     >>> ls('var', 'blobstoragesnapshots', timestamp1, 'blobstorage')
     -  blob1.txt
     -  blob2.txt
@@ -135,9 +135,9 @@ Note that due to the timestamps no renaming takes place from blobstorage.0 to bl
     >>> ls('var', 'blobstoragesnapshots_foo')
     d  blobstorage-foo.20...-...-...-...-...-...
     d  blobstorage-foo.20...-...-...-...-...-...
-    >>> foo_timestamp0 == os.listdir('var/blobstoragesnapshots_foo/')[0]
+    >>> foo_timestamp0 == sorted(os.listdir('var/blobstoragesnapshots_foo/'))[0]
     True
-    >>> foo_timestamp1 = os.listdir('var/blobstoragesnapshots_foo/')[1]
+    >>> foo_timestamp1 = sorted(os.listdir('var/blobstoragesnapshots_foo/'))[1]
     >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp1, 'blobstorage-foo')
     -  blob-foo1.txt
     -  blob-foo2.txt
@@ -178,11 +178,11 @@ But let's test it for good measure::
     d  blobstorage.20...-...-...-...-...-...
     d  blobstorage.20...-...-...-...-...-...
     d  blobstorage.20...-...-...-...-...-...
-    >>> timestamp0 == os.listdir('var/blobstoragesnapshots/')[0]
+    >>> timestamp0 == sorted(os.listdir('var/blobstoragesnapshots/'))[0]
     True
-    >>> timestamp1 == os.listdir('var/blobstoragesnapshots/')[1]
+    >>> timestamp1 == sorted(os.listdir('var/blobstoragesnapshots/'))[1]
     True
-    >>> timestamp2 = os.listdir('var/blobstoragesnapshots/')[2]
+    >>> timestamp2 = sorted(os.listdir('var/blobstoragesnapshots/'))[2]
     >>> ls('var', 'blobstoragesnapshots', timestamp2, 'blobstorage')
     -  blob1.txt
     >>> ls('var', 'blobstoragesnapshots', timestamp1, 'blobstorage')
@@ -200,11 +200,11 @@ But let's test it for good measure::
     d  blobstorage-foo.20...-...-...-...-...-...
     d  blobstorage-foo.20...-...-...-...-...-...
     d  blobstorage-foo.20...-...-...-...-...-...
-    >>> foo_timestamp0 == os.listdir('var/blobstoragesnapshots_foo/')[0]
+    >>> foo_timestamp0 == sorted(os.listdir('var/blobstoragesnapshots_foo/'))[0]
     True
-    >>> foo_timestamp1 == os.listdir('var/blobstoragesnapshots_foo/')[1]
+    >>> foo_timestamp1 == sorted(os.listdir('var/blobstoragesnapshots_foo/'))[1]
     True
-    >>> foo_timestamp2 = os.listdir('var/blobstoragesnapshots_foo/')[2]
+    >>> foo_timestamp2 = sorted(os.listdir('var/blobstoragesnapshots_foo/'))[2]
     >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp2, 'blobstorage-foo')
     -  blob-foo2.txt
     >>> ls('var', 'blobstoragesnapshots_foo', foo_timestamp1, 'blobstorage-foo')
@@ -244,14 +244,14 @@ Let's see how a bin/backup goes:
     --backup -f /sample-buildout/var/filestorage/foo.fs -r /sample-buildout/var/backups_foo --quick --gzip
     --backup -f /sample-buildout/var/filestorage/bar.fs -r /sample-buildout/var/backups_bar --quick --gzip
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
-    >>> backup_timestamp0 = os.listdir('var/blobstoragebackups/')[0]
+    >>> backup_timestamp0 = sorted(os.listdir('var/blobstoragebackups/'))[0]
     >>> ls('var', 'blobstoragebackups')
     d  blobstorage.20...-...-...-...-...-...
     >>> ls('var', 'blobstoragebackups', backup_timestamp0)
     d  blobstorage
     >>> ls('var', 'blobstoragebackups', backup_timestamp0, 'blobstorage')
     -  blob1.txt
-    >>> foo_backup_timestamp0 = os.listdir('var/blobstoragebackups_foo/')[0]
+    >>> foo_backup_timestamp0 = sorted(os.listdir('var/blobstoragebackups_foo/'))[0]
     >>> ls('var', 'blobstoragebackups_foo')
     d  blobstorage-foo.20...-...-...-...-...-...
     >>> ls('var', 'blobstoragebackups_foo', foo_backup_timestamp0)
@@ -282,9 +282,9 @@ We try again with an extra 'blob' and a changed 'blob':
     >>> ls('var', 'blobstoragebackups')
     d  blobstorage.20...-...-...-...-...-...
     d  blobstorage.20...-...-...-...-...-...
-    >>> backup_timestamp0 == os.listdir('var/blobstoragebackups/')[0]
+    >>> backup_timestamp0 == sorted(os.listdir('var/blobstoragebackups/'))[0]
     True
-    >>> backup_timestamp1 = os.listdir('var/blobstoragebackups/')[1]
+    >>> backup_timestamp1 = sorted(os.listdir('var/blobstoragebackups/'))[1]
     >>> ls('var', 'blobstoragebackups', backup_timestamp1, 'blobstorage')
     -  blob1.txt
     -  blob2.txt
@@ -583,7 +583,7 @@ Now we test it::
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     >>> ls('var', 'blobstoragezips')
     -   blobstorage.20...-...-...-...-...-....tar
-    >>> zip_timestamp0 = os.listdir('var/blobstoragezips')[0]
+    >>> zip_timestamp0 = sorted(os.listdir('var/blobstoragezips'))[0]
 
 Keep is ignored by zipbackup, always using 1 as value.
 Pause a short time to avoid getting an error for overwriting the previous file::
@@ -599,7 +599,7 @@ Pause a short time to avoid getting an error for overwriting the previous file::
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     >>> ls('var', 'blobstoragezips')
     -   blobstorage.20...-...-...-...-...-....tar
-    >>> zip_timestamp1 = os.listdir('var/blobstoragezips')[0]
+    >>> zip_timestamp1 = sorted(os.listdir('var/blobstoragezips'))[0]
     >>> zip_timestamp0 == zip_timestamp1
     False
 

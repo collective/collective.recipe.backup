@@ -280,7 +280,7 @@ def get_valid_directories(container, name):
 
     """
     valid_entries = []
-    for entry in os.listdir(container):
+    for entry in sorted(os.listdir(container)):
         if not entry.startswith(name + '.'):
             continue
         entry_start, entry_num = entry.rsplit('.', 1)
@@ -343,7 +343,7 @@ def get_valid_archives(container, name):
     >>> remove('dirtest')
     """
     valid_entries = []
-    for entry in os.listdir(container):
+    for entry in sorted(os.listdir(container)):
         matched = re.match('^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
         if matched is None:
             continue
@@ -463,7 +463,7 @@ def get_blob_backup_dirs(backup_location, only_timestamps=False):
     If only_timestamps is True, we only return backups that have timestamps.
     That is useful when restoring.
     """
-    filenames = os.listdir(backup_location)
+    filenames = sorted(os.listdir(backup_location))
     logger.debug('Looked up filenames in the target dir: %s found. %r.',
                  len(filenames), filenames)
     backup_dirs = []
@@ -527,7 +527,7 @@ def get_blob_backup_archives(
     If only_timestamps is True, we only return backups that have timestamps.
     That is useful when restoring.
     """
-    filenames = os.listdir(backup_location)
+    filenames = sorted(os.listdir(backup_location))
     logger.debug('Looked up filenames in the target dir: %s found. %r.',
                  len(filenames), filenames)
     backup_archives = []
