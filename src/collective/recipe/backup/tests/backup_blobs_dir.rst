@@ -138,6 +138,18 @@ Pretend there is a newer filestorage backup and a blob change.
     -  one.txt
     -  two.txt
 
+Check a restore with archive=True.
+This should prefer archives, but should be able to restore non-archives too.
+
+    >>> ls('blobs')
+    d  dir
+    -  one.txt
+    -  two.txt
+    >>> restore_blobs('backups', os.path.abspath('blobs'), date='2099-01-01-00-00-00', archive_blob=True, timestamps=True)
+    >>> ls('blobs')
+    d  dir
+    -  one.txt
+
 Remove the oldest filestorage backup.
 
     >>> remove('fs', '{0}.fsz'.format(timestamp1))
