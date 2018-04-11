@@ -594,7 +594,7 @@ def get_blob_backup_all_archive_files(backup_location):
     return get_blob_backup_archives(
         backup_location,
         only_timestamps=False,
-        include_snapshot_files=True
+        include_snapshot_files=True,
     )
 
 
@@ -1501,7 +1501,7 @@ def cleanup(
 def cleanup_archives(
         backup_location,
         keep=0,
-        fs_backup_location=None
+        fs_backup_location=None,
 ):
     """Clean up old blob backups.
 

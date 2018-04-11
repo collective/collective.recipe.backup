@@ -494,10 +494,10 @@ class CopyBlobsTestCase(unittest.TestCase):
             (0, 0, 'b.tar'),
             (0, 0, 'c.delta.tar'),
             (0, 0, 'd.delta.tar'),
-            (0, 0, 'e.tar')
+            (0, 0, 'e.tar'),
         ]), [
             [(0, 0, 'a.delta.tar'), (0, 0, 'b.tar')],
-            [(0, 0, 'c.delta.tar'), (0, 0, 'd.delta.tar'), (0, 0, 'e.tar')]
+            [(0, 0, 'c.delta.tar'), (0, 0, 'd.delta.tar'), (0, 0, 'e.tar')],
         ])
         # Snars (snapshot archives) and tars are combined:
         self.assertEqual(
@@ -513,7 +513,7 @@ class CopyBlobsTestCase(unittest.TestCase):
         ]), [
             [(0, 0, 'a.snar'), (0, 0, 'b.tar')],
             [(0, 0, 'c.snar')],
-            [(0, 0, 'd.snar'), (0, 0, 'e.tar')]
+            [(0, 0, 'd.snar'), (0, 0, 'e.tar')],
         ])
         # The order of snar and tar should not matter:
         # two that belong together are expected to have the same base name,
@@ -528,7 +528,7 @@ class CopyBlobsTestCase(unittest.TestCase):
         ]), [
             [(0, 0, 'a.tar'), (0, 0, 'b.snar')],
             [(0, 0, 'c.tar')],
-            [(0, 0, 'd.tar'), (0, 0, 'e.snar')]
+            [(0, 0, 'd.tar'), (0, 0, 'e.snar')],
         ])
         # Deltas, tars and snars are combined:
         self.assertEqual(
@@ -548,5 +548,5 @@ class CopyBlobsTestCase(unittest.TestCase):
         ]), [
             [(0, 0, 'a.delta.tar'), (0, 0, 'b.tar'), (0, 0, 'c.snar')],
             [(0, 0, 'd.delta.tar'), (0, 0, 'e.delta.tar.gz'),
-             (0, 0, 'f.snar'), (0, 0, 'g.tar.gz')]
+             (0, 0, 'f.snar'), (0, 0, 'g.tar.gz')],
         ])
