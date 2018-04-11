@@ -1,0 +1,1 @@
+Sort os.listdir, for improved functioning on Mac.  [maurits]

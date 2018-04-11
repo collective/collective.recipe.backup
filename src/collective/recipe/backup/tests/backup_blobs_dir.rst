@@ -75,7 +75,7 @@ Now cleanup and try with filestamps.
     >>> backup_blobs('blobs', 'backups', timestamps=True)
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
-    >>> backup0 = os.listdir('backups')[0]
+    >>> backup0 = sorted(os.listdir('backups'))[0]
     >>> timestamp0 = backup0[len('blobs.'):]
     >>> ls('backups', backup0, 'blobs')
     d  dir
@@ -92,7 +92,7 @@ Wait a while, so we get a different timestamp, and then change some stuff.
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
     d  blobs.20...-...-...-...-...
-    >>> backup1 = os.listdir('backups')[-1]
+    >>> backup1 = sorted(os.listdir('backups'))[-1]
     >>> timestamp1 = backup1[len('blobs.'):]
     >>> timestamp0 < timestamp1
     True
@@ -114,9 +114,9 @@ to any filestorage backup.
     ...     fs_backup_location='fs')
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
-    >>> len(os.listdir('backups'))  # The dots could shadow other backups.
+    >>> len(sorted(os.listdir('backups')))  # The dots could shadow other backups.
     1
-    >>> backup1 == os.listdir('backups')[0]
+    >>> backup1 == sorted(os.listdir('backups'))[0]
     True
     >>> ls('backups', backup1, 'blobs')
     d  dir
@@ -131,7 +131,7 @@ Pretend there is a newer filestorage backup and a blob change.
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
     d  blobs.2100-01-01-00-00-00
-    >>> len(os.listdir('backups'))  # The dots could shadow a third backup
+    >>> len(sorted(os.listdir('backups')))  # The dots could shadow a third backup
     2
     >>> ls('backups', 'blobs.2100-01-01-00-00-00', 'blobs')
     d  dir
@@ -145,7 +145,7 @@ Remove the oldest filestorage backup.
     ...    fs_backup_location='fs')
     >>> ls('backups')
     d  blobs.2100-01-01-00-00-00
-    >>> len(os.listdir('backups'))
+    >>> len(sorted(os.listdir('backups')))
     1
 
 Cleanup:

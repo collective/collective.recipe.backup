@@ -328,7 +328,7 @@ def cleanup(backup_location, keep=0):
             "Value of 'keep' is %r, we don't want to remove anything.", keep)
         return
     logger.debug('Trying to clean up old backups.')
-    filenames = os.listdir(backup_location)
+    filenames = sorted(os.listdir(backup_location))
     logger.debug('Looked up filenames in the target dir: %s found. %r.',
                  len(filenames), filenames)
     num_backups = int(keep)
