@@ -1140,7 +1140,6 @@ def find_backup_to_restore(
         backup_getter = get_blob_backup_dirs
     current_backups = backup_getter(source)
     if not current_backups:
-        logger.error('There are no backups in %s.', source)
         return
     if not date_string:
         # The most recent is the default.
@@ -1182,8 +1181,6 @@ def find_backup_to_restore(
     if paths:
         return paths
 
-    logger.error('Could not find backup of %r or earlier.', date_string)
-
 
 def restore_blobs(
         source,
@@ -1220,15 +1217,38 @@ def restore_blobs(
 
     """
     destination = destination.rstrip(os.sep)
-    if archive_blob:
+    # The archive_blob options may have first been false when creating
+    # a backup, then true, then false again.  During restore, we should
+    # be able to restore all.
+    # See https://github.com/collective/collective.recipe.backup/issues/44
+
+    # Determine the source (blob backup) that should be restored.
+    archive_source = find_backup_to_restore(
+        source, date_string=date, archive=True, timestamps=timestamps)
+    standard_source = find_backup_to_restore(
+        source, date_string=date, timestamps=timestamps)
+    if not (standard_source or archive_source):
+        # error
+        if date:
+            logger.error('Could not find backup of %r or earlier.', date)
+        else:
+            logger.error('There are no backups in %s.', source)
+        return True
+    # From here on we do have an archive.
+    if only_check:
+        # We are done.
+        return
+
+    if archive_blob and archive_source:
+        # We want an archive and have found an archive.
         result = restore_blobs_archive(
             source, destination, date, timestamps=timestamps,
             only_check=only_check)
         return result
 
-    # Determine the source (blob backup) that should be restored.
-    backup_source = find_backup_to_restore(
-        source, date_string=date, timestamps=timestamps)
+    # We either do not want an archive or do not have an archive.
+    # So we restore the standard.
+    backup_source = standard_source
     if not backup_source:
         return True
     # We probably get a list of one.  For tar archives there may be more,
@@ -1357,7 +1377,7 @@ def restore_blobs_archive(
         if output:
             print(output)
         if failed:
-            return
+            return True
 
 
 def remove_orphaned_blob_backups(
