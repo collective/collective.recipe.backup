@@ -1,3 +1,0 @@
-With archive_blob true, still allow restoring non archives.
-We prefer archives then, but if no proper archive is found, we look for non archives.
-[maurits]
