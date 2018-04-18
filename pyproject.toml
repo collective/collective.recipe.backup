@@ -9,7 +9,7 @@ directory = "news/"
 title_format = "{version} ({project_date})"
 # First underline is used for version/date header.
 # Second underline is used for the type names (like 'Bug fixes:').
-underlines = ["-", ""]
+underlines = ["=", ""]
 
 [[tool.towncrier.type]]
 directory = "breaking"
