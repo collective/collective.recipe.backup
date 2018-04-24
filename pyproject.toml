@@ -3,7 +3,7 @@
 # See https://github.com/hawkowl/towncrier/issues/111
 # We cheat here because we do not really need the package name:
 package = "towncrier"
-issue_format = "`Issue #{issue} <https://github.com/community/collective.recipe.backup/issues/{issue}>`_"
+issue_format = "`Issue #{issue} <https://github.com/collective/collective.recipe.backup/issues/{issue}>`_"
 filename = "CHANGES.rst"
 directory = "news/"
 title_format = "{version} ({project_date})"

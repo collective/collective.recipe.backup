@@ -16,9 +16,9 @@ Bug fixes:
 - With archive_blob true, still allow restoring non archives. We prefer
   archives then, but if no proper archive is found, we look for non archives.
   [maurits] (`Issue #44
-  <https://github.com/community/collective.recipe.backup/issues/44>`_)
+  <https://github.com/collective/collective.recipe.backup/issues/44>`_)
 - Sort os.listdir, for improved functioning on Mac. [maurits] (`Issue #45
-  <https://github.com/community/collective.recipe.backup/issues/45>`_)
+  <https://github.com/collective/collective.recipe.backup/issues/45>`_)
 
 
 4.0 (2017-12-22)
