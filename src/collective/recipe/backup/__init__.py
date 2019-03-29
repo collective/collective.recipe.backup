@@ -284,7 +284,7 @@ class Recipe(object):
         datafs = construct_path(buildout_dir, self.options['datafs'])
         filestorage_dir = os.path.split(datafs)[0]
         if additional:
-            ADDITIONAL_REGEX = (
+            additional_regex = (
                 r'^\s*(?P<storage>[^\s]+)'
                 r'\s*(?P<datafs>[^\s]*)'
                 r'\s*(?P<blobdir>[^\s]*)\s*$'
@@ -292,7 +292,7 @@ class Recipe(object):
             for a in additional.split('\n'):
                 if not a:
                     continue
-                storage = re.match(ADDITIONAL_REGEX, a).groupdict()
+                storage = re.match(additional_regex, a).groupdict()
                 if storage['storage'] in [s['storage'] for s in storages]:
                     logger.warning(
                         'storage {0} duplicated'.format(storage['storage'])
@@ -390,7 +390,7 @@ class Recipe(object):
             return storages
         storage_keys = [s['storage'] for s in storages]
         alt_keys = []
-        ALT_REGEX = (
+        alt_regex = (
             r'^\s*(?P<storage>[^\s]+)'
             r'\s+(?P<datafs>[^\s]+)'
             r'\s*(?P<blobdir>[^\s]*)\s*$'
@@ -398,7 +398,7 @@ class Recipe(object):
         for a in alt_sources.split('\n'):
             if not a:
                 continue
-            match = re.match(ALT_REGEX, a)
+            match = re.match(alt_regex, a)
             if match is None:
                 raise zc.buildout.UserError(
                     'alternative_restore_sources line {0!r} has a wrong '
