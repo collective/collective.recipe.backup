@@ -1,0 +1,3 @@
+Updated package versions in test buildout.
+Improved code quality according to flake8 and with black.
+[maurits]

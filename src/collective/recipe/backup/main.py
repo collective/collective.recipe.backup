@@ -10,33 +10,34 @@ import logging
 import sys
 
 
-logger = logging.getLogger('backup')
+logger = logging.getLogger("backup")
 
 
 def backup_main(
-        bin_dir,
-        storages,
-        keep,
-        full,
-        verbose,
-        gzip,
-        backup_blobs,
-        only_blobs,
-        use_rsync,
-        keep_blob_days=0,
-        pre_command='',
-        post_command='',
-        archive_blob=False,
-        compress_blob=False,
-        rsync_options='',
-        quick=True,
-        blob_timestamps=False,
-        backup_method=config.STANDARD_BACKUP,
-        incremental_blobs=False,
-        **kwargs):
+    bin_dir,
+    storages,
+    keep,
+    full,
+    verbose,
+    gzip,
+    backup_blobs,
+    only_blobs,
+    use_rsync,
+    keep_blob_days=0,
+    pre_command="",
+    post_command="",
+    archive_blob=False,
+    compress_blob=False,
+    rsync_options="",
+    quick=True,
+    blob_timestamps=False,
+    backup_method=config.STANDARD_BACKUP,
+    incremental_blobs=False,
+    **kwargs
+):
     """Main method, gets called by generated bin/backup."""
     if backup_method not in config.BACKUP_METHODS:
-        raise RuntimeError('Unknown backup method {0}.'.format(backup_method))
+        raise RuntimeError("Unknown backup method {0}.".format(backup_method))
     utils.execute_or_fail(pre_command)
     utils.check_folders(
         storages,
@@ -46,46 +47,49 @@ def backup_main(
     )
     if not only_blobs:
         result = repozorunner.backup_main(
-            bin_dir, storages, keep, full, verbose, gzip, quick,
-            backup_method,
+            bin_dir, storages, keep, full, verbose, gzip, quick, backup_method
         )
         if result:
             if backup_blobs:
-                logger.error(
-                    'Halting execution due to error; not backing up blobs.')
+                logger.error("Halting execution due to error; not backing up blobs.")
             else:
-                logger.error('Halting execution due to error.')
+                logger.error("Halting execution due to error.")
             sys.exit(1)
 
     if not backup_blobs:
         utils.execute_or_fail(post_command)
         return
     for storage in storages:
-        blobdir = storage['blobdir']
+        blobdir = storage["blobdir"]
         if not blobdir:
-            logger.info(
-                'No blob dir defined for %s storage', storage['storage'])
+            logger.info("No blob dir defined for %s storage", storage["storage"])
             continue
         blob_backup_location = None
         if backup_method == config.STANDARD_BACKUP:
-            blob_backup_location = storage['blob_backup_location']
+            blob_backup_location = storage["blob_backup_location"]
             logger.info(
-                'Please wait while backing up blobs from %s to %s',
-                blobdir, blob_backup_location)
+                "Please wait while backing up blobs from %s to %s",
+                blobdir,
+                blob_backup_location,
+            )
         elif backup_method == config.SNAPSHOT_BACKUP:
-            blob_backup_location = storage['blob_snapshot_location']
+            blob_backup_location = storage["blob_snapshot_location"]
             logger.info(
-                'Please wait while making snapshot of blobs from %s to %s',
-                blobdir, blob_backup_location)
+                "Please wait while making snapshot of blobs from %s to %s",
+                blobdir,
+                blob_backup_location,
+            )
         elif backup_method == config.ZIP_BACKUP:
-            blob_backup_location = storage['blob_zip_location']
+            blob_backup_location = storage["blob_zip_location"]
             logger.info(
-                'Please wait while backing up blobs from %s to %s',
-                blobdir, blob_backup_location)
+                "Please wait while backing up blobs from %s to %s",
+                blobdir,
+                blob_backup_location,
+            )
         if only_blobs:
             fs_backup_location = None
         else:
-            fs_backup_location = storage['backup_location']
+            fs_backup_location = storage["backup_location"]
         copyblobs.backup_blobs(
             blobdir,
             blob_backup_location,
@@ -106,39 +110,39 @@ def backup_main(
 def fullbackup_main(*args, **kwargs):
     """Main method, gets called by generated bin/fullbackup.
     """
-    kwargs['full'] = True
+    kwargs["full"] = True
     return backup_main(*args, **kwargs)
 
 
 def snapshot_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
-    kwargs['full'] = True
-    kwargs['incremental_blobs'] = False
-    kwargs['backup_method'] = config.SNAPSHOT_BACKUP
+    kwargs["full"] = True
+    kwargs["incremental_blobs"] = False
+    kwargs["backup_method"] = config.SNAPSHOT_BACKUP
     return backup_main(*args, **kwargs)
 
 
 def zipbackup_main(*args, **kwargs):
     """Main method, gets called by generated bin/zipbackup."""
-    kwargs['backup_method'] = config.ZIP_BACKUP
-    kwargs['full'] = True
-    kwargs['gzip'] = True
-    kwargs['archive_blob'] = True
-    kwargs['incremental_blobs'] = False
-    kwargs['keep'] = 1
+    kwargs["backup_method"] = config.ZIP_BACKUP
+    kwargs["full"] = True
+    kwargs["gzip"] = True
+    kwargs["archive_blob"] = True
+    kwargs["incremental_blobs"] = False
+    kwargs["keep"] = 1
     return backup_main(*args, **kwargs)
 
 
 def check_blobs(
-        storages,
-        use_rsync,
-        restore_snapshot=False,
-        archive_blob=False,
-        alt_restore=False,
-        rsync_options='',
-        zip_restore=False,
-        blob_timestamps=False,
-        date=None,
+    storages,
+    use_rsync,
+    restore_snapshot=False,
+    archive_blob=False,
+    alt_restore=False,
+    rsync_options="",
+    zip_restore=False,
+    blob_timestamps=False,
+    date=None,
 ):
     """Check that blobs can be restored.
 
@@ -147,23 +151,22 @@ def check_blobs(
     only once.
     """
     for storage in storages:
-        blobdir = storage['blobdir']
+        blobdir = storage["blobdir"]
         if not blobdir:
-            logger.info('No blob dir defined for %s storage',
-                        storage['storage'])
+            logger.info("No blob dir defined for %s storage", storage["storage"])
             continue
         if restore_snapshot:
-            blob_backup_location = storage['blob_snapshot_location']
+            blob_backup_location = storage["blob_snapshot_location"]
         elif alt_restore:
-            blob_backup_location = storage['blob_alt_location']
+            blob_backup_location = storage["blob_alt_location"]
         elif zip_restore:
-            blob_backup_location = storage['blob_zip_location']
+            blob_backup_location = storage["blob_zip_location"]
         else:
-            blob_backup_location = storage['blob_backup_location']
+            blob_backup_location = storage["blob_backup_location"]
         if not blob_backup_location:
-            logger.error('No blob storage source specified')
+            logger.error("No blob storage source specified")
             sys.exit(1)
-        storage['blob_backup_location'] = blob_backup_location
+        storage["blob_backup_location"] = blob_backup_location
         result = copyblobs.restore_blobs(
             blob_backup_location,
             blobdir,
@@ -175,54 +178,56 @@ def check_blobs(
             only_check=True,
         )
         if result:
-            logger.error('Halting execution: '
-                         'restoring blobstorages would fail.')
+            logger.error("Halting execution: " "restoring blobstorages would fail.")
             sys.exit(1)
 
 
 def restore_check(
-        bin_dir,
-        storages,
-        verbose,
-        backup_blobs,
-        only_blobs,
-        use_rsync,
-        restore_snapshot=False,
-        pre_command='',
-        post_command='',
-        archive_blob=False,
-        alt_restore=False,
-        rsync_options='',
-        quick=True,
-        zip_restore=False,
-        blob_timestamps=False,
-        **kwargs):
+    bin_dir,
+    storages,
+    verbose,
+    backup_blobs,
+    only_blobs,
+    use_rsync,
+    restore_snapshot=False,
+    pre_command="",
+    post_command="",
+    archive_blob=False,
+    alt_restore=False,
+    rsync_options="",
+    quick=True,
+    zip_restore=False,
+    blob_timestamps=False,
+    **kwargs
+):
     """Method to check that a restore will work.
 
     Returns the chosen date, if any.
     """
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
     if sum([1 for opt in explicit_restore_opts if opt]) > 1:
-        logger.error('Must use at most one option of restore_snapshot, '
-                     'alt_restore and zip_restore.')
+        logger.error(
+            "Must use at most one option of restore_snapshot, "
+            "alt_restore and zip_restore."
+        )
         sys.exit(1)
     # Try to find a date in the command line arguments
     date = utils.get_date_from_args()
 
-    if not kwargs.get('no_prompt'):
-        question = '\n'
+    if not kwargs.get("no_prompt"):
+        question = "\n"
         if not only_blobs:
-            question += 'This will replace the filestorage:\n'
+            question += "This will replace the filestorage:\n"
             for storage in storages:
-                question += '    {0}\n'.format(storage.get('datafs'))
+                question += "    {0}\n".format(storage.get("datafs"))
         if backup_blobs:
-            question += 'This will replace the blobstorage:\n'
+            question += "This will replace the blobstorage:\n"
             for storage in storages:
-                if storage.get('blobdir'):
-                    question += '    {0}\n'.format(storage.get('blobdir'))
-        question += 'Are you sure?'
+                if storage.get("blobdir"):
+                    question += "    {0}\n".format(storage.get("blobdir"))
+        question += "Are you sure?"
         if not utils.ask(question, default=False, exact=True):
-            logger.info('Not restoring.')
+            logger.info("Not restoring.")
             sys.exit(0)
 
     utils.execute_or_fail(pre_command)
@@ -230,11 +235,17 @@ def restore_check(
     # First run some checks.
     if not only_blobs:
         result = repozorunner.restore_main(
-            bin_dir, storages, verbose, date,
-            restore_snapshot, alt_restore, zip_restore, only_check=True)
+            bin_dir,
+            storages,
+            verbose,
+            date,
+            restore_snapshot,
+            alt_restore,
+            zip_restore,
+            only_check=True,
+        )
         if result:
-            logger.error('Halting execution: '
-                         'restoring filestorages would fail.')
+            logger.error("Halting execution: " "restoring filestorages would fail.")
             sys.exit(1)
     if backup_blobs:
         check_blobs(
@@ -252,23 +263,24 @@ def restore_check(
 
 
 def restore_main(
-        bin_dir,
-        storages,
-        verbose,
-        backup_blobs,
-        only_blobs,
-        use_rsync,
-        restore_snapshot=False,
-        pre_command='',
-        post_command='',
-        archive_blob=False,
-        alt_restore=False,
-        rsync_options='',
-        quick=True,
-        zip_restore=False,
-        blob_timestamps=False,
-        incremental_blobs=False,
-        **kwargs):
+    bin_dir,
+    storages,
+    verbose,
+    backup_blobs,
+    only_blobs,
+    use_rsync,
+    restore_snapshot=False,
+    pre_command="",
+    post_command="",
+    archive_blob=False,
+    alt_restore=False,
+    rsync_options="",
+    quick=True,
+    zip_restore=False,
+    blob_timestamps=False,
+    incremental_blobs=False,
+    **kwargs
+):
 
     """Main method, gets called by generated bin/restore."""
     # First run several checks, and get the date that should be restored.
@@ -289,30 +301,29 @@ def restore_main(
         zip_restore=zip_restore,
         blob_timestamps=blob_timestamps,
         incremental_blobs=incremental_blobs,
-        **kwargs)
+        **kwargs
+    )
     # Checks have passed, now do the real restore.
     if not only_blobs:
         result = repozorunner.restore_main(
-            bin_dir, storages, verbose, date,
-            restore_snapshot, alt_restore, zip_restore)
+            bin_dir, storages, verbose, date, restore_snapshot, alt_restore, zip_restore
+        )
         if result:
             if backup_blobs:
-                logger.error('Halting execution due to error; not restoring '
-                             'blobs.')
+                logger.error("Halting execution due to error; not restoring " "blobs.")
             else:
-                logger.error('Halting execution due to error.')
+                logger.error("Halting execution due to error.")
             sys.exit(1)
 
     if not backup_blobs:
         utils.execute_or_fail(post_command)
         return
     for storage in storages:
-        blobdir = storage['blobdir']
+        blobdir = storage["blobdir"]
         if not blobdir:
             continue
-        blob_backup_location = storage['blob_backup_location']
-        logger.info('Restoring blobs from %s to %s', blob_backup_location,
-                    blobdir)
+        blob_backup_location = storage["blob_backup_location"]
+        logger.info("Restoring blobs from %s to %s", blob_backup_location, blobdir)
         result = copyblobs.restore_blobs(
             blob_backup_location,
             blobdir,
@@ -323,7 +334,7 @@ def restore_main(
             timestamps=blob_timestamps,
         )
         if result:
-            logger.error('Halting execution due to error.')
+            logger.error("Halting execution due to error.")
             sys.exit(1)
     utils.execute_or_fail(post_command)
 
@@ -335,7 +346,7 @@ def snapshot_restore_main(*args, **kwargs):
     snapshot_location and blob_snapshot_location.
     """
     # Override the locations:
-    kwargs['restore_snapshot'] = True
+    kwargs["restore_snapshot"] = True
     return restore_main(*args, **kwargs)
 
 
@@ -346,7 +357,7 @@ def alt_restore_main(*args, **kwargs):
     alternative restore sources.
     """
     # Override the locations:
-    kwargs['alt_restore'] = True
+    kwargs["alt_restore"] = True
     return restore_main(*args, **kwargs)
 
 
@@ -354,7 +365,7 @@ def zip_restore_main(*args, **kwargs):
     """Main method, gets called by generated bin/ziprestore.
     """
     # Override the locations:
-    kwargs['zip_restore'] = True
+    kwargs["zip_restore"] = True
     # Override another option.
-    kwargs['archive_blob'] = True
+    kwargs["archive_blob"] = True
     return restore_main(*args, **kwargs)
