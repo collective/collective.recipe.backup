@@ -13,23 +13,6 @@ import zc.recipe.egg
 
 logger = logging.getLogger("backup")
 
-if hasattr(zc.buildout.easy_install, "sitepackage_safe_scripts"):
-    # zc.buildout 1.5
-    USE_SAFE_SCRIPTS = True
-else:
-    # zc.buildout 1.4 or earlier
-    USE_SAFE_SCRIPTS = False
-# Using safe scripts sounds nice, but with that and a proper system
-# python I somehow get this error when calling bin/repozo within one
-# of our scripts, without an actual way to get that traceback:
-#
-# 'import site' failed; use -v for traceback
-#
-# So we will not use it after all.  It does not seem very needed
-# either, as we are not importing any modules from outside the python
-# core..
-USE_SAFE_SCRIPTS = False
-
 
 class Recipe(object):
     """zc.buildout recipe"""
@@ -491,12 +474,6 @@ logging.basicConfig(level=loglevel,
 
         # Keep list of generated files/directories/scripts
         generated = []
-        if USE_SAFE_SCRIPTS and not os.path.exists(opts["parts-directory"]):
-            # zc.buildout 1.5 wants to put a site.py into this parts
-            # directory (indicated by site_py_dest) when site-packages
-            # safe scripts are created.
-            os.mkdir(opts["parts-directory"])
-            generated.append(opts["parts-directory"])
 
         # Handle a few alternative spellings:
         opts["bin_dir"] = opts["bin-directory"]
@@ -753,35 +730,15 @@ def construct_path(buildout_dir, path):
 
 
 def create_script(**kwargs):
-    """Create a script.
-
-    Do this in a way that is compatible with zc.buildout 1.4 and 1.5
-    (using the sitepackage_safe_scripts in the latter case).
-
-    See http://pypi.python.org/pypi/zc.buildout/1.5.2
-    section: #updating-recipes-to-support-a-system-python
-    """
-    if USE_SAFE_SCRIPTS:
-        # zc.buildout 1.5
-        script = zc.buildout.easy_install.sitepackage_safe_scripts(
-            kwargs.get("dest"),
-            kwargs.get("working_set"),
-            kwargs.get("executable"),
-            kwargs.get("site_py_dest"),
-            reqs=kwargs.get("reqs"),
-            script_arguments=kwargs.get("script_arguments"),
-            initialization=kwargs.get("initialization"),
-        )
-    else:
-        # zc.buildout 1.4 or earlier
-        script = zc.buildout.easy_install.scripts(
-            kwargs.get("reqs"),
-            kwargs.get("working_set"),
-            kwargs.get("executable"),
-            kwargs.get("dest"),
-            arguments=kwargs.get("script_arguments"),
-            initialization=kwargs.get("initialization"),
-        )
+    """Create a script."""
+    script = zc.buildout.easy_install.scripts(
+        kwargs.get("reqs"),
+        kwargs.get("working_set"),
+        kwargs.get("executable"),
+        kwargs.get("dest"),
+        arguments=kwargs.get("script_arguments"),
+        initialization=kwargs.get("initialization"),
+    )
     return script
 
 
