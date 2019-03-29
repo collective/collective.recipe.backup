@@ -430,6 +430,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     New in version 4.0.  Default is false.
     When switched on, it will use the ``--listed-incremental`` option of ``tar``.
     Note: this only works with the GNU version of ``tar``.
+    On Mac you may need to install this with ``brew install gnu-tar`` and change your ``PATH`` according to the instructions.
     It will create a metadata or `snapshot file <https://www.gnu.org/software/tar/manual/html_node/Incremental-Dumps.html>`_
     so that a second call to the backup script will create a second tarball with only the differences.
     For some reason, all directories always end up in the second tarball,
