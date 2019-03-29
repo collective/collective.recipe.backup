@@ -20,13 +20,13 @@ import os
 import sys
 
 
-logger = logging.getLogger('repozorunner')
+logger = logging.getLogger("repozorunner")
 
 
 def quote_command(command):
     # Quote the program name, so it works even if it contains spaces
-    command = ' '.join(['"{0}"'.format(x) for x in command])
-    if sys.platform[:3].lower() == 'win':
+    command = " ".join(['"{0}"'.format(x) for x in command])
+    if sys.platform[:3].lower() == "win":
         # odd, but true: the windows cmd processor can't handle more than
         # one quoted item per string unless you add quotes around the
         # whole line.
@@ -45,30 +45,30 @@ def backup_main(
     backup_method=config.STANDARD_BACKUP,
 ):
     """Main method, gets called by generated bin/backup."""
-    repozo = os.path.join(bin_dir, 'repozo')
+    repozo = os.path.join(bin_dir, "repozo")
     if full:
         quick = False
 
     for storage in storages:
-        fs = storage['datafs']
+        fs = storage["datafs"]
         if backup_method == config.STANDARD_BACKUP:
-            location = storage['backup_location']
+            location = storage["backup_location"]
             logger.info(
-                'Please wait while backing up database file: %s to %s',
+                "Please wait while backing up database file: %s to %s",
                 fs,
                 location,
             )
         elif backup_method == config.SNAPSHOT_BACKUP:
-            location = storage['snapshot_location']
+            location = storage["snapshot_location"]
             logger.info(
-                'Please wait while making snapshot backup: %s to %s',
+                "Please wait while making snapshot backup: %s to %s",
                 fs,
                 location,
             )
         elif backup_method == config.ZIP_BACKUP:
-            location = storage['zip_location']
+            location = storage["zip_location"]
             logger.info(
-                'Please wait while backing up database file: %s to %s',
+                "Please wait while backing up database file: %s to %s",
                 fs,
                 location,
             )
@@ -80,9 +80,9 @@ def backup_main(
                 )
             )
         )
-        logger.debug('Repozo command executed.')
+        logger.debug("Repozo command executed.")
         if result:
-            logger.error('Repozo command failed. See message above.')
+            logger.error("Repozo command failed. See message above.")
             return result
         cleanup(location, keep)
 
@@ -110,39 +110,39 @@ def restore_main(
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
     if sum([1 for opt in explicit_restore_opts if opt]) > 1:
         logger.error(
-            'Must use at most one option of restore_snapshot, '
-            'alt_restore and zip_restore.'
+            "Must use at most one option of restore_snapshot, "
+            "alt_restore and zip_restore."
         )
         sys.exit(1)
-    repozo = os.path.join(bin_dir, 'repozo')
-    logger.debug('If things break: did you stop zope?')
+    repozo = os.path.join(bin_dir, "repozo")
+    logger.debug("If things break: did you stop zope?")
     for storage in storages:
         if restore_snapshot:
-            backup_location = storage['snapshot_location']
+            backup_location = storage["snapshot_location"]
         elif alt_restore:
-            backup_location = storage['alt_location']
+            backup_location = storage["alt_location"]
         elif zip_restore:
-            backup_location = storage['zip_location']
+            backup_location = storage["zip_location"]
         else:
-            backup_location = storage['backup_location']
-        fs = storage['datafs'].rstrip(os.sep)
+            backup_location = storage["backup_location"]
+        fs = storage["datafs"].rstrip(os.sep)
         fs_dir = os.path.dirname(fs)
         if not os.path.exists(fs_dir):
             os.makedirs(fs_dir)
-            logger.info('Created directory %s', fs_dir)
+            logger.info("Created directory %s", fs_dir)
         arguments = restore_arguments(
             fs, backup_location, date, verbose, as_list=True
         )
         if only_check:
             continue
         logger.info(
-            'Please wait while restoring database file: %s to %s',
+            "Please wait while restoring database file: %s to %s",
             backup_location,
             fs,
         )
         result = os.system(quote_command([repozo] + arguments))
         if result:
-            logger.error('Repozo command failed. See message above.')
+            logger.error("Repozo command failed. See message above.")
             return result
 
 
@@ -171,12 +171,12 @@ def backup_arguments(
 
     """
     if datafs is None or backup_location is None:
-        raise RuntimeError('Missing locations.')
+        raise RuntimeError("Missing locations.")
     arguments = []
-    arguments.append('--backup')
-    arguments.append('-f')
+    arguments.append("--backup")
+    arguments.append("-f")
     arguments.append(datafs)
-    arguments.append('-r')
+    arguments.append("-r")
     arguments.append(backup_location)
     if quick:
         # From the repozo help text:
@@ -184,25 +184,25 @@ def backup_arguments(
         # This significantly reduces the disk i/o at the (theoretical)
         # cost of inconsistency.  This is a probabilistic way of
         # determining whether a full backup is necessary.
-        arguments.append('--quick')
+        arguments.append("--quick")
     if full:
         # By default, there's an incremental backup, if possible.
-        arguments.append('-F')
+        arguments.append("-F")
     else:
         logger.debug(
-            'You are not making a full backup. Note that if there '
-            'are no changes since the last backup, there will not '
-            'be a new incremental backup file.'
+            "You are not making a full backup. Note that if there "
+            "are no changes since the last backup, there will not "
+            "be a new incremental backup file."
         )
     if verbose:
-        arguments.append('--verbose')
+        arguments.append("--verbose")
     if gzip:
-        arguments.append('--gzip')
+        arguments.append("--gzip")
 
-    logger.debug('Repozo arguments used: %s', ' '.join(arguments))
+    logger.debug("Repozo arguments used: %s", " ".join(arguments))
     if as_list:
         return arguments
-    return ' '.join(arguments)
+    return " ".join(arguments)
 
 
 def restore_arguments(
@@ -218,24 +218,24 @@ def restore_arguments(
 
     """
     if datafs is None or backup_location is None:
-        raise RuntimeError('Missing locations.')
+        raise RuntimeError("Missing locations.")
     arguments = []
-    arguments.append('--recover')
-    arguments.append('-o')
+    arguments.append("--recover")
+    arguments.append("-o")
     arguments.append(datafs)
-    arguments.append('-r')
+    arguments.append("-r")
     arguments.append(backup_location)
 
     if date is not None:
-        logger.debug('Restore as of date %r requested.', date)
-        arguments.append('-D')
+        logger.debug("Restore as of date %r requested.", date)
+        arguments.append("-D")
         arguments.append(date)
     if verbose:
-        arguments.append('--verbose')
-    logger.debug('Repozo arguments used: %s', ' '.join(arguments))
+        arguments.append("--verbose")
+    logger.debug("Repozo arguments used: %s", " ".join(arguments))
     if as_list:
         return arguments
-    return ' '.join(arguments)
+    return " ".join(arguments)
 
 
 def cleanup(backup_location, keep=0):
@@ -355,15 +355,15 @@ def cleanup(backup_location, keep=0):
             "Value of 'keep' is %r, we don't want to remove anything.", keep
         )
         return
-    logger.debug('Trying to clean up old backups.')
+    logger.debug("Trying to clean up old backups.")
     filenames = sorted(os.listdir(backup_location))
     logger.debug(
-        'Looked up filenames in the target dir: %s found. %r.',
+        "Looked up filenames in the target dir: %s found. %r.",
         len(filenames),
         filenames,
     )
     num_backups = int(keep)
-    logger.debug('Max number of backups: %s.', num_backups)
+    logger.debug("Max number of backups: %s.", num_backups)
     files_modtimes = []
     for filename in filenames:
         mod_time = os.path.getmtime(os.path.join(backup_location, filename))
@@ -373,26 +373,26 @@ def cleanup(backup_location, keep=0):
     fullbackups = [
         f
         for f in files_modtimes
-        if f[0].endswith('.fs') or f[0].endswith('.fsz')
+        if f[0].endswith(".fs") or f[0].endswith(".fsz")
     ]
     logger.debug(
-        'Filtered out full backups (*.fs/*.fsz): %r.',
+        "Filtered out full backups (*.fs/*.fsz): %r.",
         [f[0] for f in fullbackups],
     )
     fullbackups = sorted(fullbackups, key=itemgetter(1))
-    logger.debug('%d fullbackups: %r', len(fullbackups), fullbackups)
+    logger.debug("%d fullbackups: %r", len(fullbackups), fullbackups)
     if len(fullbackups) > num_backups and num_backups != 0:
-        logger.debug('There are older backups that we can remove.')
+        logger.debug("There are older backups that we can remove.")
         fullbackups.reverse()
         logger.debug(
-            'Full backups, sorted by date, newest first: %r.',
+            "Full backups, sorted by date, newest first: %r.",
             [f[0] for f in fullbackups],
         )
         oldest_backup_to_keep = fullbackups[(num_backups - 1)]
-        logger.debug('Oldest backup to keep: %s', oldest_backup_to_keep[0])
+        logger.debug("Oldest backup to keep: %s", oldest_backup_to_keep[0])
         last_date_to_keep = oldest_backup_to_keep[1]
         logger.debug(
-            'The oldest backup we get to keep is from %s.', last_date_to_keep
+            "The oldest backup we get to keep is from %s.", last_date_to_keep
         )
         deleted = 0
         # Note: this also deletes now outdated .deltafs and .dat
@@ -403,11 +403,11 @@ def cleanup(backup_location, keep=0):
             if modtime < last_date_to_keep:
                 filepath = os.path.join(backup_location, filename)
                 os.remove(filepath)
-                logger.debug('Deleted %s.', filepath)
+                logger.debug("Deleted %s.", filepath)
                 deleted += 1
         logger.info(
-            'Removed %d file(s) belonging to old backups, the latest '
-            '%s full backups have been kept.',
+            "Removed %d file(s) belonging to old backups, the latest "
+            "%s full backups have been kept.",
             deleted,
             str(num_backups),
         )
@@ -415,15 +415,15 @@ def cleanup(backup_location, keep=0):
             # This may be a programming/testing error.
             logger.error("We should have deleted something, but didn't...")
     else:
-        logger.debug('Not removing backups.')
+        logger.debug("Not removing backups.")
         if len(fullbackups) <= num_backups:
             logger.debug(
-                'Reason: #backups (%s) <= than max (%s).',
+                "Reason: #backups (%s) <= than max (%s).",
                 len(fullbackups),
                 num_backups,
             )
         if num_backups == 0:
             logger.debug(
-                'Reason: max # of backups is 0, so that is a '
-                'sign to us to not remove backups.'
+                "Reason: max # of backups is 0, so that is a "
+                "sign to us to not remove backups."
             )
