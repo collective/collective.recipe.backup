@@ -64,8 +64,8 @@ def backup_main(
             logger.info('Please wait while backing up database file: %s to %s',
                         fs, location)
         result = os.system(quote_command(
-            [repozo] +
-            backup_arguments(
+            [repozo]
+            + backup_arguments(
                 fs, location, full, verbose, gzip, quick,
                 as_list=True)))
         logger.debug('Repozo command executed.')

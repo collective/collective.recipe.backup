@@ -20,8 +20,10 @@ import zc.buildout.tests
 import zc.recipe.egg
 
 
-optionflags = (doctest.ELLIPSIS |
-               doctest.NORMALIZE_WHITESPACE)
+optionflags = (
+    doctest.ELLIPSIS
+    | doctest.NORMALIZE_WHITESPACE
+)
 
 checker = renormalizing.RENormalizing([
     # If want to clean up the doctest output you can register
