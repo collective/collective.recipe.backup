@@ -83,13 +83,17 @@ It is useless to use incremental blobs here: a snapshot is always one tarball.
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/snapshotbackups
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
     INFO: tar cf /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-....tar  -C /sample-buildout/var/blobstorage .
+    INFO: Creating symlink from latest to blobstorage.20...-...-...-...-...-....tar
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/snapshotbackups -F --gzip
     >>> ls('var', 'blobstoragesnapshots')
     -  blobstorage.20...-...-...-...-...-....tar
+    l  latest
     >>> len(os.listdir('var/blobstoragesnapshots'))
-    1
+    2
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobstorage.20...-...-...-...-...-....tar
 
 We mock a file storage backup from 2016:
 

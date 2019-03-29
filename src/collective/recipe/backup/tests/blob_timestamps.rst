@@ -578,12 +578,16 @@ Now we test it::
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar  -C /sample-buildout/var/blobstorage .
+    INFO: Creating symlink from latest to blobstorage.20...-...-...-...-...-....tar
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     >>> ls('var', 'blobstoragezips')
-    -   blobstorage.20...-...-...-...-...-....tar
+    -  blobstorage.20...-...-...-...-...-....tar
+    l  latest
     >>> zip_timestamp0 = sorted(os.listdir('var/blobstoragezips'))[0]
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobstorage.20...-...-...-...-...-....tar
 
 Keep is ignored by zipbackup, always using 1 as value.
 Pause a short time to avoid getting an error for overwriting the previous file::
@@ -593,15 +597,19 @@ Pause a short time to avoid getting an error for overwriting the previous file::
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragezips
     INFO: tar cf /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar  -C /sample-buildout/var/blobstorage .
+    INFO: Creating symlink from latest to blobstorage.20...-...-...-...-...-....tar
     INFO: Removed 1 full blob backup, with 1 file. The latest 1 backup has been kept.
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zipbackups -F --gzip
     >>> ls('var', 'blobstoragezips')
-    -   blobstorage.20...-...-...-...-...-....tar
+    -  blobstorage.20...-...-...-...-...-....tar
+    l  latest
     >>> zip_timestamp1 = sorted(os.listdir('var/blobstoragezips'))[0]
     >>> zip_timestamp0 == zip_timestamp1
     False
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobstorage.20...-...-...-...-...-....tar
 
 Now test the ziprestore script::
 

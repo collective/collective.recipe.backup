@@ -842,13 +842,19 @@ def backup_blobs(
                     "no database changes since last backup.",
                     dest,
                 )
-                # Now possibly remove old backups.
+                # Now possibly remove old backups and remove/create latest symlink.
+                if timestamps and not incremental_blobs:
+                    # Creating a symlink to the latest blob backup only makes sense in this combination.
+                    latest = dest
+                else:
+                    latest = None
                 cleanup(
                     destination,
                     full,
                     keep,
                     keep_blob_days,
                     fs_backup_location=fs_backup_location,
+                    latest=latest
                 )
                 return
         else:
@@ -897,9 +903,14 @@ def backup_blobs(
         dest = os.path.join(dest, base_name)
         logger.info("Copying %s to %s", source, dest)
         shutil.copytree(source, dest)
-    # Now possibly remove old backups.
+    # Now possibly remove old backups and remove/create latest symlink.
+    if timestamps and not incremental_blobs:
+        # Creating a symlink to the latest blob backup only makes sense in this combination.
+        latest = dest
+    else:
+        latest = None
     cleanup(
-        destination, full, keep, keep_blob_days, fs_backup_location=fs_backup_location
+        destination, full, keep, keep_blob_days, fs_backup_location=fs_backup_location, latest=latest
     )
 
 
@@ -950,9 +961,14 @@ def backup_blobs_archive(
                         "no database changes since last backup.",
                         dest,
                     )
-                    # Now possibly remove old backups.
+                    # Now possibly remove old backups and remove/create latest symlink.
+                    if timestamps and not incremental_blobs:
+                        # Creating a symlink to the latest blob backup only makes sense in this combination.
+                        latest = dest
+                    else:
+                        latest = None
                     cleanup_archives(
-                        destination, keep=keep, fs_backup_location=fs_backup_location
+                        destination, keep=keep, fs_backup_location=fs_backup_location, latest=latest
                     )
                     return
         else:
@@ -994,8 +1010,13 @@ def backup_blobs_archive(
         print(output)
     if failed:
         return
-    # Now possibly remove old backups.
-    cleanup_archives(destination, keep=keep, fs_backup_location=fs_backup_location)
+    # Now possibly remove old backups and remove/create latest symlink.
+    if timestamps and not incremental_blobs:
+        # Creating a symlink to the latest blob backup only makes sense in this combination.
+        latest = dest
+    else:
+        latest = None
+    cleanup_archives(destination, keep=keep, fs_backup_location=fs_backup_location, latest=latest)
 
 
 def is_full_tarball(path):
@@ -1446,7 +1467,7 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location, archive=Fa
 
 
 def cleanup(
-    backup_location, full=False, keep=0, keep_blob_days=0, fs_backup_location=None
+    backup_location, full=False, keep=0, keep_blob_days=0, fs_backup_location=None, latest=None
 ):
     """Clean up old blob backups.
 
@@ -1457,6 +1478,8 @@ def cleanup(
 
     For tests, see tests/cleanup_dir.rst.
     """
+    update_latest_symlink(backup_location, latest=latest)
+
     logger.debug("Starting cleanup of blob backups from %s", backup_location)
     if remove_orphaned_blob_backups(backup_location, fs_backup_location):
         # A True return value means there is nothing left to do.
@@ -1529,7 +1552,25 @@ def cleanup(
         )
 
 
-def cleanup_archives(backup_location, keep=0, fs_backup_location=None):
+def update_latest_symlink(backup_location, latest=None):
+    """Update symlink to latest blob backup."""
+    # Remove symlink to the latest blob backup.
+    cwd = os.getcwd()
+    os.chdir(backup_location)
+    symlink = "latest"
+    if os.path.islink(symlink):
+        logger.debug('Removed old symlink latest pointing to %s', os.path.realpath(symlink))
+        os.unlink(symlink)
+    if latest:
+        latest = os.path.basename(latest)
+        # This may recreate the symlink we previously removed, but okay.
+        logger.info('Creating symlink from latest to %s', latest)
+        os.symlink(latest, symlink)
+    # back to where we came from
+    os.chdir(cwd)
+
+
+def cleanup_archives(backup_location, keep=0, fs_backup_location=None, latest=None):
     """Clean up old blob backups.
 
     When fs_backup_location is passed and we find filestorage backups there,
@@ -1539,6 +1580,8 @@ def cleanup_archives(backup_location, keep=0, fs_backup_location=None):
 
     For tests, see tests/cleanup_archives.rst.
     """
+    update_latest_symlink(backup_location, latest=latest)
+
     logger.debug("Starting cleanup of blob archives from %s", backup_location)
     if remove_orphaned_blob_backups(backup_location, fs_backup_location, archive=True):
         # A True return value means there is nothing left to do.
