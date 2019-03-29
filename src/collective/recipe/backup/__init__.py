@@ -275,8 +275,8 @@ class Recipe(object):
         if additional:
             ADDITIONAL_REGEX = (
                 r'^\s*(?P<storage>[^\s]+)'
-                '\s*(?P<datafs>[^\s]*)'
-                '\s*(?P<blobdir>[^\s]*)\s*$')
+                r'\s*(?P<datafs>[^\s]*)'
+                r'\s*(?P<blobdir>[^\s]*)\s*$')
             for a in additional.split('\n'):
                 if not a:
                     continue
@@ -367,8 +367,8 @@ class Recipe(object):
         alt_keys = []
         ALT_REGEX = (
             r'^\s*(?P<storage>[^\s]+)'
-            '\s+(?P<datafs>[^\s]+)'
-            '\s*(?P<blobdir>[^\s]*)\s*$')
+            r'\s+(?P<datafs>[^\s]+)'
+            r'\s*(?P<blobdir>[^\s]*)\s*$')
         for a in alt_sources.split('\n'):
             if not a:
                 continue

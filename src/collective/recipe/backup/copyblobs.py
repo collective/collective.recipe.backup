@@ -344,7 +344,7 @@ def get_valid_archives(container, name):
     """
     valid_entries = []
     for entry in sorted(os.listdir(container)):
-        matched = re.match('^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
+        matched = re.match(r'^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
         if matched is None:
             continue
         match = matched.groups()[0]
@@ -446,7 +446,7 @@ def rotate_archives(container, name):
     sorted_backups = sorted(previous_backups, key=archive_backup_key)
     # Rotate the directories.
     for entry in sorted_backups:
-        matched = re.match('^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
+        matched = re.match(r'^{0}\.(\d+)\.tar(\.gz)?$'.format(name), entry)
         old_num, gz = matched.groups()
         new_num = int(old_num) + 1
         if gz is None:
