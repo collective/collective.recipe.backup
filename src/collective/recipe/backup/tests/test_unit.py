@@ -99,20 +99,14 @@ class UtilsTestCase(unittest.TestCase):
         self.assertFalse(get_zope_option(buildout_info, "foo"))
         # Only keys from one of the correct recipes are found:
         self.assertFalse(get_zope_option(buildout_info, "one-only"))
-        self.assertEqual(
-            get_zope_option(buildout_info, "wanted"), "two-wanted"
-        )
+        self.assertEqual(get_zope_option(buildout_info, "wanted"), "two-wanted")
         # Keys from a non active part are not found:
         self.assertFalse(get_zope_option(buildout_info, "three-only"))
         # We accept recipes with mixed case:
-        self.assertEqual(
-            get_zope_option(buildout_info, "four-only"), "four-only-value"
-        )
+        self.assertEqual(get_zope_option(buildout_info, "four-only"), "four-only-value")
         # The order of parts is important:
         buildout_info["buildout"] = {"parts": "four two one"}
-        self.assertEqual(
-            get_zope_option(buildout_info, "wanted"), "four-wanted"
-        )
+        self.assertEqual(get_zope_option(buildout_info, "wanted"), "four-wanted")
 
 
 class CopyBlobsTestCase(unittest.TestCase):
@@ -126,14 +120,11 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(len(gen_timestamp()), 19)
         # We can pass a time tuple.
         self.assertEqual(
-            gen_timestamp(now=(1999, 12, 31, 23, 59, 30)),
-            "1999-12-31-23-59-30",
+            gen_timestamp(now=(1999, 12, 31, 23, 59, 30)), "1999-12-31-23-59-30"
         )
         # We can pass an integer or float like time.time().
         self.assertEqual(gen_timestamp(now=1487874793), "2017-02-23-18-33-13")
-        self.assertEqual(
-            gen_timestamp(now=1487874793.90436), "2017-02-23-18-33-13"
-        )
+        self.assertEqual(gen_timestamp(now=1487874793.90436), "2017-02-23-18-33-13")
 
     def test_is_time_stamp(self):
         from collective.recipe.backup.copyblobs import gen_timestamp
@@ -147,33 +138,23 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertTrue(is_time_stamp(gen_timestamp()))
 
     def test_get_prefix_and_number(self):
-        from collective.recipe.backup.copyblobs import (
-            get_prefix_and_number as gpn,
-        )
+        from collective.recipe.backup.copyblobs import get_prefix_and_number as gpn
 
         self.assertEqual(gpn("1"), ("", "1"))
-        self.assertEqual(
-            gpn("1999-12-31-23-59-30"), ("", "1999-12-31-23-59-30")
-        )
+        self.assertEqual(gpn("1999-12-31-23-59-30"), ("", "1999-12-31-23-59-30"))
         self.assertFalse(gpn("1", prefix="a"))
         self.assertEqual(gpn("a.1", prefix="a"), ("a", "1"))
         self.assertEqual(gpn("a.1", prefix="a."), ("a", "1"))
         self.assertEqual(gpn("montypython.123"), ("montypython", "123"))
         self.assertEqual(gpn("a.1.tar.gz", suffixes="tar.gz"), ("a", "1"))
-        self.assertEqual(
-            gpn("a.1.tar.gz", suffixes=["tar", "tar.gz"]), ("a", "1")
-        )
+        self.assertEqual(gpn("a.1.tar.gz", suffixes=["tar", "tar.gz"]), ("a", "1"))
         self.assertFalse(gpn("a.1.tar.gz", suffixes=["tar", "tgz"]))
         self.assertEqual(
             gpn("a.1999-12-31-23-59-30.tar.gz", prefix="a", suffixes="tar.gz"),
             ("a", "1999-12-31-23-59-30"),
         )
-        self.assertEqual(
-            gpn("a.1.tar.gz", suffixes=["tar", "tar.gz"]), ("a", "1")
-        )
-        self.assertEqual(
-            gpn("a.1.tar", suffixes=["tar", "tar.gz"]), ("a", "1")
-        )
+        self.assertEqual(gpn("a.1.tar.gz", suffixes=["tar", "tar.gz"]), ("a", "1"))
+        self.assertEqual(gpn("a.1.tar", suffixes=["tar", "tar.gz"]), ("a", "1"))
         self.assertFalse(gpn("a.1.tar.gz", suffixes=["tar", "tgz"]))
         # The order of the suffixes should not matter.
         self.assertEqual(
@@ -207,39 +188,27 @@ class CopyBlobsTestCase(unittest.TestCase):
 
         # Compare timestamps.  Newest last.
         self.assertLess(
-            number_key("1999-12-31-23-59-30"),
-            number_key("2000-12-31-23-59-30"),
+            number_key("1999-12-31-23-59-30"), number_key("2000-12-31-23-59-30")
         )
         self.assertGreater(
-            number_key("2000-12-31-23-59-30"),
-            number_key("1999-12-31-23-59-30"),
+            number_key("2000-12-31-23-59-30"), number_key("1999-12-31-23-59-30")
         )
         self.assertEqual(
-            number_key("1999-12-31-23-59-30"),
-            number_key("1999-12-31-23-59-30"),
+            number_key("1999-12-31-23-59-30"), number_key("1999-12-31-23-59-30")
         )
 
         # Check the effect on a complete sort.
         # We usually want it reversed.
         self.assertEqual(
-            sorted(["0", "2", "1"], key=number_key, reverse=True),
-            ["0", "1", "2"],
+            sorted(["0", "2", "1"], key=number_key, reverse=True), ["0", "1", "2"]
         )
         self.assertEqual(
             sorted(
-                [
-                    "1999-12-31-23-59-30",
-                    "2017-01-02-03-04-05",
-                    "2017-10-02-03-04-05",
-                ],
+                ["1999-12-31-23-59-30", "2017-01-02-03-04-05", "2017-10-02-03-04-05"],
                 key=number_key,
                 reverse=True,
             ),
-            [
-                "2017-10-02-03-04-05",
-                "2017-01-02-03-04-05",
-                "1999-12-31-23-59-30",
-            ],
+            ["2017-10-02-03-04-05", "2017-01-02-03-04-05", "1999-12-31-23-59-30"],
         )
         self.assertEqual(
             sorted(
@@ -253,8 +222,7 @@ class CopyBlobsTestCase(unittest.TestCase):
         # Test normal sorting for good measure.
         self.assertEqual(
             sorted(
-                ["0", "2", "1999-12-31-23-59-30", "2017-01-02-03-04-05"],
-                key=number_key,
+                ["0", "2", "1999-12-31-23-59-30", "2017-01-02-03-04-05"], key=number_key
             ),
             ["2", "0", "1999-12-31-23-59-30", "2017-01-02-03-04-05"],
         )
@@ -266,24 +234,14 @@ class CopyBlobsTestCase(unittest.TestCase):
 
         # Values should be (number, modification time, ignored extra).
         # Number is either a number or a timestamp.
-        self.assertGreater(
-            first_number_key(("0", 0)), first_number_key(("1", 0))
-        )
-        self.assertEqual(
-            first_number_key(("0", 0)), first_number_key(("0", 0))
-        )
+        self.assertGreater(first_number_key(("0", 0)), first_number_key(("1", 0)))
+        self.assertEqual(first_number_key(("0", 0)), first_number_key(("0", 0)))
         self.assertLess(first_number_key(("1", 0)), first_number_key(("0", 0)))
-        self.assertGreater(
-            first_number_key(("9", 0)), first_number_key(("10", 0))
-        )
-        self.assertLess(
-            first_number_key(("99", 0)), first_number_key(("10", 0))
-        )
+        self.assertGreater(first_number_key(("9", 0)), first_number_key(("10", 0)))
+        self.assertLess(first_number_key(("99", 0)), first_number_key(("10", 0)))
 
         # When the number is the same, the modification time becomes relevant.
-        self.assertGreater(
-            first_number_key(("0", 1)), first_number_key(("0", 0))
-        )
+        self.assertGreater(first_number_key(("0", 1)), first_number_key(("0", 0)))
         self.assertLess(first_number_key(("0", 0)), first_number_key(("0", 1)))
 
         # Check the effect on a complete sort.
@@ -419,8 +377,7 @@ class CopyBlobsTestCase(unittest.TestCase):
             [x for x in correct_order_by_mod_time if not is_snar(x[2])],
         )
         self.assertEqual(
-            sorted(data, key=first_number_key, reverse=True),
-            correct_order_by_number,
+            sorted(data, key=first_number_key, reverse=True), correct_order_by_number
         )
         self.assertEqual(
             sorted(data, key=mod_time_number_key, reverse=True),
@@ -440,14 +397,11 @@ class CopyBlobsTestCase(unittest.TestCase):
         self.assertEqual(backup_key("foo.1"), backup_key("bar.1"))
 
         # Compare integers and timestamps.  Time stamps are last.
-        self.assertLess(
-            backup_key("foo.0"), backup_key("foo.1999-12-31-23-59-30")
-        )
+        self.assertLess(backup_key("foo.0"), backup_key("foo.1999-12-31-23-59-30"))
 
         # Compare timestamps.  Newest last.
         self.assertLess(
-            backup_key("foo.1999-12-31-23-59-30"),
-            backup_key("foo.2000-12-31-23-59-30"),
+            backup_key("foo.1999-12-31-23-59-30"), backup_key("foo.2000-12-31-23-59-30")
         )
 
         # It let's most of the logic be handled in number_key,
@@ -462,32 +416,23 @@ class CopyBlobsTestCase(unittest.TestCase):
                 ],
                 key=backup_key,
             ),
-            [
-                "foo.2",
-                "foo.0",
-                "foo.1999-12-31-23-59-30",
-                "foo.2017-01-02-03-04-05",
-            ],
+            ["foo.2", "foo.0", "foo.1999-12-31-23-59-30", "foo.2017-01-02-03-04-05"],
         )
 
     def test_archive_backup_key(self):
         from collective.recipe.backup.copyblobs import archive_backup_key
 
         self.assertGreater(
-            archive_backup_key("foo.0.tar.gz"),
-            archive_backup_key("foo.1.tar.gz"),
+            archive_backup_key("foo.0.tar.gz"), archive_backup_key("foo.1.tar.gz")
         )
         self.assertEqual(
-            archive_backup_key("foo.0.tar.gz"),
-            archive_backup_key("foo.0.tar.gz"),
+            archive_backup_key("foo.0.tar.gz"), archive_backup_key("foo.0.tar.gz")
         )
         self.assertLess(
-            archive_backup_key("foo.1.tar.gz"),
-            archive_backup_key("foo.0.tar.gz"),
+            archive_backup_key("foo.1.tar.gz"), archive_backup_key("foo.0.tar.gz")
         )
         self.assertGreater(
-            archive_backup_key("foo.9.tar.gz"),
-            archive_backup_key("foo.10.tar.gz"),
+            archive_backup_key("foo.9.tar.gz"), archive_backup_key("foo.10.tar.gz")
         )
 
         # tar or tar.gz are both accepted.
@@ -501,8 +446,7 @@ class CopyBlobsTestCase(unittest.TestCase):
             archive_backup_key("foo.1.tar.gz"), archive_backup_key("foo.0.tar")
         )
         self.assertGreater(
-            archive_backup_key("foo.9.tar.gz"),
-            archive_backup_key("foo.10.tar"),
+            archive_backup_key("foo.9.tar.gz"), archive_backup_key("foo.10.tar")
         )
 
         # Compare timestamps.  Newest last.
@@ -569,8 +513,7 @@ class CopyBlobsTestCase(unittest.TestCase):
             [[(0, 0, "a.tar")], [(0, 0, "b.tar")]],
         )
         self.assertEqual(
-            cb([(0, 0, "dir1"), (0, 0, "dir2")]),
-            [[(0, 0, "dir1")], [(0, 0, "dir2")]],
+            cb([(0, 0, "dir1"), (0, 0, "dir2")]), [[(0, 0, "dir1")], [(0, 0, "dir2")]]
         )
         # Deltas and tars are combined:
         self.assertEqual(
@@ -589,11 +532,7 @@ class CopyBlobsTestCase(unittest.TestCase):
             ),
             [
                 [(0, 0, "a.delta.tar"), (0, 0, "b.tar")],
-                [
-                    (0, 0, "c.delta.tar"),
-                    (0, 0, "d.delta.tar"),
-                    (0, 0, "e.tar"),
-                ],
+                [(0, 0, "c.delta.tar"), (0, 0, "d.delta.tar"), (0, 0, "e.tar")],
             ],
         )
         # Snars (snapshot archives) and tars are combined:

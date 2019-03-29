@@ -54,23 +54,17 @@ def backup_main(
         if backup_method == config.STANDARD_BACKUP:
             location = storage["backup_location"]
             logger.info(
-                "Please wait while backing up database file: %s to %s",
-                fs,
-                location,
+                "Please wait while backing up database file: %s to %s", fs, location
             )
         elif backup_method == config.SNAPSHOT_BACKUP:
             location = storage["snapshot_location"]
             logger.info(
-                "Please wait while making snapshot backup: %s to %s",
-                fs,
-                location,
+                "Please wait while making snapshot backup: %s to %s", fs, location
             )
         elif backup_method == config.ZIP_BACKUP:
             location = storage["zip_location"]
             logger.info(
-                "Please wait while backing up database file: %s to %s",
-                fs,
-                location,
+                "Please wait while backing up database file: %s to %s", fs, location
             )
         result = os.system(
             quote_command(
@@ -130,15 +124,11 @@ def restore_main(
         if not os.path.exists(fs_dir):
             os.makedirs(fs_dir)
             logger.info("Created directory %s", fs_dir)
-        arguments = restore_arguments(
-            fs, backup_location, date, verbose, as_list=True
-        )
+        arguments = restore_arguments(fs, backup_location, date, verbose, as_list=True)
         if only_check:
             continue
         logger.info(
-            "Please wait while restoring database file: %s to %s",
-            backup_location,
-            fs,
+            "Please wait while restoring database file: %s to %s", backup_location, fs
         )
         result = os.system(quote_command([repozo] + arguments))
         if result:
@@ -351,9 +341,7 @@ def cleanup(backup_location, keep=0):
     """
     keep = int(keep)  # Making sure.
     if not keep:
-        logger.debug(
-            "Value of 'keep' is %r, we don't want to remove anything.", keep
-        )
+        logger.debug("Value of 'keep' is %r, we don't want to remove anything.", keep)
         return
     logger.debug("Trying to clean up old backups.")
     filenames = sorted(os.listdir(backup_location))
@@ -371,13 +359,10 @@ def cleanup(backup_location, keep=0):
         files_modtimes.append(file_)
     # we are only interested in full backups
     fullbackups = [
-        f
-        for f in files_modtimes
-        if f[0].endswith(".fs") or f[0].endswith(".fsz")
+        f for f in files_modtimes if f[0].endswith(".fs") or f[0].endswith(".fsz")
     ]
     logger.debug(
-        "Filtered out full backups (*.fs/*.fsz): %r.",
-        [f[0] for f in fullbackups],
+        "Filtered out full backups (*.fs/*.fsz): %r.", [f[0] for f in fullbackups]
     )
     fullbackups = sorted(fullbackups, key=itemgetter(1))
     logger.debug("%d fullbackups: %r", len(fullbackups), fullbackups)
@@ -391,9 +376,7 @@ def cleanup(backup_location, keep=0):
         oldest_backup_to_keep = fullbackups[(num_backups - 1)]
         logger.debug("Oldest backup to keep: %s", oldest_backup_to_keep[0])
         last_date_to_keep = oldest_backup_to_keep[1]
-        logger.debug(
-            "The oldest backup we get to keep is from %s.", last_date_to_keep
-        )
+        logger.debug("The oldest backup we get to keep is from %s.", last_date_to_keep)
         deleted = 0
         # Note: this also deletes now outdated .deltafs and .dat
         # files, so we may easily delete more items than there are
@@ -418,9 +401,7 @@ def cleanup(backup_location, keep=0):
         logger.debug("Not removing backups.")
         if len(fullbackups) <= num_backups:
             logger.debug(
-                "Reason: #backups (%s) <= than max (%s).",
-                len(fullbackups),
-                num_backups,
+                "Reason: #backups (%s) <= than max (%s).", len(fullbackups), num_backups
             )
         if num_backups == 0:
             logger.debug(

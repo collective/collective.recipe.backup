@@ -51,9 +51,7 @@ def backup_main(
         )
         if result:
             if backup_blobs:
-                logger.error(
-                    "Halting execution due to error; not backing up blobs."
-                )
+                logger.error("Halting execution due to error; not backing up blobs.")
             else:
                 logger.error("Halting execution due to error.")
             sys.exit(1)
@@ -64,9 +62,7 @@ def backup_main(
     for storage in storages:
         blobdir = storage["blobdir"]
         if not blobdir:
-            logger.info(
-                "No blob dir defined for %s storage", storage["storage"]
-            )
+            logger.info("No blob dir defined for %s storage", storage["storage"])
             continue
         blob_backup_location = None
         if backup_method == config.STANDARD_BACKUP:
@@ -157,9 +153,7 @@ def check_blobs(
     for storage in storages:
         blobdir = storage["blobdir"]
         if not blobdir:
-            logger.info(
-                "No blob dir defined for %s storage", storage["storage"]
-            )
+            logger.info("No blob dir defined for %s storage", storage["storage"])
             continue
         if restore_snapshot:
             blob_backup_location = storage["blob_snapshot_location"]
@@ -184,9 +178,7 @@ def check_blobs(
             only_check=True,
         )
         if result:
-            logger.error(
-                "Halting execution: " "restoring blobstorages would fail."
-            )
+            logger.error("Halting execution: " "restoring blobstorages would fail.")
             sys.exit(1)
 
 
@@ -253,9 +245,7 @@ def restore_check(
             only_check=True,
         )
         if result:
-            logger.error(
-                "Halting execution: " "restoring filestorages would fail."
-            )
+            logger.error("Halting execution: " "restoring filestorages would fail.")
             sys.exit(1)
     if backup_blobs:
         check_blobs(
@@ -316,19 +306,11 @@ def restore_main(
     # Checks have passed, now do the real restore.
     if not only_blobs:
         result = repozorunner.restore_main(
-            bin_dir,
-            storages,
-            verbose,
-            date,
-            restore_snapshot,
-            alt_restore,
-            zip_restore,
+            bin_dir, storages, verbose, date, restore_snapshot, alt_restore, zip_restore
         )
         if result:
             if backup_blobs:
-                logger.error(
-                    "Halting execution due to error; not restoring " "blobs."
-                )
+                logger.error("Halting execution due to error; not restoring " "blobs.")
             else:
                 logger.error("Halting execution due to error.")
             sys.exit(1)
@@ -341,9 +323,7 @@ def restore_main(
         if not blobdir:
             continue
         blob_backup_location = storage["blob_backup_location"]
-        logger.info(
-            "Restoring blobs from %s to %s", blob_backup_location, blobdir
-        )
+        logger.info("Restoring blobs from %s to %s", blob_backup_location, blobdir)
         result = copyblobs.restore_blobs(
             blob_backup_location,
             blobdir,

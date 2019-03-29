@@ -80,10 +80,7 @@ def ask(question, default=True, exact=False):
         if not answer and default is not None:
             return default
         if exact and answer.lower() not in ("yes", "no"):
-            print(
-                "Please explicitly answer yes/no in full "
-                "(or accept the default)"
-            )
+            print("Please explicitly answer yes/no in full " "(or accept the default)")
             continue
         if answer:
             answer = answer[0].lower()
@@ -109,10 +106,7 @@ def execute_or_fail(command):
 
 
 def check_folders(
-    storages,
-    backup_blobs=True,
-    only_blobs=False,
-    backup_method=config.STANDARD_BACKUP,
+    storages, backup_blobs=True, only_blobs=False, backup_method=config.STANDARD_BACKUP
 ):
     """Check that folders exist, and create them if not."""
     backup = backup_method == config.STANDARD_BACKUP
@@ -193,9 +187,7 @@ def try_create_folder(pathdir):
         newdir = os.path.join(newdir, part)
         if os.path.exists(newdir):
             if not os.path.isdir(newdir):
-                logger.warning(
-                    "WARNING: %s is a file, not a directory.", newdir
-                )
+                logger.warning("WARNING: %s is a file, not a directory.", newdir)
                 return
             continue
         # newdir does not exist.  Try to create the full path, and the
