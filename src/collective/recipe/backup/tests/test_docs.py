@@ -20,26 +20,27 @@ import zc.buildout.tests
 import zc.recipe.egg
 
 
-optionflags = (
-    doctest.ELLIPSIS
-    | doctest.NORMALIZE_WHITESPACE
-)
+optionflags = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
 
-checker = renormalizing.RENormalizing([
-    # If want to clean up the doctest output you can register
-    # additional regexp normalizers here. The format is a two-tuple
-    # with the RE as the first item and the replacement as the second
-    # item, e.g.
-    # (re.compile('my-[rR]eg[eE]ps'), 'my-regexps')
-    (re.compile(r'DEBUG:.*'), ''),  # Remove DEBUG lines.
-    (re.compile(r'Not SVN Repository\n'), ''),  # svn warning
-    zc.buildout.testing.normalize_path,
-])
+checker = renormalizing.RENormalizing(
+    [
+        # If want to clean up the doctest output you can register
+        # additional regexp normalizers here. The format is a two-tuple
+        # with the RE as the first item and the replacement as the second
+        # item, e.g.
+        # (re.compile('my-[rR]eg[eE]ps'), 'my-regexps')
+        (re.compile(r'DEBUG:.*'), ''),  # Remove DEBUG lines.
+        (re.compile(r'Not SVN Repository\n'), ''),  # svn warning
+        zc.buildout.testing.normalize_path,
+    ]
+)
 
 
 _dummy, REPOZO_OUTPUT = tempfile.mkstemp()
 REPOZO_SCRIPT_TEXT = """#!/bin/sh
-echo $* >> {0}""".format(REPOZO_OUTPUT)
+echo $* >> {0}""".format(
+    REPOZO_OUTPUT
+)
 
 
 def check_repozo_output():
@@ -68,28 +69,27 @@ def setUp(test):
 
     # Add some items to the global definitions of the test,
     # so we can access them from the doc tests.
-    test.globs.update({
-        'check_repozo_output': check_repozo_output,
-        'REPOZO_SCRIPT_TEXT': REPOZO_SCRIPT_TEXT,
-    })
+    test.globs.update(
+        {
+            'check_repozo_output': check_repozo_output,
+            'REPOZO_SCRIPT_TEXT': REPOZO_SCRIPT_TEXT,
+        }
+    )
 
 
 def test_suite():
     suite = unittest.TestSuite()
-    modules = [
-        utils,
-        repozorunner,
-        collective.recipe.backup,
-        copyblobs,
-    ]
+    modules = [utils, repozorunner, collective.recipe.backup, copyblobs]
     for module in modules:
-        suite.addTest(doctest.DocTestSuite(
-            module,
-            setUp=setUp,
-            tearDown=zc.buildout.testing.buildoutTearDown,
-            optionflags=optionflags,
-            checker=checker,
-        ))
+        suite.addTest(
+            doctest.DocTestSuite(
+                module,
+                setUp=setUp,
+                tearDown=zc.buildout.testing.buildoutTearDown,
+                optionflags=optionflags,
+                checker=checker,
+            )
+        )
 
     docfiles = [
         'altrestore.rst',
@@ -115,16 +115,20 @@ def test_suite():
         print('Enable them when there is a compatible mailinglogger version.')
         print(
             'See '
-            'https://github.com/collective/collective.recipe.backup/issues/31')
+            'https://github.com/collective/collective.recipe.backup/issues/31'
+        )
     else:
         docfiles.append(test_file)
     for docfile in docfiles:
-        suite.addTest(doctest.DocFileSuite(
-            docfile,
-            setUp=setUp,
-            tearDown=zc.buildout.testing.buildoutTearDown,
-            optionflags=optionflags,
-            checker=checker))
+        suite.addTest(
+            doctest.DocFileSuite(
+                docfile,
+                setUp=setUp,
+                tearDown=zc.buildout.testing.buildoutTearDown,
+                optionflags=optionflags,
+                checker=checker,
+            )
+        )
     return suite
 
 
