@@ -38,3 +38,4 @@ include/
 lib/
 pip-selfcheck.json
 local/
+pyvenc.cfg
