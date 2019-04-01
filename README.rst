@@ -360,6 +360,8 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
     For example: ``blobstorage.1972-12-25-01-02-03``.
     Or with ``archive_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
+    Because the filename is unpredictable, since version 4.1 we create a ``latest`` symlink
+    the most recent backup.
 
 ``blobbackuplocation``
     Directory where the blob storage will be backed up to.  Defaults
