@@ -843,11 +843,11 @@ def backup_blobs(
                     dest,
                 )
                 # Now possibly remove old backups and remove/create latest symlink.
-                if timestamps and not incremental_blobs:
+                if incremental_blobs:
+                    latest = None
+                else:
                     # Creating a symlink to the latest blob backup only makes sense in this combination.
                     latest = dest
-                else:
-                    latest = None
                 cleanup(
                     destination,
                     full,
