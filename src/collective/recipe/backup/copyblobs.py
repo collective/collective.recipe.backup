@@ -914,6 +914,24 @@ def backup_blobs(
     )
 
 
+def find_timestamped_filename(destination, filename):
+    # compress_blob may be on now, or may have been on in the past.
+    # Look for both.  And look for deltas too.
+    for suffix in ("tar", "tar.gz", "delta.tar", "delta.tar.gz"):
+        fname = "{0}.{1}".format(filename, suffix)
+        dest = os.path.join(destination, fname)
+        # If a backup already exists, then apparently there were no
+        # database changes since the last backup, so we don't need
+        # to do anything.
+        if os.path.exists(dest):
+            logger.info(
+                "Blob backup at %s already exists, so there were "
+                "no database changes since last backup.",
+                dest,
+            )
+            return dest
+
+
 def backup_blobs_archive(
     source,
     destination,
@@ -947,30 +965,19 @@ def backup_blobs_archive(
         timestamp = get_latest_filestorage_timestamp(fs_backup_location)
         if timestamp:
             filename = "{0}.{1}".format(base_name, timestamp)
-            # compress_blob may be on now, or may have been on in the past.
-            # Look for both.  And look for deltas too.
-            for suffix in ("tar", "tar.gz", "delta.tar", "delta.tar.gz"):
-                fname = "{0}.{1}".format(filename, suffix)
-                dest = os.path.join(destination, fname)
-                # If a backup already exists, then apparently there were no
-                # database changes since the last backup, so we don't need
-                # to do anything.
-                if os.path.exists(dest):
-                    logger.info(
-                        "Blob backup at %s already exists, so there were "
-                        "no database changes since last backup.",
-                        dest,
-                    )
-                    # Now possibly remove old backups and remove/create latest symlink.
-                    if timestamps and not incremental_blobs:
-                        # Creating a symlink to the latest blob backup only makes sense in this combination.
-                        latest = dest
-                    else:
-                        latest = None
-                    cleanup_archives(
-                        destination, keep=keep, fs_backup_location=fs_backup_location, latest=latest
-                    )
-                    return
+            dest = find_timestamped_filename(destination, filename)
+            if dest:
+                # We have found an existing backup.
+                # Now possibly remove old backups and remove/create latest symlink.
+                if incremental_blobs:
+                    latest = None
+                else:
+                    # Creating a symlink to the latest blob backup only makes sense in this combination.
+                    latest = dest
+                cleanup_archives(
+                    destination, keep=keep, fs_backup_location=fs_backup_location, latest=latest
+                )
+                return
         else:
             timestamp = gen_timestamp()
             filename = "{0}.{1}".format(base_name, timestamp)
