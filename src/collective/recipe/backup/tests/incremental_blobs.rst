@@ -92,8 +92,8 @@ It is useless to use incremental blobs here: a snapshot is always one tarball.
     l  latest
     >>> len(os.listdir('var/blobstoragesnapshots'))
     2
-    >>> print(os.path.realpath('backups/latest'))
-    /sample-buildout/backups/blobstorage.20...-...-...-...-...-....tar
+    >>> print(os.path.realpath('var/blobstoragesnapshots/latest'))
+    /sample-buildout/var/blobstoragesnapshots/blobstorage.20...-...-...-...-...-....tar
 
 We mock a file storage backup from 2016:
 

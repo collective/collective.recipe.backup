@@ -586,8 +586,10 @@ Now we test it::
     -  blobstorage.20...-...-...-...-...-....tar
     l  latest
     >>> zip_timestamp0 = sorted(os.listdir('var/blobstoragezips'))[0]
-    >>> print(os.path.realpath('backups/latest'))
-    /sample-buildout/backups/blobstorage.20...-...-...-...-...-....tar
+    >>> print(os.path.realpath('var/blobstoragezips/latest'))
+    /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar
+    >>> os.path.realpath('var/blobstoragezips/latest').endswith(zip_timestamp0)
+    True
 
 Keep is ignored by zipbackup, always using 1 as value.
 Pause a short time to avoid getting an error for overwriting the previous file::
@@ -608,8 +610,10 @@ Pause a short time to avoid getting an error for overwriting the previous file::
     >>> zip_timestamp1 = sorted(os.listdir('var/blobstoragezips'))[0]
     >>> zip_timestamp0 == zip_timestamp1
     False
-    >>> print(os.path.realpath('backups/latest'))
-    /sample-buildout/backups/blobstorage.20...-...-...-...-...-....tar
+    >>> print(os.path.realpath('var/blobstoragezips/latest'))
+    /sample-buildout/var/blobstoragezips/blobstorage.20...-...-...-...-...-....tar
+    >>> os.path.realpath('var/blobstoragezips/latest').endswith(zip_timestamp1)
+    True
 
 Now test the ziprestore script::
 
