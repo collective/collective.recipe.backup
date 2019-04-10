@@ -52,6 +52,10 @@ Use timestamps with a fs_backup_location.
     -  blobs.1.tar.gz
     -  blobs.2.tar
     -  blobs.2017-05-24-11-54-39.tar.gz
+    l  latest
+    >>> import os
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobs.2017-05-24-11-54-39.tar.gz
 
 And again with the same settings, as I saw something go wrong once.
 
@@ -63,6 +67,7 @@ And again with the same settings, as I saw something go wrong once.
     -  blobs.1.tar.gz
     -  blobs.2.tar
     -  blobs.2017-05-24-11-54-39.tar.gz
+    l  latest
 
 Same without compressing, which accepts previous compressed tarballs too.
 
@@ -74,6 +79,7 @@ Same without compressing, which accepts previous compressed tarballs too.
     -  blobs.1.tar.gz
     -  blobs.2.tar
     -  blobs.2017-05-24-11-54-39.tar.gz
+    l  latest
 
 Same settings, now with a change and a newer filestorage backup.
 
@@ -87,6 +93,9 @@ Same settings, now with a change and a newer filestorage backup.
     -  blobs.2.tar
     -  blobs.2017-05-24-11-54-39.tar.gz
     -  blobs.2017-05-25-12-00-00.tar
+    l  latest
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobs.2017-05-25-12-00-00.tar
 
 Now with incremental_blobs, which requires timestamps to be True.
 

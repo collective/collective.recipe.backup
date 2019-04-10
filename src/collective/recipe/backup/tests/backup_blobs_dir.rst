@@ -92,7 +92,10 @@ Wait a while, so we get a different timestamp, and then change some stuff.
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
     d  blobs.20...-...-...-...-...
-    >>> backup1 = sorted(os.listdir('backups'))[-1]
+    d  latest
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobs.20...-...-...-...-...
+    >>> backup1 = sorted(os.listdir('backups'))[1]
     >>> timestamp1 = backup1[len('blobs.'):]
     >>> timestamp0 < timestamp1
     True
@@ -114,8 +117,9 @@ to any filestorage backup.
     ...     fs_backup_location='fs')
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
+    d  latest
     >>> len(sorted(os.listdir('backups')))  # The dots could shadow other backups.
-    1
+    2
     >>> backup1 == sorted(os.listdir('backups'))[0]
     True
     >>> ls('backups', backup1, 'blobs')
@@ -131,8 +135,11 @@ Pretend there is a newer filestorage backup and a blob change.
     >>> ls('backups')
     d  blobs.20...-...-...-...-...
     d  blobs.2100-01-01-00-00-00
+    d  latest
     >>> len(sorted(os.listdir('backups')))  # The dots could shadow a third backup
-    2
+    3
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobs.2100-01-01-00-00-00
     >>> ls('backups', 'blobs.2100-01-01-00-00-00', 'blobs')
     d  dir
     -  one.txt
@@ -157,8 +164,11 @@ Remove the oldest filestorage backup.
     ...    fs_backup_location='fs')
     >>> ls('backups')
     d  blobs.2100-01-01-00-00-00
+    d  latest
     >>> len(sorted(os.listdir('backups')))
-    1
+    2
+    >>> print(os.path.realpath('backups/latest'))
+    /sample-buildout/backups/blobs.2100-01-01-00-00-00
 
 Cleanup:
 

@@ -360,6 +360,8 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
     For example: ``blobstorage.1972-12-25-01-02-03``.
     Or with ``archive_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
+    Because the filename is unpredictable, since version 4.1 we create a ``latest`` symlink
+    to the most recent backup.
 
 ``blobbackuplocation``
     Directory where the blob storage will be backed up to.  Defaults
@@ -439,6 +441,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     This option *requires* the ``blob_timestamps`` option to be true,
     because it needs the tarball names to be stable, instead of getting rotated.
     If you have explicitly set ``blob_timestamps`` to false, buildout will exit with an error.
+    Note that the ``latest`` symlink to the most recent backup is not created with ``incremental_blobs`` true.
     For large blobstorages it may take long to restore, so do test it out.
     But that is wise in all cases.
     Essentially, this feature seems to trade off storage space reduction with restore time.
