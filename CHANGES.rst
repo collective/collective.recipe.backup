@@ -7,6 +7,30 @@
 
 .. towncrier release notes start
 
+4.1.0 (2019-04-10)
+==================
+
+New features:
+
+
+- Create symlink to latest timestamped blobstorage backup.
+  When ``blob_timestamps`` is false, ``blobstorage.0`` is a stable filename,
+  but with ``blob_timestamps`` true, such a stable name was missing.
+  [maurits] (`Issue #48 <https://github.com/collective/collective.recipe.backup/issues/48>`_)
+- Dropped official Python 2.6 support, added Python 3.7 support.
+  No code change, but we are no longer testing 2.6.
+  [maurits] (`Issue #49 <https://github.com/collective/collective.recipe.backup/issues/49>`_)
+
+
+Bug fixes:
+
+
+- Updated package versions in test buildout.
+  Improved code quality according to flake8 and with black.
+  [maurits] (`Issue #49 <https://github.com/collective/collective.recipe.backup/issues/49>`_)
+- Removed already disabled support for sitepackage_safe_scripts.  [maurits] (`Issue #51 <https://github.com/collective/collective.recipe.backup/issues/51>`_)
+
+
 4.0.1 (2018-04-19)
 ==================
 
