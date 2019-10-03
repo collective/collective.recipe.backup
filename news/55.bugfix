@@ -1,0 +1,2 @@
+When using timestamps, use correct filestorage backup location for blob timestamp of snapshot and zip backup.
+[maurits]

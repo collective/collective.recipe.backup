@@ -88,8 +88,12 @@ def backup_main(
             )
         if only_blobs:
             fs_backup_location = None
-        else:
+        elif backup_method == config.STANDARD_BACKUP:
             fs_backup_location = storage["backup_location"]
+        elif backup_method == config.SNAPSHOT_BACKUP:
+            fs_backup_location = storage["snapshot_location"]
+        elif backup_method == config.ZIP_BACKUP:
+            fs_backup_location = storage["zip_location"]
         copyblobs.backup_blobs(
             blobdir,
             blob_backup_location,
