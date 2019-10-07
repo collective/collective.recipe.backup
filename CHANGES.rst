@@ -7,6 +7,16 @@
 
 .. towncrier release notes start
 
+4.1.1 (2019-10-07)
+==================
+
+Bug fixes:
+
+
+- When using timestamps, use correct filestorage backup location for blob timestamp of snapshot and zip backup.
+  [maurits] (`Issue #55 <https://github.com/collective/collective.recipe.backup/issues/55>`_)
+
+
 4.1.0 (2019-04-10)
 ==================
 
