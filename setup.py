@@ -42,6 +42,7 @@ setup(
     description="bin/backup script: sensible defaults around bin/repozo",
     long_description=long_description,
     classifiers=[
+        'Development Status :: 5 - Production/Stable',
         'Framework :: Buildout',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
