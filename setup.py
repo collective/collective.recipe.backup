@@ -58,7 +58,7 @@ setup(
     ],
     keywords='buildout backup repozo zope',
     author='Reinout van Rees, Maurits van Rees',
-    author_email='reinout@vanrees.org',
+    author_email='m.van.rees@zestsoftware.nl',
     url='https://github.com/collective/collective.recipe.backup',
     license='GPL',
     package_dir={'': 'src'},
