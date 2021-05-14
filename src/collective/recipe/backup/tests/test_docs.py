@@ -96,6 +96,7 @@ def test_suite():
         "altrestore.rst",
         "backup_blobs_archive.rst",
         "backup_blobs_dir.rst",
+        "backup_blobs_dir_hard_links.rst",
         "base.rst",
         "blobs.rst",
         "blob_timestamps.rst",
