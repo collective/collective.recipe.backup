@@ -766,6 +766,7 @@ def backup_blobs(
     fs_backup_location=None,
     compress_blob=False,
     incremental_blobs=False,
+    rsync_hard_links_on_first_copy=False,
 ):
     """Copy blobs from source to destination.
 
@@ -879,9 +880,18 @@ def backup_blobs(
             )
         else:
             # No previous directory to hardlink against.
-            cmd = "rsync -a {options} {source} {dest}".format(
-                options=rsync_options, source=source, dest=dest
-            )
+            if rsync_hard_links_on_first_copy:
+                abs_source = os.path.sep.join((os.path.abspath(source), ""))
+                abs_dest = os.path.sep.join((os.path.abspath(dest), base_name, ""))
+                os.makedirs(abs_dest, exist_ok=True)
+                # Let's hard link against the original one
+                cmd = "rsync -a {options} --link-dest={source} {source} {dest}".format(
+                    options=rsync_options, source=abs_source, dest=abs_dest
+                )
+            else:
+                cmd = "rsync -a {options} {source} {dest}".format(
+                    options=rsync_options, source=source, dest=dest
+                )
         logger.info(cmd)
         output, failed = utils.system(cmd)
         if output:

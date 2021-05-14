@@ -32,6 +32,7 @@ def backup_main(
     blob_timestamps=False,
     backup_method=config.STANDARD_BACKUP,
     incremental_blobs=False,
+    rsync_hard_links_on_first_copy=False,
     **kwargs,
 ):
     """Main method, gets called by generated bin/backup."""
@@ -106,6 +107,7 @@ def backup_main(
             timestamps=blob_timestamps,
             fs_backup_location=fs_backup_location,
             incremental_blobs=incremental_blobs,
+            rsync_hard_links_on_first_copy=rsync_hard_links_on_first_copy,
         )
     utils.execute_or_fail(post_command)
 

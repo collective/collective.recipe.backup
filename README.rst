@@ -497,6 +497,15 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     a backup from a symlinked directory, in which case
     ``rsync_options = --no-l -k`` does the trick.
 
+``rsync_hard_links_on_first_copy``
+    When using ``rsync`` to make the first backup of the blobs, create hard links
+    instead of copies of the blobs.
+    This is useful to save disk space but you need to pay attention
+    that changing the blobs in the source folder
+    will change the blobs in the backup.
+    The ``blob_storage`` and the backup folder ``blobbackuplocation``
+    have to be in the same partition for hard links to be possible.
+
 ``snapshotlocation``
     Location where snapshot backups of the filestorage are stored. Defaults to
     ``var/snapshotbackups`` inside the buildout directory.

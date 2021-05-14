@@ -146,6 +146,7 @@ class Recipe:
         options.setdefault("quick", "true")
         options.setdefault("rsync_options", "")
         options.setdefault("use_rsync", "true")
+        options.setdefault("rsync_hard_links_on_first_copy", "false")
 
         # Get the blob storage.
         blob_storage = options["blob_storage"]
@@ -461,6 +462,7 @@ logging.basicConfig(level=loglevel,
         no_prompt=options.no_prompt,
         blob_timestamps={blob_timestamps},
         incremental_blobs={incremental_blobs},
+        rsync_hard_links_on_first_copy={rsync_hard_links_on_first_copy},
         """
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
@@ -602,6 +604,7 @@ logging.basicConfig(level=loglevel,
                 "compress_blob",
                 "blob_timestamps",
                 "incremental_blobs",
+                "rsync_hard_links_on_first_copy",
             ],
         )
 
