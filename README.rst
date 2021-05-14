@@ -1,8 +1,8 @@
 Easy Zope backup/restore recipe for buildout
 ********************************************
 
-.. image:: https://travis-ci.org/collective/collective.recipe.backup.png
-    :target: https://travis-ci.org/collective/collective.recipe.backup
+.. image:: https://github.com/collective/collective.recipe.backup/workflows/tests/badge.svg
+    :target: https://github.com/collective/collective.recipe.backup/actions?query=workflow%3Atests
 
 .. contents::
 
