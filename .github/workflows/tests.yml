@@ -34,7 +34,7 @@ jobs:
           python -m pip install -r requirements.txt
           sudo apt-get install libxml2-dev libxslt-dev xvfb
       - name: Run buildout
-        run: buildout -c .gha.cfg
+        run: buildout -c gha.cfg
       - name: Run code analysis
         run: ./bin/code-analysis
       - name: Run tests
