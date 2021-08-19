@@ -8,7 +8,7 @@ on:
   pull_request:
   schedule:
     - cron: "3 14 * * 6" # run once a week on Saturday
-
+  workflow_dispatch:
 jobs:
   tests:
     runs-on: ubuntu-latest
