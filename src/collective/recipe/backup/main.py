@@ -133,6 +133,7 @@ def zipbackup_main(*args, **kwargs):
     kwargs["gzip"] = True
     kwargs["archive_blob"] = True
     kwargs["incremental_blobs"] = False
+    kwargs["blob_timestamps"] = False
     kwargs["keep"] = 1
     return backup_main(*args, **kwargs)
 

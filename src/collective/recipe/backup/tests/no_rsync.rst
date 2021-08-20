@@ -43,31 +43,43 @@ nowhere to be found::
     >>> print(output)
     INFO: Created /sample-buildout/var/blobstoragebackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.20.../blobstorage
+    INFO: Creating symlink from latest to blobstorage.20...
     <BLANKLINE>
 
-Try again to see that renaming/rotating keeps working::
+Try again. but sleep 1 second so we are sure the timestamp gets a new name:
 
+    >>> import time
+    >>> time.sleep(1)
     >>> output = system('bin/backup')
     >>> 'rsync' in output
     False
     >>> print(output)
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.20.../blobstorage
+    INFO: Creating symlink from latest to blobstorage.20...
     <BLANKLINE>
+    >>> ls('var', 'blobstoragebackups')
+    d  blobstorage.20...
+    d  blobstorage.20...
+    d  latest
 
 And again to see that for incremental backups no old blob backups are removed::
 
+    >>> time.sleep(1)
     >>> output = system('bin/backup')
     >>> 'rsync' in output
     False
     >>> print(output)
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups
-    INFO: Renaming blobstorage.1 to blobstorage.2.
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragebackups/blobstorage.20.../blobstorage
+    INFO: Creating symlink from latest to blobstorage.20...
     <BLANKLINE>
+    >>> ls('var', 'blobstoragebackups')
+    d  blobstorage.20...
+    d  blobstorage.20...
+    d  blobstorage.20...
+    d  latest
 
 Now a restore::
 
@@ -81,7 +93,7 @@ Now a restore::
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobstoragebackups to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Copying /sample-buildout/var/blobstoragebackups/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
+    INFO: Copying /sample-buildout/var/blobstoragebackups/blobstorage.20.../blobstorage to /sample-buildout/var/blobstorage
     <BLANKLINE>
 
 Snapshots should work too::
@@ -92,32 +104,42 @@ Snapshots should work too::
     >>> print(output)
     INFO: Created /sample-buildout/var/blobstoragesnapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.20.../blobstorage
+    INFO: Creating symlink from latest to blobstorage.20...
     <BLANKLINE>
 
-Try again to see that renaming/rotating keeps working::
+Try again:
 
+    >>> time.sleep(1)
     >>> output = system('bin/snapshotbackup')
     >>> 'rsync' in output
     False
     >>> print(output)
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.20.../blobstorage
+    INFO: Creating symlink from latest to blobstorage.20...
     <BLANKLINE>
+    >>> ls('var', 'blobstoragesnapshots')
+    d  blobstorage.20...
+    d  blobstorage.20...
+    d  latest
 
 And again to see that removing old backups works::
 
+    >>> time.sleep(1)
     >>> output = system('bin/snapshotbackup')
     >>> 'rsync' in output
     False
     >>> print(output)
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots
-    INFO: Renaming blobstorage.1 to blobstorage.2.
-    INFO: Renaming blobstorage.0 to blobstorage.1.
-    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage
+    INFO: Copying /sample-buildout/var/blobstorage to /sample-buildout/var/blobstoragesnapshots/blobstorage.20.../blobstorage
+    INFO: Creating symlink from latest to blobstorage.20...
     INFO: Removed 1 blob backup, the latest 2 backups have been kept.
     <BLANKLINE>
+    >>> ls('var', 'blobstoragesnapshots')
+    d  blobstorage.20...
+    d  blobstorage.20...
+    d  latest
 
 And the snapshotrestore::
 
@@ -131,5 +153,5 @@ And the snapshotrestore::
     Are you sure? (yes/No)?
     INFO: Restoring blobs from /sample-buildout/var/blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Copying /sample-buildout/var/blobstoragesnapshots/blobstorage.0/blobstorage to /sample-buildout/var/blobstorage
+    INFO: Copying /sample-buildout/var/blobstoragesnapshots/blobstorage.20.../blobstorage to /sample-buildout/var/blobstorage
     <BLANKLINE>

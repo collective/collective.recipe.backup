@@ -1,2 +1,2 @@
-Switch the test infrastructure to GitHub Actions.
-Also test Python 3.8 [ale-rt]
+Switch the test infrastructure to GitHub Actions and tox.
+Also test Python 3.8 and 3.9. [ale-rt, maurits]

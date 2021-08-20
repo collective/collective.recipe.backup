@@ -14,8 +14,8 @@ This recipe is mostly a wrapper around the ``bin/repozo`` script in
 your Zope buildout.  It requires that this script is already made
 available.  If this is not the case, you will get an error like this
 when you run one of the scripts: ``bin/repozo: No such file or
-directory``.  You should be fine when you are on Plone 3 or when you
-are on Plone 4 and are using ``plone.recipe.zeoserver``.  If this is
+directory``.  This should be there when you
+are using ``plone.recipe.zeoserver``.  If this is
 not the case, the easiest way of getting a ``bin/repozo`` script is to
 add a new section in your ``buildout.cfg`` (do not forget to add it in the
 ``parts`` directive)::
@@ -50,8 +50,12 @@ cake is important!
 
 - ``bin/zipbackup`` makes a zip backup.  This zips the Data.fs and the
   blobstorage, handy for copying production data to your local
-  machine, especially the blobstorage with its many files.  *Note*:
-  the Data.fs and blobstorage (or other storages) are *not* combined
+  machine, especially the blobstorage with its many files.
+  Actually, zipping the Data.fs is standard,
+  and we do not zip the blobstorage,
+  because most files in there are already compressed.
+  But we do combine the blobs in one tar archive.
+  *Note*: the Data.fs and blobstorage (or other storages) are *not* combined
   in one file; you need to download multiple files.  Enable this
   script by using the ``enable_zipbackup`` option.
 
@@ -61,8 +65,8 @@ cake is important!
 Compatibility
 =============
 
-The recipe is tested with Python 2.6, 2.7, and 3.6.
-In Plone terms it works fine on Plone 4 and 5.
+The recipe is tested with Python 2.7, 3.6, 3.7, 3.8, 3.9.
+In Plone terms it works fine on Plone 4, 5 and 6.
 
 Note that the integration with ``plone.recipe.zope2instance`` is not tested on Python 3.6.
 There is not yet a Python 3 compatible version of this recipe and its ``mailinglogger`` dependency.
@@ -81,15 +85,16 @@ Development
 - The code comes with a ``buildout.cfg``.  Please bootstrap the
   buildout and run the created ``bin/test`` to see if the tests still
   pass.  Please try to add tests if you add code.
+  To run the tests for all supported Python versions, run ``tox``.
 
 - The long description of this package (as shown on PyPI), used to
   contain a big file with lots of test code that showed how to use the
   recipe.  This grew too large, so we left it out.  It is probably
   still good reading if you are wondering about the effect some
-  options have.  See ``src/collective/recipe/backup/tests/*.txt``.
+  options have.  See ``src/collective/recipe/backup/tests/*.rst``.
 
-- We are tested on Travis:
-  https://travis-ci.org/collective/collective.recipe.backup
+- We are tested on GitHub Actions:
+  https://github.com/collective/collective.recipe.backup/actions
 
 - Questions and comments to https://community.plone.org or to
   `Maurits van Rees <mailto:maurits@vanrees.org>`_.
@@ -353,15 +358,17 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     using underscores in all the other options.  Pick one.
 
 ``blob_timestamps``
-    New in version 4.0.  Default is false.
-    By default we create ``blobstorage.0``.
+    New in version 4.0.  Default is true (this was false before version 4.2).
+    If false, we create ``blobstorage.0``.
     The next time, we rotate this to ``blobstorage.1`` and create a new ``blobstorage.0``.
     With ``blob_timestamps = true``, we create stable directories that we do not rotate.
     They get a timestamp, the same timestamp that the ZODB filestorage backup gets.
     For example: ``blobstorage.1972-12-25-01-02-03``.
-    Or with ``archive_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar.gz``.
+    Or with ``archive_blob = true``: ``blobstorage.1972-12-25-01-02-03.tar``.
     Because the filename is unpredictable, since version 4.1 we create a ``latest`` symlink
     to the most recent backup.
+    Blob timestamps are not used with zipbackup, because this only keeps 1 backup,
+    which means there is no confusion about which filestorage backup it belongs to.
 
 ``blobbackuplocation``
     Directory where the blob storage will be backed up to.  Defaults

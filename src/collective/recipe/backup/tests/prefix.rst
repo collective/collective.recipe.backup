@@ -163,20 +163,34 @@ Let's run the buildout::
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
 
+Mock some repozo backups with timestamps.
+In this way we can check that our logic for matching a blobstorage backup and filestorage backup works.
+And it is easier to write the tests with a real date rather than 20...-...-...-...-...-...
+
+    >>> mkdir('backuplocation', 'std')
+    >>> mkdir('backuplocation', 'std', 'datafs')
+    >>> write('backuplocation', 'std', 'datafs', '1999-12-31-01-01-01.fsz', 'mock datafs backup')
+    >>> mkdir('backuplocation', 'snapshots')
+    >>> mkdir('backuplocation', 'snapshots', 'datafs')
+    >>> write('backuplocation', 'snapshots', 'datafs', '1999-10-01-01-01-01.fsz', 'mock datafs snapshotbackup')
+
 And run the scripts::
 
     >>> print(system('bin/backup'))
-    INFO: Created /sample-buildout/backuplocation/std/datafs
     INFO: Created /sample-buildout/backuplocation/std/blobs
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/std/datafs
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/backuplocation/std/blobs
-    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/backuplocation/std/blobs/blobstorage.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/backuplocation/std/blobs/blobstorage.1999-12-31-01-01-01
+    INFO: Creating symlink from latest to blobstorage.1999-12-31-01-01-01
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/std/datafs --quick --gzip
-    >>> ls('backuplocation', 'std', 'blobs', 'blobstorage.0')
+    >>> ls('backuplocation', 'std', 'blobs')
+    d  blobstorage.1999-12-31-01-01-01
+    d  latest
+    >>> ls('backuplocation', 'std', 'blobs', 'blobstorage.1999-12-31-01-01-01')
     d  blobstorage
-    >>> ls('backuplocation', 'std', 'blobs', 'blobstorage.0', 'blobstorage')
+    >>> ls('backuplocation', 'std', 'blobs', 'blobstorage.1999-12-31-01-01-01', 'blobstorage')
     -  blob.txt
     >>> print(system('bin/zipbackup'))
     INFO: Created /sample-buildout/backuplocation/snapshots/zip
@@ -188,11 +202,11 @@ And run the scripts::
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/zip -F --gzip
     >>> print(system('bin/snapshotbackup'))
-    INFO: Created /sample-buildout/backuplocation/snapshots/datafs
     INFO: Created /sample-buildout/backuplocation/snapshots/blobs
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/snapshots/datafs
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/backuplocation/snapshots/blobs
-    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/backuplocation/snapshots/blobs/blobstorage.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/backuplocation/snapshots/blobs/blobstorage.1999-10-01-01-01-01
+    INFO: Creating symlink from latest to blobstorage.1999-10-01-01-01-01
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/datafs -F --gzip
@@ -205,7 +219,7 @@ And run the scripts::
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/backuplocation/std/datafs to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/backuplocation/std/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/backuplocation/std/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/backuplocation/std/blobs/blobstorage.1999-12-31-01-01-01/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/std/datafs
@@ -233,7 +247,7 @@ And run the scripts::
     Are you sure? (yes/No)?
     INFO: Please wait while restoring database file: /sample-buildout/backuplocation/snapshots/datafs to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/backuplocation/snapshots/blobs to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/backuplocation/snapshots/blobs/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/backuplocation/snapshots/blobs/blobstorage.1999-10-01-01-01-01/blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/snapshots/datafs
@@ -269,15 +283,18 @@ Let's run the buildout::
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
     <BLANKLINE>
+    >>> mkdir('myownbackup')
+    >>> mkdir('myownbackup', 'datafs')
+    >>> write('myownbackup', 'datafs', '1999-08-01-01-01-01.fsz', 'mock datafs snapshotbackup')
 
 And run the scripts::
 
     >>> print(system('bin/backup'))
-    INFO: Created /sample-buildout/myownbackup/datafs
     INFO: Created /sample-buildout/myownbackup/blobs
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/myownbackup/datafs
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/myownbackup/blobs
-    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/myownbackup/blobs/blobstorage.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/myownbackup/blobs/blobstorage.1999-08-01-01-01-01
+    INFO: Creating symlink from latest to blobstorage.1999-08-01-01-01-01
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/myownbackup/datafs --quick --gzip
