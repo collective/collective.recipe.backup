@@ -900,9 +900,9 @@ def backup_blobs(
             # The parent directory must exist for shutil.copytree
             # in python2.4.
             os.makedirs(dest)
-        dest = os.path.join(dest, base_name)
-        logger.info("Copying %s to %s", source, dest)
-        shutil.copytree(source, dest)
+        target = os.path.join(dest, base_name)
+        logger.info("Copying %s to %s", source, target)
+        shutil.copytree(source, target)
     # Now possibly remove old backups and remove/create latest symlink.
     if timestamps and not incremental_blobs:
         # Creating a symlink to the latest blob backup only makes sense in this combination.

@@ -64,7 +64,7 @@ using archiving technology::
     INFO: Created /sample-buildout/var/nozipbackup-blobstorages
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/nozipbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/nozipbackup-blobstorages
-    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/nozipbackup-blobstorages/blobstorage.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/nozipbackup-blobstorages/blobstorage.20...
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackups --quick
@@ -73,7 +73,7 @@ using archiving technology::
     INFO: Created /sample-buildout/var/nozipbackup-blobstoragesnapshots
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/nozipbackup-snapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/nozipbackup-blobstoragesnapshots
-    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/nozipbackup-blobstoragesnapshots/blobstorage.0
+    INFO: rsync -a  /sample-buildout/var/blobstorage /sample-buildout/var/nozipbackup-blobstoragesnapshots/blobstorage.20...
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackup-snapshots -F
@@ -85,7 +85,8 @@ zippedbackup backs up by gzipping the filestorage backup and archiving the blob 
     INFO: Created /sample-buildout/var/zippedbackup-blobstorages
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zippedbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/zippedbackup-blobstorages
-    INFO: tar cf /sample-buildout/var/zippedbackup-blobstorages/blobstorage.0.tar  -C /sample-buildout/var/blobstorage .
+    INFO: tar cf /sample-buildout/var/zippedbackup-blobstorages/blobstorage.20....tar  -C /sample-buildout/var/blobstorage .
+    INFO: Creating symlink from latest to blobstorage.20....tar
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackups --quick --gzip
@@ -94,8 +95,8 @@ zippedbackup backs up by gzipping the filestorage backup and archiving the blob 
     INFO: Created /sample-buildout/var/zippedbackup-blobstoragesnapshots
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/zippedbackup-snapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/zippedbackup-blobstoragesnapshots
-    INFO: tar cf /sample-buildout/var/zippedbackup-blobstoragesnapshots/blobstorage.0.tar  -C /sample-buildout/var/blobstorage .
-
+    INFO: tar cf /sample-buildout/var/zippedbackup-blobstoragesnapshots/blobstorage.20....tar  -C /sample-buildout/var/blobstorage .
+    INFO: Creating symlink from latest to blobstorage.20....tar
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackup-snapshots -F --gzip
@@ -107,7 +108,8 @@ And compressedbackup compresses the blob archive::
     INFO: Created /sample-buildout/var/compressedbackup-blobstorages
     INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/compressedbackups
     INFO: Please wait while backing up blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/compressedbackup-blobstorages
-    INFO: tar czf /sample-buildout/var/compressedbackup-blobstorages/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: tar czf /sample-buildout/var/compressedbackup-blobstorages/blobstorage.20....tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: Creating symlink from latest to blobstorage.20....tar.gz
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/compressedbackups --quick --gzip
@@ -116,8 +118,8 @@ And compressedbackup compresses the blob archive::
     INFO: Created /sample-buildout/var/compressedbackup-blobstoragesnapshots
     INFO: Please wait while making snapshot backup: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/compressedbackup-snapshots
     INFO: Please wait while making snapshot of blobs from /sample-buildout/var/blobstorage to /sample-buildout/var/compressedbackup-blobstoragesnapshots
-    INFO: tar czf /sample-buildout/var/compressedbackup-blobstoragesnapshots/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage .
-
+    INFO: tar czf /sample-buildout/var/compressedbackup-blobstoragesnapshots/blobstorage.20....tar.gz -C /sample-buildout/var/blobstorage .
+    INFO: Creating symlink from latest to blobstorage.20....tar.gz
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/compressedbackup-snapshots -F --gzip
@@ -134,7 +136,7 @@ Now test the restore::
     INFO: Created directory /sample-buildout/var/filestorage
     INFO: Please wait while restoring database file: /sample-buildout/var/nozipbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/nozipbackup-blobstorages to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/var/nozipbackup-blobstorages/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/nozipbackup-blobstorages/blobstorage.20.../blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackups
@@ -146,7 +148,7 @@ Now test the restore::
         /sample-buildout/var/blobstorage
     Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/nozipbackup-snapshots to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/nozipbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
-    INFO: rsync -a  --delete /sample-buildout/var/nozipbackup-blobstoragesnapshots/blobstorage.0/blobstorage /sample-buildout/var
+    INFO: rsync -a  --delete /sample-buildout/var/nozipbackup-blobstoragesnapshots/blobstorage.20.../blobstorage /sample-buildout/var
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/nozipbackup-snapshots
@@ -159,8 +161,8 @@ Now test the restore::
     Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/zippedbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/zippedbackup-blobstorages to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/var/zippedbackup-blobstorages/blobstorage.0.tar to /sample-buildout/var/blobstorage
-    INFO: tar xf /sample-buildout/var/zippedbackup-blobstorages/blobstorage.0.tar  -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/zippedbackup-blobstorages/blobstorage.20....tar to /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/var/zippedbackup-blobstorages/blobstorage.20....tar  -C /sample-buildout/var/blobstorage
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackups
@@ -173,8 +175,8 @@ Now test the restore::
     Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/zippedbackup-snapshots to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/zippedbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/var/zippedbackup-blobstoragesnapshots/blobstorage.0.tar to /sample-buildout/var/blobstorage
-    INFO: tar xf /sample-buildout/var/zippedbackup-blobstoragesnapshots/blobstorage.0.tar  -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/zippedbackup-blobstoragesnapshots/blobstorage.20....tar to /sample-buildout/var/blobstorage
+    INFO: tar xf /sample-buildout/var/zippedbackup-blobstoragesnapshots/blobstorage.20....tar  -C /sample-buildout/var/blobstorage
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/zippedbackup-snapshots
@@ -187,8 +189,8 @@ Now test the restore::
     Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/compressedbackups to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/compressedbackup-blobstorages to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/var/compressedbackup-blobstorages/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/var/compressedbackup-blobstorages/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/compressedbackup-blobstorages/blobstorage.20....tar.gz to /sample-buildout/var/blobstorage
+    INFO: tar xzf /sample-buildout/var/compressedbackup-blobstorages/blobstorage.20....tar.gz -C /sample-buildout/var/blobstorage
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/compressedbackups
@@ -201,8 +203,8 @@ Now test the restore::
     Are you sure? (yes/No)? INFO: Please wait while restoring database file: /sample-buildout/var/compressedbackup-snapshots to /sample-buildout/var/filestorage/Data.fs
     INFO: Restoring blobs from /sample-buildout/var/compressedbackup-blobstoragesnapshots to /sample-buildout/var/blobstorage
     INFO: Removing /sample-buildout/var/blobstorage
-    INFO: Extracting /sample-buildout/var/compressedbackup-blobstoragesnapshots/blobstorage.0.tar.gz to /sample-buildout/var/blobstorage
-    INFO: tar xzf /sample-buildout/var/compressedbackup-blobstoragesnapshots/blobstorage.0.tar.gz -C /sample-buildout/var/blobstorage
+    INFO: Extracting /sample-buildout/var/compressedbackup-blobstoragesnapshots/blobstorage.20....tar.gz to /sample-buildout/var/blobstorage
+    INFO: tar xzf /sample-buildout/var/compressedbackup-blobstoragesnapshots/blobstorage.20....tar.gz -C /sample-buildout/var/blobstorage
     <BLANKLINE>
     >>> check_repozo_output()
     --recover -o /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/compressedbackup-snapshots

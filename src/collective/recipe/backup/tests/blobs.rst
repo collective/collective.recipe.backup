@@ -5,6 +5,8 @@ Blob storage
 
 For tests with ``blob_timestamps = true``, see ``blob_timestamps.rst``.
 That started as a copy of the current ``blobs.rst`` file.
+At first, ``blob_timestamps = false`` was the default.
+I want to change that in version 4.2.
 
 New in this recipe is that we backup the blob storage.  Plone 4 uses a
 blob storage to store files on the file system.  In Plone 3 this is
@@ -35,6 +37,7 @@ is only for Plone 4 and higher.
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... """)
     >>> print(system(buildout))
     Installing backup.
@@ -49,6 +52,7 @@ is only for Plone 4 and higher.
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... backup_blobs = false
     ... """)
     >>> print(system(buildout))
@@ -69,6 +73,7 @@ We can override the additional_filestorages location:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... backup_blobs = false
     ... additional_filestorages =
     ...    catalog ${buildout:directory}/var/filestorage/2.fs
@@ -93,6 +98,7 @@ We can override the additional_filestorages blob source location:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... backup_blobs = True
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... additional_filestorages =
@@ -118,6 +124,7 @@ Wrong configurations for additional_filestorages:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... backup_blobs = false
     ... additional_filestorages =
     ...    wrong ${buildout:directory}/var/filestorage foo.fs ${buildout:directory}/var/blobstorage_foo
@@ -141,6 +148,7 @@ Full cycle tests:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... keep = 3
     ... additional_filestorages =
@@ -663,6 +671,7 @@ blob_storage option, otherwise buildout quits::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... backup_blobs = true
     ... """)
     >>> print(system(buildout))
@@ -683,6 +692,7 @@ Combining blob_backup=false and only_blobs=true will not work::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... backup_blobs = false
     ... only_blobs = true
@@ -707,11 +717,13 @@ enable_zipbackup too::
     ...
     ... [filebackup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... backup_blobs = false
     ...
     ... [blobbackup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... only_blobs = true
     ... enable_zipbackup = true
@@ -822,6 +834,7 @@ restore to ensure passing of extra options to rsync works::
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... rsync_options = --no-l -k
     ... """)
@@ -871,6 +884,7 @@ So backup still works, now test restore that uses a symlinked directory as the b
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... blob_storage = ${buildout:directory}/var/blobstorage
     ... blobbackuplocation = ${buildout:directory}/var/test
     ... rsync_options = --no-l -k
@@ -917,6 +931,7 @@ See issue #26. So test what happens:
     ...
     ... [backup]
     ... recipe = collective.recipe.backup
+    ... blob_timestamps = false
     ... blob_storage = ${buildout:directory}/var/blobstorage/
     ... """)
     >>> print(system(buildout))
