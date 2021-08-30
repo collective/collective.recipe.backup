@@ -7,6 +7,30 @@
 
 .. towncrier release notes start
 
+4.2.0 (2021-08-30)
+==================
+
+New features:
+
+
+- Changed default of ``blob_timestamps`` to true.
+  We might remove the previous behavior (creating ``blobstorage.0``, ``blobstorage.1`` etcetera) completely in version 5.
+  [maurits] (`Issue #61 <https://github.com/collective/collective.recipe.backup/issues/61>`_)
+
+
+Bug fixes:
+
+
+- Switch the test infrastructure to GitHub Actions and tox.
+  Also test Python 3.8 and 3.9. [ale-rt, maurits] (`Issue #58 <https://github.com/collective/collective.recipe.backup/issues/58>`_)
+- Fixed ``latest`` symlink when using options ``blob_timestamps`` and ``no_rsync``.
+  Previously it pointed to for example ``blobstorage.2021-01-02-03-04-05/blobstorage`` instead of the directory above it.
+  [maurits] (`Issue #61 <https://github.com/collective/collective.recipe.backup/issues/61>`_)
+- When creating a zipbackup, do not create a blob timestamp.
+  We always only keep one zipbackup, so there is no need for timestamps to know which filestorage backup it belongs to.
+  [maurits] (`Issue #61 <https://github.com/collective/collective.recipe.backup/issues/61>`_)
+
+
 4.1.1 (2019-10-07)
 ==================
 
