@@ -31,6 +31,8 @@ checker = renormalizing.RENormalizing(
         # (re.compile('my-[rR]eg[eE]ps'), 'my-regexps')
         (re.compile(r"DEBUG:.*"), ""),  # Remove DEBUG lines.
         (re.compile(r"Not SVN Repository\n"), ""),  # svn warning
+        # newer pip can complain:
+        (re.compile(r"WARNING: Requires-Python support missing.\n"), ""),
         zc.buildout.testing.normalize_path,
     ]
 )
