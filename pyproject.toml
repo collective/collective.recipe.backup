@@ -25,3 +25,29 @@ showcontent = true
 directory = "bugfix"
 name = "Bug fixes:"
 showcontent = true
+
+[tool.isort]
+profile = "black"
+force_alphabetical_sort = true
+force_single_line = true
+lines_after_imports = 2
+
+[tool.flakeheaven.plugins]
+# Disable some checks.
+# - E203 whitespace before ':'
+#   black does this differently
+# - E501 line too long
+#   we use the line length of black, so pycodestyle should not test it.
+# - W503 line break before binary operator
+#   Outdated recommendation, see https://www.flake8rules.com/rules/W503.html
+mccabe = ["+*"]
+pycodestyle = ["+*", "-E203", "-E501", "-W503"]
+pyflakes = ["+*"]
+pylint = ["+*"]
+
+[tool.plone-code-analysis]
+# No zpretty
+checkers = ["black", "flake8", "isort", "pyroma",]
+formatters = ["black", "isort",]
+paths = "src/ setup.py"
+paths_pyroma = "."

@@ -114,7 +114,9 @@ def test_suite():
     test_file = "zope2instance.rst"
     if sys.version_info[0] > 2:
         print("INFO: ignoring {0} tests on Python 3.".format(test_file))
-        print("It would pull in Zope and ZODB, which is too much for what we try to test.")
+        print(
+            "It would pull in Zope and ZODB, which is too much for what we try to test."
+        )
         print("See https://github.com/collective/collective.recipe.backup/issues/31")
     else:
         docfiles.append(test_file)

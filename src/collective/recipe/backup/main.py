@@ -112,8 +112,7 @@ def backup_main(
 
 
 def fullbackup_main(*args, **kwargs):
-    """Main method, gets called by generated bin/fullbackup.
-    """
+    """Main method, gets called by generated bin/fullbackup."""
     kwargs["full"] = True
     return backup_main(*args, **kwargs)
 
@@ -367,8 +366,7 @@ def alt_restore_main(*args, **kwargs):
 
 
 def zip_restore_main(*args, **kwargs):
-    """Main method, gets called by generated bin/ziprestore.
-    """
+    """Main method, gets called by generated bin/ziprestore."""
     # Override the locations:
     kwargs["zip_restore"] = True
     # Override another option.

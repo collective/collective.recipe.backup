@@ -1,0 +1,2 @@
+Drop code-analysis, add other QA checks: isort, black, flake8.
+[maurits]
