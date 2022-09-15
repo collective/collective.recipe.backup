@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*
 """Functions that invoke repozo and/or the blob backup.
 """
 from collective.recipe.backup import config
@@ -33,11 +32,11 @@ def backup_main(
     blob_timestamps=False,
     backup_method=config.STANDARD_BACKUP,
     incremental_blobs=False,
-    **kwargs
+    **kwargs,
 ):
     """Main method, gets called by generated bin/backup."""
     if backup_method not in config.BACKUP_METHODS:
-        raise RuntimeError("Unknown backup method {0}.".format(backup_method))
+        raise RuntimeError(f"Unknown backup method {backup_method}.")
     utils.execute_or_fail(pre_command)
     utils.check_folders(
         storages,
@@ -202,14 +201,14 @@ def restore_check(
     quick=True,
     zip_restore=False,
     blob_timestamps=False,
-    **kwargs
+    **kwargs,
 ):
     """Method to check that a restore will work.
 
     Returns the chosen date, if any.
     """
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
-    if sum([1 for opt in explicit_restore_opts if opt]) > 1:
+    if sum(1 for opt in explicit_restore_opts if opt) > 1:
         logger.error(
             "Must use at most one option of restore_snapshot, "
             "alt_restore and zip_restore."
@@ -223,12 +222,12 @@ def restore_check(
         if not only_blobs:
             question += "This will replace the filestorage:\n"
             for storage in storages:
-                question += "    {0}\n".format(storage.get("datafs"))
+                question += "    {}\n".format(storage.get("datafs"))
         if backup_blobs:
             question += "This will replace the blobstorage:\n"
             for storage in storages:
                 if storage.get("blobdir"):
-                    question += "    {0}\n".format(storage.get("blobdir"))
+                    question += "    {}\n".format(storage.get("blobdir"))
         question += "Are you sure?"
         if not utils.ask(question, default=False, exact=True):
             logger.info("Not restoring.")
@@ -283,7 +282,7 @@ def restore_main(
     zip_restore=False,
     blob_timestamps=False,
     incremental_blobs=False,
-    **kwargs
+    **kwargs,
 ):
 
     """Main method, gets called by generated bin/restore."""
@@ -305,7 +304,7 @@ def restore_main(
         zip_restore=zip_restore,
         blob_timestamps=blob_timestamps,
         incremental_blobs=incremental_blobs,
-        **kwargs
+        **kwargs,
     )
     # Checks have passed, now do the real restore.
     if not only_blobs:

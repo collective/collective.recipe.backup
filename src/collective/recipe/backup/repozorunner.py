@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*
 """Wrapper that invokes repozo.
 
 There are three main methods, these get called by the generated scripts. So
@@ -25,12 +24,12 @@ logger = logging.getLogger("repozorunner")
 
 def quote_command(command):
     # Quote the program name, so it works even if it contains spaces
-    command = " ".join(['"{0}"'.format(x) for x in command])
+    command = " ".join([f'"{x}"' for x in command])
     if sys.platform[:3].lower() == "win":
         # odd, but true: the windows cmd processor can't handle more than
         # one quoted item per string unless you add quotes around the
         # whole line.
-        command = '"{0}"'.format(command)
+        command = f'"{command}"'
     return command
 
 
@@ -102,7 +101,7 @@ def restore_main(
     restore_blobs.  When all is well, call it normally without only_check.
     """
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
-    if sum([1 for opt in explicit_restore_opts if opt]) > 1:
+    if sum(1 for opt in explicit_restore_opts if opt) > 1:
         logger.error(
             "Must use at most one option of restore_snapshot, "
             "alt_restore and zip_restore."

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*
 """
 The idea is to use rsync and hard links; this probably requires a
 unixy (Linux, Mac OS X) operating system.
@@ -128,7 +127,7 @@ def number_key(value):
         type_indicator = 0
     except ValueError:
         if not is_time_stamp(value):
-            raise ValueError("No integer and no timestamp in {0}.".format(value))
+            raise ValueError(f"No integer and no timestamp in {value}.")
         # timestamp
         type_indicator = 1
     return (type_indicator, value)
@@ -166,14 +165,12 @@ def part_of_same_backup(values):
         return True
     first = values[0]
     if "." not in first:
-        raise ValueError("Expected '.' in backup name {0}".format(first))
+        raise ValueError(f"Expected '.' in backup name {first}")
     start = first.rsplit(".", 1)[0]
     for value in values:
         start2 = value.rsplit(".", 1)[0]
         if start != start2:
-            raise ValueError(
-                "Not the same start for backups: {0} vs {1}".format(first, value)
-            )
+            raise ValueError(f"Not the same start for backups: {first} vs {value}")
 
 
 def part_of_same_archive_backup(values):
@@ -194,7 +191,7 @@ def part_of_same_archive_backup(values):
                 cleaned.append(candidate[: -len(suffix)])
                 break
         if not correct:
-            raise ValueError("{0} does not end with {1}".format(candidate, suffix))
+            raise ValueError(f"{candidate} does not end with {suffix}")
     return part_of_same_backup(cleaned)
 
 
@@ -233,7 +230,7 @@ def gen_timestamp(now=None):
     """
     if now is None or isinstance(now, (int, float)):
         now = time.gmtime(now)[:6]
-    return "{0:04d}-{1:02d}-{2:02d}-{3:02d}-{4:02d}-{5:02d}".format(*now)
+    return "{:04d}-{:02d}-{:02d}-{:02d}-{:02d}-{:02d}".format(*now)
 
 
 def get_valid_directories(container, name):
@@ -291,9 +288,7 @@ def get_valid_directories(container, name):
             continue
         # Looks like we have a winner.  It must be a directory though.
         if not os.path.isdir(os.path.join(container, entry)):
-            raise Exception(
-                "Refusing to rotate {0} as it is not a directory.".format(entry)
-            )
+            raise Exception(f"Refusing to rotate {entry} as it is not a directory.")
         valid_entries.append(entry)
     return valid_entries
 
@@ -341,7 +336,7 @@ def get_valid_archives(container, name):
     """
     valid_entries = []
     for entry in sorted(os.listdir(container)):
-        matched = re.match(r"^{0}\.(\d+)\.tar(\.gz)?$".format(name), entry)
+        matched = re.match(rf"^{name}\.(\d+)\.tar(\.gz)?$", entry)
         if matched is None:
             continue
         match = matched.groups()[0]
@@ -350,7 +345,7 @@ def get_valid_archives(container, name):
         except (ValueError, TypeError):
             continue
         if not os.path.isfile(os.path.join(container, entry)):
-            raise Exception("Refusing to rotate {0} as it is not a file.".format(entry))
+            raise Exception(f"Refusing to rotate {entry} as it is not a file.")
         valid_entries.append(entry)
     return valid_entries
 
@@ -395,7 +390,7 @@ def rotate_directories(container, name):
     # Rotate the directories.
     for directory in sorted_backups:
         new_num = int(directory.split(".")[-1]) + 1
-        new_name = "{0}.{1}".format(name, new_num)
+        new_name = f"{name}.{new_num}"
         logger.info("Renaming %s to %s.", directory, new_name)
         os.rename(os.path.join(container, directory), os.path.join(container, new_name))
 
@@ -441,12 +436,12 @@ def rotate_archives(container, name):
     sorted_backups = sorted(previous_backups, key=archive_backup_key)
     # Rotate the directories.
     for entry in sorted_backups:
-        matched = re.match(r"^{0}\.(\d+)\.tar(\.gz)?$".format(name), entry)
+        matched = re.match(rf"^{name}\.(\d+)\.tar(\.gz)?$", entry)
         old_num, gz = matched.groups()
         new_num = int(old_num) + 1
         if gz is None:
             gz = ""
-        new_name = "{0}.{1}.tar{2}".format(name, new_num, gz)
+        new_name = f"{name}.{new_num}.tar{gz}"
         logger.info("Renaming %s to %s.", entry, new_name)
         os.rename(os.path.join(container, entry), os.path.join(container, new_name))
 
@@ -741,9 +736,7 @@ def find_snapshot_archive(
             full_stamp = timestamp
 
     # We have determined a full timestamp, so now we can get a file name.
-    snapshot_archive = os.path.join(
-        destination, "{0}.{1}.snar".format(base_name, full_stamp)
-    )
+    snapshot_archive = os.path.join(destination, f"{base_name}.{full_stamp}.snar")
     # If the time stamps are the same, then a full backup is in progress.
     # This can be when full is explicitly true, or when a zeopack has made
     # the previous full backup outdated.
@@ -872,7 +865,7 @@ def backup_blobs(
             # not.
             if not os.path.isdir(prev):
                 # Should have been caught already.
-                raise Exception("{0} must be a directory".format(prev))
+                raise Exception(f"{prev} must be a directory")
             # Hardlink against the previous directory.  Done by hand it
             # would be:
             # rsync -a  --delete --link-dest=../blobstorage.1 blobstorage/
@@ -923,7 +916,7 @@ def find_timestamped_filename(destination, filename):
     # compress_blob may be on now, or may have been on in the past.
     # Look for both.  And look for deltas too.
     for suffix in ("tar", "tar.gz", "delta.tar", "delta.tar.gz"):
-        fname = "{0}.{1}".format(filename, suffix)
+        fname = f"{filename}.{suffix}"
         dest = os.path.join(destination, fname)
         # If a backup already exists, then apparently there were no
         # database changes since the last backup, so we don't need
@@ -969,7 +962,7 @@ def backup_blobs_archive(
     if timestamps:
         timestamp = get_latest_filestorage_timestamp(fs_backup_location)
         if timestamp:
-            filename = "{0}.{1}".format(base_name, timestamp)
+            filename = f"{base_name}.{timestamp}"
             dest = find_timestamped_filename(destination, filename)
             if dest:
                 # We have found an existing backup.
@@ -988,7 +981,7 @@ def backup_blobs_archive(
                 return
         else:
             timestamp = gen_timestamp()
-            filename = "{0}.{1}".format(base_name, timestamp)
+            filename = f"{base_name}.{timestamp}"
         if incremental_blobs:
             # Get the timestamp of the latest full backup,
             # if we have a snapshot archive for it.
@@ -1000,7 +993,7 @@ def backup_blobs_archive(
                 # '--listed-incremental=/dir' gets normalized to '/dir'
                 # by zc.buildout during testing. Strange, but it should
                 # be no problem to have quotes here.
-                tar_options = "--listed-incremental={0!r}".format(snapshot_archive)
+                tar_options = f"--listed-incremental={snapshot_archive!r}"
                 if os.path.exists(snapshot_archive):
                     # The snapshot archive exists, so this is a delta backup.
                     # File name should be blobs.timestamp.delta.tar(.gz).
@@ -1017,8 +1010,8 @@ def backup_blobs_archive(
     else:
         tar_command = "tar cf"
     if os.path.exists(dest):
-        raise Exception("Path already exists: {0}".format(dest))
-    cmd = "{0} {1} {2} -C {3} .".format(tar_command, dest, tar_options, source)
+        raise Exception(f"Path already exists: {dest}")
+    cmd = f"{tar_command} {dest} {tar_options} -C {source} ."
     logger.info(cmd)
     output, failed = utils.system(cmd)
     if output:
@@ -1417,7 +1410,7 @@ def restore_blobs_archive(
             tar_command = "tar xzf"
         else:
             tar_command = "tar xf"
-        cmd = "{0} {1}{2} -C {3}".format(
+        cmd = "{} {}{} -C {}".format(
             tar_command, backup_source, tar_options, destination
         )
         logger.info(cmd)

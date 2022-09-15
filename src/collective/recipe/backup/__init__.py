@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Recipe backup"""
 from collective.recipe.backup import utils
 
@@ -14,7 +13,7 @@ import zc.recipe.egg
 logger = logging.getLogger("backup")
 
 
-class Recipe(object):
+class Recipe:
     """zc.buildout recipe"""
 
     def __init__(self, buildout, name, options):
@@ -180,7 +179,7 @@ class Recipe(object):
             raise zc.buildout.UserError(
                 "No blob_storage found. You must specify one. "
                 "To ignore this, set 'backup_blobs = false' "
-                "in the [{0}] section.".format(self.name)
+                "in the [{}] section.".format(self.name)
             )
 
         self.egg = zc.recipe.egg.Egg(buildout, options["recipe"], options)
@@ -261,33 +260,33 @@ class Recipe(object):
                     continue
                 storage = re.match(additional_regex, a).groupdict()
                 if storage["storage"] in [s["storage"] for s in storages]:
-                    logger.warning("storage {0} duplicated".format(storage["storage"]))
+                    logger.warning("storage {} duplicated".format(storage["storage"]))
                 if not storage["datafs"]:
                     storage["datafs"] = os.path.join(
-                        filestorage_dir, "{0}.fs".format(storage["storage"])
+                        filestorage_dir, "{}.fs".format(storage["storage"])
                     )
-                storage["backup_location"] = "{0}_{1}".format(
+                storage["backup_location"] = "{}_{}".format(
                     backup_location, storage["storage"]
                 )
-                storage["snapshot_location"] = "{0}_{1}".format(
+                storage["snapshot_location"] = "{}_{}".format(
                     snapshot_location, storage["storage"]
                 )
-                storage["zip_location"] = "{0}_{1}".format(
+                storage["zip_location"] = "{}_{}".format(
                     zip_location, storage["storage"]
                 )
                 if storage["blobdir"]:
                     storage["blob_backup_location"] = (
-                        "{0}_{1}".format(blob_backup_location, storage["storage"])
+                        "{}_{}".format(blob_backup_location, storage["storage"])
                         if blob_backup_location
                         else None
                     )
                     storage["blob_snapshot_location"] = (
-                        "{0}_{1}".format(blob_snapshot_location, storage["storage"])
+                        "{}_{}".format(blob_snapshot_location, storage["storage"])
                         if blob_snapshot_location
                         else None
                     )
                     storage["blob_zip_location"] = (
-                        "{0}_{1}".format(blob_zip_location, storage["storage"])
+                        "{}_{}".format(blob_zip_location, storage["storage"])
                         if blob_zip_location
                         else None
                     )
@@ -359,7 +358,7 @@ class Recipe(object):
             match = re.match(alt_regex, a)
             if match is None:
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources line {0!r} has a wrong "
+                    "alternative_restore_sources line {!r} has a wrong "
                     "format. Should be: 'storage-name "
                     "filestorage-backup-path', optionally followed by "
                     "a blobstorage-backup-path.".format(a)
@@ -370,7 +369,7 @@ class Recipe(object):
                 key = "1"  # Data.fs is called storage '1'.
             if key not in storage_keys:
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources key {0!r} unknown in "
+                    "alternative_restore_sources key {!r} unknown in "
                     "storages.".format(orig_key)
                 )
             alt_keys.append(key)
@@ -379,12 +378,12 @@ class Recipe(object):
                 # Duplicate key.
                 if key == "1":
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources key {0!r} is used. "
+                        "alternative_restore_sources key {!r} is used. "
                         "Are you using both '1' and 'Data'? They are "
                         "alternative keys for the same Data.fs.".format(orig_key)
                     )
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources key {0!r} "
+                    "alternative_restore_sources key {!r} "
                     "is used twice.".format(orig_key)
                 )
             storage["alt_location"] = construct_path(buildout_dir, source["datafs"])
@@ -392,14 +391,14 @@ class Recipe(object):
             if storage["blobdir"]:
                 if not blobdir:
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources key {0!r} is "
+                        "alternative_restore_sources key {!r} is "
                         "missing a blobdir.".format(orig_key)
                     )
                 storage["blob_alt_location"] = construct_path(buildout_dir, blobdir)
             elif blobdir:
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources key {0!r} specifies "
-                    "blobdir {1!r} but the original storage has no "
+                    "alternative_restore_sources key {!r} specifies "
+                    "blobdir {!r} but the original storage has no "
                     "blobstorage.".format(orig_key, blobdir)
                 )
             else:
@@ -410,7 +409,7 @@ class Recipe(object):
                 if key == "1":
                     key = "Data"  # canonical spelling
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources is missing key {0!r}.".format(key)
+                    f"alternative_restore_sources is missing key {key!r}."
                 )
 
         return storages
@@ -639,9 +638,7 @@ logging.basicConfig(level=loglevel,
         if len(locations.keys()) != len(set(locations.values())):
             raise zc.buildout.UserError(
                 "These must be distinct locations:\n",
-                "\n".join(
-                    [("{0} = {1}".format(k, v)) for (k, v) in sorted(locations.items())]
-                ),
+                "\n".join([(f"{k} = {v}") for (k, v) in sorted(locations.items())]),
             )
 
         if not to_bool(options.get("backup_blobs")):

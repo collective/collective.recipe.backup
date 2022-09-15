@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Doctest runner for 'collective.recipe.backup'.
 """
@@ -40,7 +39,7 @@ checker = renormalizing.RENormalizing(
 
 _dummy, REPOZO_OUTPUT = tempfile.mkstemp()
 REPOZO_SCRIPT_TEXT = """#!/bin/sh
-echo $* >> {0}""".format(
+echo $* >> {}""".format(
     REPOZO_OUTPUT
 )
 
@@ -113,7 +112,7 @@ def test_suite():
     ]
     test_file = "zope2instance.rst"
     if sys.version_info[0] > 2:
-        print("INFO: ignoring {0} tests on Python 3.".format(test_file))
+        print(f"INFO: ignoring {test_file} tests on Python 3.")
         print(
             "It would pull in Zope and ZODB, which is too much for what we try to test."
         )
