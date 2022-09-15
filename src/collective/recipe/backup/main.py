@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*
 """Functions that invoke repozo and/or the blob backup.
 """
 from collective.recipe.backup import config
@@ -37,7 +36,7 @@ def backup_main(
 ):
     """Main method, gets called by generated bin/backup."""
     if backup_method not in config.BACKUP_METHODS:
-        raise RuntimeError("Unknown backup method {}.".format(backup_method))
+        raise RuntimeError(f"Unknown backup method {backup_method}.")
     utils.execute_or_fail(pre_command)
     utils.check_folders(
         storages,

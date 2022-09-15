@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module contains the tool of collective.recipe.backup
 """

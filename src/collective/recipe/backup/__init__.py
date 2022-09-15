@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Recipe backup"""
 from collective.recipe.backup import utils
 
@@ -14,7 +13,7 @@ import zc.recipe.egg
 logger = logging.getLogger("backup")
 
 
-class Recipe(object):
+class Recipe:
     """zc.buildout recipe"""
 
     def __init__(self, buildout, name, options):
@@ -410,7 +409,7 @@ class Recipe(object):
                 if key == "1":
                     key = "Data"  # canonical spelling
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources is missing key {!r}.".format(key)
+                    f"alternative_restore_sources is missing key {key!r}."
                 )
 
         return storages
@@ -640,7 +639,7 @@ logging.basicConfig(level=loglevel,
             raise zc.buildout.UserError(
                 "These must be distinct locations:\n",
                 "\n".join(
-                    [("{} = {}".format(k, v)) for (k, v) in sorted(locations.items())]
+                    [(f"{k} = {v}") for (k, v) in sorted(locations.items())]
                 ),
             )
 

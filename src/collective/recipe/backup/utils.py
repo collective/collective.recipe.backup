@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*
 # Small utility methods.
 from collective.recipe.backup import config
 
@@ -71,7 +70,7 @@ def ask(question, default=True, exact=False):
             yn = yn.replace("y", "Y")
         if default is False:
             yn = yn.replace("n", "N")
-        q = "{} ({})? ".format(question, yn)
+        q = f"{question} ({yn})? "
         input = raw_input(q)
         if input:
             answer = input

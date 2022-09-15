@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*
 """Wrapper that invokes repozo.
 
 There are three main methods, these get called by the generated scripts. So
@@ -25,12 +24,12 @@ logger = logging.getLogger("repozorunner")
 
 def quote_command(command):
     # Quote the program name, so it works even if it contains spaces
-    command = " ".join(['"{}"'.format(x) for x in command])
+    command = " ".join([f'"{x}"' for x in command])
     if sys.platform[:3].lower() == "win":
         # odd, but true: the windows cmd processor can't handle more than
         # one quoted item per string unless you add quotes around the
         # whole line.
-        command = '"{}"'.format(command)
+        command = f'"{command}"'
     return command
 
 
