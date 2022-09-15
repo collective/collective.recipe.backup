@@ -638,9 +638,7 @@ logging.basicConfig(level=loglevel,
         if len(locations.keys()) != len(set(locations.values())):
             raise zc.buildout.UserError(
                 "These must be distinct locations:\n",
-                "\n".join(
-                    [(f"{k} = {v}") for (k, v) in sorted(locations.items())]
-                ),
+                "\n".join([(f"{k} = {v}") for (k, v) in sorted(locations.items())]),
             )
 
         if not to_bool(options.get("backup_blobs")):

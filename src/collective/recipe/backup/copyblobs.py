@@ -170,9 +170,7 @@ def part_of_same_backup(values):
     for value in values:
         start2 = value.rsplit(".", 1)[0]
         if start != start2:
-            raise ValueError(
-                f"Not the same start for backups: {first} vs {value}"
-            )
+            raise ValueError(f"Not the same start for backups: {first} vs {value}")
 
 
 def part_of_same_archive_backup(values):
@@ -290,9 +288,7 @@ def get_valid_directories(container, name):
             continue
         # Looks like we have a winner.  It must be a directory though.
         if not os.path.isdir(os.path.join(container, entry)):
-            raise Exception(
-                f"Refusing to rotate {entry} as it is not a directory."
-            )
+            raise Exception(f"Refusing to rotate {entry} as it is not a directory.")
         valid_entries.append(entry)
     return valid_entries
 
@@ -340,7 +336,7 @@ def get_valid_archives(container, name):
     """
     valid_entries = []
     for entry in sorted(os.listdir(container)):
-        matched = re.match(fr"^{name}\.(\d+)\.tar(\.gz)?$", entry)
+        matched = re.match(rf"^{name}\.(\d+)\.tar(\.gz)?$", entry)
         if matched is None:
             continue
         match = matched.groups()[0]
@@ -440,7 +436,7 @@ def rotate_archives(container, name):
     sorted_backups = sorted(previous_backups, key=archive_backup_key)
     # Rotate the directories.
     for entry in sorted_backups:
-        matched = re.match(fr"^{name}\.(\d+)\.tar(\.gz)?$", entry)
+        matched = re.match(rf"^{name}\.(\d+)\.tar(\.gz)?$", entry)
         old_num, gz = matched.groups()
         new_num = int(old_num) + 1
         if gz is None:
@@ -740,9 +736,7 @@ def find_snapshot_archive(
             full_stamp = timestamp
 
     # We have determined a full timestamp, so now we can get a file name.
-    snapshot_archive = os.path.join(
-        destination, f"{base_name}.{full_stamp}.snar"
-    )
+    snapshot_archive = os.path.join(destination, f"{base_name}.{full_stamp}.snar")
     # If the time stamps are the same, then a full backup is in progress.
     # This can be when full is explicitly true, or when a zeopack has made
     # the previous full backup outdated.

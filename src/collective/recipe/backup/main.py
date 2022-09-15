@@ -32,7 +32,7 @@ def backup_main(
     blob_timestamps=False,
     backup_method=config.STANDARD_BACKUP,
     incremental_blobs=False,
-    **kwargs
+    **kwargs,
 ):
     """Main method, gets called by generated bin/backup."""
     if backup_method not in config.BACKUP_METHODS:
@@ -201,7 +201,7 @@ def restore_check(
     quick=True,
     zip_restore=False,
     blob_timestamps=False,
-    **kwargs
+    **kwargs,
 ):
     """Method to check that a restore will work.
 
@@ -282,7 +282,7 @@ def restore_main(
     zip_restore=False,
     blob_timestamps=False,
     incremental_blobs=False,
-    **kwargs
+    **kwargs,
 ):
 
     """Main method, gets called by generated bin/restore."""
@@ -304,7 +304,7 @@ def restore_main(
         zip_restore=zip_restore,
         blob_timestamps=blob_timestamps,
         incremental_blobs=incremental_blobs,
-        **kwargs
+        **kwargs,
     )
     # Checks have passed, now do the real restore.
     if not only_blobs:
