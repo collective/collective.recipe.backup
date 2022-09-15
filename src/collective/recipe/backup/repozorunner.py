@@ -146,18 +146,18 @@ def backup_arguments(
     as_list=False,
 ):
     """
-      >>> backup_arguments()
-      Traceback (most recent call last):
-      ...
-      RuntimeError: Missing locations.
-      >>> backup_arguments(datafs='in/Data.fs', backup_location='out')
-      '--backup -f in/Data.fs -r out'
-      >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
-      ...                  full=True)
-      '--backup -f in/Data.fs -r out -F'
-      >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
-      ...                  quick=True)
-      '--backup -f in/Data.fs -r out --quick'
+    >>> backup_arguments()
+    Traceback (most recent call last):
+    ...
+    RuntimeError: Missing locations.
+    >>> backup_arguments(datafs='in/Data.fs', backup_location='out')
+    '--backup -f in/Data.fs -r out'
+    >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
+    ...                  full=True)
+    '--backup -f in/Data.fs -r out -F'
+    >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
+    ...                  quick=True)
+    '--backup -f in/Data.fs -r out --quick'
 
     """
     if datafs is None or backup_location is None:
@@ -199,12 +199,12 @@ def restore_arguments(
     datafs=None, backup_location=None, date=None, verbose=False, as_list=False
 ):
     """
-      >>> restore_arguments()
-      Traceback (most recent call last):
-      ...
-      RuntimeError: Missing locations.
-      >>> restore_arguments(datafs='in/Data.fs', backup_location='out')
-      '--recover -o in/Data.fs -r out'
+    >>> restore_arguments()
+    Traceback (most recent call last):
+    ...
+    RuntimeError: Missing locations.
+    >>> restore_arguments(datafs='in/Data.fs', backup_location='out')
+    '--recover -o in/Data.fs -r out'
 
     """
     if datafs is None or backup_location is None:

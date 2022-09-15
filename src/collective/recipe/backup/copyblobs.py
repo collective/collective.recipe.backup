@@ -854,7 +854,7 @@ def backup_blobs(
                     keep,
                     keep_blob_days,
                     fs_backup_location=fs_backup_location,
-                    latest=latest
+                    latest=latest,
                 )
                 return
         else:
@@ -910,7 +910,12 @@ def backup_blobs(
     else:
         latest = None
     cleanup(
-        destination, full, keep, keep_blob_days, fs_backup_location=fs_backup_location, latest=latest
+        destination,
+        full,
+        keep,
+        keep_blob_days,
+        fs_backup_location=fs_backup_location,
+        latest=latest,
     )
 
 
@@ -975,7 +980,10 @@ def backup_blobs_archive(
                     # Creating a symlink to the latest blob backup only makes sense in this combination.
                     latest = dest
                 cleanup_archives(
-                    destination, keep=keep, fs_backup_location=fs_backup_location, latest=latest
+                    destination,
+                    keep=keep,
+                    fs_backup_location=fs_backup_location,
+                    latest=latest,
                 )
                 return
         else:
@@ -1023,7 +1031,9 @@ def backup_blobs_archive(
         latest = dest
     else:
         latest = None
-    cleanup_archives(destination, keep=keep, fs_backup_location=fs_backup_location, latest=latest)
+    cleanup_archives(
+        destination, keep=keep, fs_backup_location=fs_backup_location, latest=latest
+    )
 
 
 def is_full_tarball(path):
@@ -1474,7 +1484,12 @@ def remove_orphaned_blob_backups(backup_location, fs_backup_location, archive=Fa
 
 
 def cleanup(
-    backup_location, full=False, keep=0, keep_blob_days=0, fs_backup_location=None, latest=None
+    backup_location,
+    full=False,
+    keep=0,
+    keep_blob_days=0,
+    fs_backup_location=None,
+    latest=None,
 ):
     """Clean up old blob backups.
 
@@ -1566,12 +1581,14 @@ def update_latest_symlink(backup_location, latest=None):
     os.chdir(backup_location)
     symlink = "latest"
     if os.path.islink(symlink):
-        logger.debug('Removed old symlink latest pointing to %s', os.path.realpath(symlink))
+        logger.debug(
+            "Removed old symlink latest pointing to %s", os.path.realpath(symlink)
+        )
         os.unlink(symlink)
     if latest:
         latest = os.path.basename(latest)
         # This may recreate the symlink we previously removed, but okay.
-        logger.info('Creating symlink from latest to %s', latest)
+        logger.info("Creating symlink from latest to %s", latest)
         os.symlink(latest, symlink)
     # back to where we came from
     os.chdir(cwd)
