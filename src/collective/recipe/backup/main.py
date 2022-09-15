@@ -37,7 +37,7 @@ def backup_main(
 ):
     """Main method, gets called by generated bin/backup."""
     if backup_method not in config.BACKUP_METHODS:
-        raise RuntimeError("Unknown backup method {0}.".format(backup_method))
+        raise RuntimeError("Unknown backup method {}.".format(backup_method))
     utils.execute_or_fail(pre_command)
     utils.check_folders(
         storages,
@@ -209,7 +209,7 @@ def restore_check(
     Returns the chosen date, if any.
     """
     explicit_restore_opts = [restore_snapshot, alt_restore, zip_restore]
-    if sum([1 for opt in explicit_restore_opts if opt]) > 1:
+    if sum(1 for opt in explicit_restore_opts if opt) > 1:
         logger.error(
             "Must use at most one option of restore_snapshot, "
             "alt_restore and zip_restore."
@@ -223,12 +223,12 @@ def restore_check(
         if not only_blobs:
             question += "This will replace the filestorage:\n"
             for storage in storages:
-                question += "    {0}\n".format(storage.get("datafs"))
+                question += "    {}\n".format(storage.get("datafs"))
         if backup_blobs:
             question += "This will replace the blobstorage:\n"
             for storage in storages:
                 if storage.get("blobdir"):
-                    question += "    {0}\n".format(storage.get("blobdir"))
+                    question += "    {}\n".format(storage.get("blobdir"))
         question += "Are you sure?"
         if not utils.ask(question, default=False, exact=True):
             logger.info("Not restoring.")

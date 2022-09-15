@@ -71,7 +71,7 @@ def ask(question, default=True, exact=False):
             yn = yn.replace("y", "Y")
         if default is False:
             yn = yn.replace("n", "N")
-        q = "{0} ({1})? ".format(question, yn)
+        q = "{} ({})? ".format(question, yn)
         input = raw_input(q)
         if input:
             answer = input
