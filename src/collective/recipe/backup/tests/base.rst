@@ -14,7 +14,6 @@ The simplest way to use it is to add a part in ``buildout.cfg`` like this::
     ... [backup]
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
-    ... enable_fullbackup = true
     ... """)
 
 Running the buildout adds a backup, snapshotbackup, restore and
@@ -24,7 +23,6 @@ creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
     >>> print(system(buildout))
     Installing backup.
     Generated script '/sample-buildout/bin/backup'.
-    Generated script '/sample-buildout/bin/fullbackup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
     Generated script '/sample-buildout/bin/snapshotrestore'.
@@ -32,7 +30,6 @@ creates the ``var/backups`` and ``var/snapshotbackups`` dirs::
     >>> ls('bin')
     -  backup
     -  buildout
-    -  fullbackup
     -  repozo
     -  restore
     -  snapshotbackup
@@ -53,14 +50,6 @@ By default, backups are done in ``var/backups``::
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups --quick --gzip
-
-Full backups are placed there too::
-
-    >>> print(system('bin/fullbackup'))
-    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/var/backups
-    <BLANKLINE>
-    >>> check_repozo_output()
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/var/backups -F --gzip
 
 
 Restore
