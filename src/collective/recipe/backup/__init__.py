@@ -60,7 +60,6 @@ class Recipe:
         buildout_dir = os.path.join(bin_dir, os.path.pardir)
         if self.name == "backup":
             backup_name = "backup"
-            fullbackup_name = "fullbackup"
             zipbackup_name = "zipbackup"
             snapshot_name = "snapshotbackup"
             restore_name = "restore"
@@ -72,7 +71,6 @@ class Recipe:
             blob_zip_name = "blobstoragezip"
         else:
             backup_name = self.name
-            fullbackup_name = self.name + "-full"
             zipbackup_name = self.name + "-zip"
             snapshot_name = self.name + "-snapshot"
             restore_name = self.name + "-restore"
@@ -135,7 +133,6 @@ class Recipe:
         options.setdefault("compress_blob", "false")
         options.setdefault("datafs", datafs)
         options.setdefault("debug", "false")
-        options.setdefault("enable_fullbackup", "false")
         options.setdefault("enable_snapshotrestore", "true")
         options.setdefault("enable_zipbackup", "false")
         options.setdefault("full", "false")
@@ -188,7 +185,6 @@ class Recipe:
         options["executable"] = buildout[python]["executable"]
         options["bin-directory"] = buildout["buildout"]["bin-directory"]
         options["backup_name"] = backup_name
-        options["fullbackup_name"] = fullbackup_name
         options["zipbackup_name"] = zipbackup_name
         options["snapshot_name"] = snapshot_name
         options["restore_name"] = restore_name
@@ -507,18 +503,6 @@ logging.basicConfig(level=loglevel,
         creation_args["reqs"] = reqs
         generated += create_script(**creation_args)
 
-        # Create full backup script
-        if to_bool(self.options["enable_fullbackup"]):
-            reqs = [
-                (
-                    self.options["fullbackup_name"],
-                    "collective.recipe.backup.main",
-                    "fullbackup_main",
-                )
-            ]
-            creation_args["reqs"] = reqs
-            generated += create_script(**creation_args)
-
         # Create zip backup script.
         if to_bool(self.options["enable_zipbackup"]):
             reqs = [
@@ -615,7 +599,6 @@ logging.basicConfig(level=loglevel,
                 "quick",
                 "enable_snapshotrestore",
                 "enable_zipbackup",
-                "enable_fullbackup",
                 "compress_blob",
                 "blob_timestamps",
                 "incremental_blobs",

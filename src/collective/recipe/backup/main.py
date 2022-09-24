@@ -110,12 +110,6 @@ def backup_main(
     utils.execute_or_fail(post_command)
 
 
-def fullbackup_main(*args, **kwargs):
-    """Main method, gets called by generated bin/fullbackup."""
-    kwargs["full"] = True
-    return backup_main(*args, **kwargs)
-
-
 def snapshot_main(*args, **kwargs):
     """Main method, gets called by generated bin/snapshotbackup."""
     kwargs["full"] = True

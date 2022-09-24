@@ -36,12 +36,7 @@ cake is important!
 
 - ``bin/backup`` makes an incremental backup.
 
-- ``bin/fullbackup`` always makes a full backup, in the same directory
-  as the normal backups.  You can enable this by setting the
-  ``enable_fullbackup`` option to true.
-
-- ``bin/restore`` restores the latest backup, created by the backup or
-  fullbackup script.
+- ``bin/restore`` restores the latest backup created by the backup script.
 
 - ``bin/snapshotbackup`` makes a full snapshot backup, separate from the
   regular backups. Handy right before a big change in the site.
@@ -115,7 +110,7 @@ You can set lots of extra options, but the recipe authors like to
 think they have created sane defaults, so this single line stating the
 recipe name should be enough in most cases.
 
-Running the buildout adds the ``backup``, ``fullbackup``,
+Running the buildout adds the ``backup``,
 ``snapshotbackup``, ``zipbackup``, ``restore``, ``snapshotrestore``
 and ``ziprestore`` scripts to the ``bin/`` directory of the buildout.
 Some are not added by default, others can be switched off.
@@ -170,28 +165,6 @@ Calling ``bin/backup`` results in a normal incremental repozo backup
 that creates a backup of the ``Data.fs`` in ``var/backups``.  When you
 have a blob storage it is by default backed up to
 ``var/blobstoragebackups``.
-
-
-Full backup
-===========
-
-Calling ``bin/fullbackup`` results in a normal FULL repozo backup
-that creates a backup of the ``Data.fs`` in ``var/backups``.  When you
-have a blob storage it is by default backed up to
-``var/blobstoragebackups``.  This script is provided so that you can
-set different cron jobs for full and incremental backups.  You may
-want to have incrementals done daily, with full backups done weekly.
-Now you can!
-
-Since version 4.0, the fullbackup script is not created by default.
-Enable it by setting ``enable_fullbackup`` to ``true``
-
-You should normally do a ``bin/zeopack`` regularly, say once a week,
-to remove unused objects from your Zope ``Data.fs``.  The next time
-``bin/backup`` is called, a complete fresh backup is made, because an
-incremental backup is not possible anymore.  This is standard
-``bin/repozo`` behaviour.  So you might not need the
-``bin/fullbackup`` script.
 
 
 Snapshots
@@ -404,9 +377,6 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``true`` to get debug level logging of the recipe itself. ``repozo`` is also run
     with ``--verbose`` if this option is enabled.
 
-``enable_fullbackup``
-    Create ``fullbackup`` script.  Default: false (changed in 4.0).
-
 ``enable_snapshotrestore``
     Having a ``snapshotrestore`` script is very useful in development
     environments, but can be harmful in a production buildout. The
@@ -422,8 +392,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
 
 ``full``
     By default, incremental backups are made. If this option is set to ``true``,
-    ``bin/backup`` will always make a full backup.  This option is (obviously)
-    the default when using the ``fullbackup`` script.
+    ``bin/backup`` will always make a full backup.
 
 ``gzip``
     Use repozo's zipping functionality. ``true`` by default. Set it to ``false``

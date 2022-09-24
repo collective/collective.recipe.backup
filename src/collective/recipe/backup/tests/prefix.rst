@@ -17,7 +17,6 @@ The simplest way to use it is to add a part in ``buildout.cfg`` like this::
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
     ... locationprefix = ${buildout:directory}/backuplocation
-    ... enable_fullbackup = true
     ... """)
 
 Let's run the buildout::
@@ -44,14 +43,6 @@ By default, backups are done in ``backuplocation/backups``::
     <BLANKLINE>
     >>> check_repozo_output()
     --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/backups --quick --gzip
-
-Full backups are placed there too::
-
-    >>> print(system('bin/fullbackup'))
-    INFO: Please wait while backing up database file: /sample-buildout/var/filestorage/Data.fs to /sample-buildout/backuplocation/backups
-    <BLANKLINE>
-    >>> check_repozo_output()
-    --backup -f /sample-buildout/var/filestorage/Data.fs -r /sample-buildout/backuplocation/backups -F --gzip
 
 
 Restore
@@ -318,13 +309,11 @@ something else,  the script names will also be different as will the created
     ... recipe = collective.recipe.backup
     ... backup_blobs = false
     ... locationprefix = ${buildout:directory}/backuplocation
-    ... enable_fullbackup = true
     ... """)
     >>> print(system(buildout))
     Uninstalling backup.
     Installing plonebackup.
     Generated script '/sample-buildout/bin/plonebackup'.
-    Generated script '/sample-buildout/bin/plonebackup-full'.
     Generated script '/sample-buildout/bin/plonebackup-snapshot'.
     Generated script '/sample-buildout/bin/plonebackup-restore'.
     Generated script '/sample-buildout/bin/plonebackup-snapshotrestore'.
@@ -336,7 +325,6 @@ name is ``[backup]`` is now prefixed with the part name:
     >>> ls('bin')
     -  buildout
     -  plonebackup
-    -  plonebackup-full
     -  plonebackup-restore
     -  plonebackup-snapshot
     -  plonebackup-snapshotrestore
