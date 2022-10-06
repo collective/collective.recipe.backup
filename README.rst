@@ -498,11 +498,12 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     ``rsync_options = --no-l -k`` does the trick.
 
 ``rsync_hard_links_on_first_copy``
-    When using ``rsync`` to make the first backup of the blobs, create hard links
-    instead of copies of the blobs.
-    This is useful to save disk space but you need to pay attention
-    that changing the blobs in the source folder
-    will change the blobs in the backup.
+    When using ``rsync``, the blob files for the first backup are copied
+    and then subsequent backups make use of hard links from this initial
+    copy, to save time and disk space.
+    Enable this option to also use hard links for the initial copy to further reduce 
+    disk usage.
+    This is safe for ZODB blobs, since they are not modified in place.
     The ``blob_storage`` and the backup folder ``blobbackuplocation``
     have to be in the same partition for hard links to be possible.
 
