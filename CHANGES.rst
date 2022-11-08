@@ -7,6 +7,12 @@
 
 .. towncrier release notes start
 
+5.0.0a2 (unreleased)
+====================
+
+- Nothing changed yet.
+
+
 4.2.0 (2021-08-30)
 ==================
 
