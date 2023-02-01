@@ -10,6 +10,14 @@
 5.0.0a2 (2023-02-01)
 ====================
 
+Bug fixes:
+
+- Add missing changelog entries for release 5.0.0a1.  [maurits]
+
+
+5.0.0a1 (2022-11-08)
+====================
+
 Breaking changes:
 
 
@@ -34,12 +42,6 @@ Bug fixes:
 
 - Drop code-analysis, add other QA checks: isort, black, flake8.
   [maurits] (`Issue #63 <https://github.com/collective/collective.recipe.backup/issues/63>`_)
-
-
-5.0.0a2 (unreleased)
-====================
-
-- Nothing changed yet.
 
 
 4.2.0 (2021-08-30)
