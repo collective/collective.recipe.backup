@@ -1,4 +1,0 @@
-No longer support the ``enable_fullbackup`` option and the ``fullbackup`` script.
-A full backup is automatically made by the first call of ``bin/backup`` after you have done a zeopack.
-If you still want such a script, look at ``bin/snapshotbackup`` script or use the `full` option, optionally in a second buildout section.
-[maurits]

@@ -7,6 +7,35 @@
 
 .. towncrier release notes start
 
+5.0.0a2 (2023-02-01)
+====================
+
+Breaking changes:
+
+
+- Drop support for Python 2.7-3.7, add support for 3.10.
+  [maurits] (`Issue #62 <https://github.com/collective/collective.recipe.backup/issues/62>`_)
+- No longer support the ``enable_fullbackup`` option and the ``fullbackup`` script.
+  A full backup is automatically made by the first call of ``bin/backup`` after you have done a zeopack.
+  If you still want such a script, look at ``bin/snapshotbackup`` script or use the `full` option, optionally in a second buildout section.
+  [maurits] (`Issue #66 <https://github.com/collective/collective.recipe.backup/issues/66>`_)
+
+
+New features:
+
+
+- Added an option to use hard links for the first backup copy
+  [ale-rt] (`Issue #57 <https://github.com/collective/collective.recipe.backup/issues/57>`_)
+- Add support for Python 3.11.  [maurits] (`Issue #311 <https://github.com/collective/collective.recipe.backup/issues/311>`_)
+
+
+Bug fixes:
+
+
+- Drop code-analysis, add other QA checks: isort, black, flake8.
+  [maurits] (`Issue #63 <https://github.com/collective/collective.recipe.backup/issues/63>`_)
+
+
 5.0.0a2 (unreleased)
 ====================
 
