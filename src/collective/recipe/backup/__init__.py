@@ -127,8 +127,7 @@ class Recipe:
         # more options, alphabetical
         options.setdefault("additional_filestorages", "")
         options.setdefault("alternative_restore_sources", "")
-        # archive_blob used to be called gzip_blob.
-        options.setdefault("archive_blob", options.get("gzip_blob", "false"))
+        options.setdefault("archive_blob", "false")
         options.setdefault("blob_timestamps", "true")
         options.setdefault("compress_blob", "false")
         options.setdefault("datafs", datafs)
