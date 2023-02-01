@@ -11,7 +11,7 @@ def read(*rnames):
     return open(os.path.join(*rnames)).read()
 
 
-version = "5.0.0a2"
+version = "5.0.0a3.dev0"
 
 long_description = (
     read("README.rst") + "\n" + "Contributors\n"
