@@ -401,9 +401,6 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     false, but it so totally makes sense to gzip your backups that we changed
     the default.
 
-``gzip_blob``
-    Backwards compatibility alias for ``archive_blob`` option.
-
 ``incremental_blobs``
     New in version 4.0.  Default is false.
     When switched on, it will use the ``--listed-incremental`` option of ``tar``.
@@ -501,7 +498,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     When using ``rsync``, the blob files for the first backup are copied
     and then subsequent backups make use of hard links from this initial
     copy, to save time and disk space.
-    Enable this option to also use hard links for the initial copy to further reduce 
+    Enable this option to also use hard links for the initial copy to further reduce
     disk usage.
     This is safe for ZODB blobs, since they are not modified in place.
     The ``blob_storage`` and the backup folder ``blobbackuplocation``
