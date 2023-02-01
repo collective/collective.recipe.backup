@@ -39,7 +39,6 @@ def backup_main(
     keep,
     full,
     verbose,
-    gzip,
     quick,
     backup_method=config.STANDARD_BACKUP,
 ):
@@ -68,9 +67,7 @@ def backup_main(
         result = os.system(
             quote_command(
                 [repozo]
-                + backup_arguments(
-                    fs, location, full, verbose, gzip, quick, as_list=True
-                )
+                + backup_arguments(fs, location, full, verbose, quick, as_list=True)
             )
         )
         logger.debug("Repozo command executed.")
@@ -140,7 +137,6 @@ def backup_arguments(
     backup_location=None,
     full=False,
     verbose=False,
-    gzip=False,
     quick=False,
     as_list=False,
 ):
@@ -150,13 +146,13 @@ def backup_arguments(
     ...
     RuntimeError: Missing locations.
     >>> backup_arguments(datafs='in/Data.fs', backup_location='out')
-    '--backup -f in/Data.fs -r out'
+    '--backup -f in/Data.fs -r out --gzip'
     >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
     ...                  full=True)
-    '--backup -f in/Data.fs -r out -F'
+    '--backup -f in/Data.fs -r out -F --gzip'
     >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
     ...                  quick=True)
-    '--backup -f in/Data.fs -r out --quick'
+    '--backup -f in/Data.fs -r out --quick --gzip'
 
     """
     if datafs is None or backup_location is None:
@@ -185,8 +181,9 @@ def backup_arguments(
         )
     if verbose:
         arguments.append("--verbose")
-    if gzip:
-        arguments.append("--gzip")
+    # Before collective.recipe.backup 5, this was an option.
+    # Now it is always true.
+    arguments.append("--gzip")
 
     logger.debug("Repozo arguments used: %s", " ".join(arguments))
     if as_list:

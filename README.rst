@@ -189,9 +189,6 @@ You can use the ``bin/zipbackup`` script for this.  This script
 overrides a few settings, ignoring whatever is set in the buildout
 config section:
 
-- ``gzip`` is explicitly turned on for the filestorage (this is
-  already the default, but we make sure).
-
 - ``archive_blob`` is turned on.
 
 - ``keep`` is set to 1 to avoid keeping lots of needless backups.
@@ -394,13 +391,6 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     By default, incremental backups are made. If this option is set to ``true``,
     ``bin/backup`` will always make a full backup.
 
-``gzip``
-    Use repozo's zipping functionality. ``true`` by default. Set it to ``false``
-    and repozo will not gzip its files. Note that gzipped databases are called
-    ``*.fsz``, not ``*.fs.gz``. **Changed in 0.8**: the default used to be
-    false, but it so totally makes sense to gzip your backups that we changed
-    the default.
-
 ``incremental_blobs``
     New in version 4.0.  Default is false.
     When switched on, it will use the ``--listed-incremental`` option of ``tar``.
@@ -530,7 +520,6 @@ An example buildout snippet using various options, would look like this::
     full = true
     debug = true
     snapshotlocation = snap/my
-    gzip = false
     enable_snapshotrestore = true
     pre_command = echo 'Can I have a backup?'
     post_command =
