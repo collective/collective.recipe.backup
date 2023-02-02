@@ -141,7 +141,6 @@ class Recipe:
         options.setdefault("only_blobs", "false")
         options.setdefault("post_command", "")
         options.setdefault("pre_command", "")
-        options.setdefault("quick", "true")
         options.setdefault("rsync_options", "")
         options.setdefault("use_rsync", "true")
         options.setdefault("rsync_hard_links_on_first_copy", "false")
@@ -447,7 +446,6 @@ logging.basicConfig(level=loglevel,
         keep_blob_days={keep_blob_days},
         full={full},
         verbose={debug},
-        quick={quick},
         only_blobs={only_blobs},
         backup_blobs={backup_blobs},
         use_rsync={use_rsync},
@@ -594,7 +592,6 @@ logging.basicConfig(level=loglevel,
                 "backup_blobs",
                 "use_rsync",
                 "archive_blob",
-                "quick",
                 "enable_snapshotrestore",
                 "enable_zipbackup",
                 "compress_blob",
