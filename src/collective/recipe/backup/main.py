@@ -27,7 +27,6 @@ def backup_main(
     archive_blob=False,
     compress_blob=False,
     rsync_options="",
-    quick=True,
     blob_timestamps=False,
     backup_method=config.STANDARD_BACKUP,
     incremental_blobs=False,
@@ -46,7 +45,7 @@ def backup_main(
     )
     if not only_blobs:
         result = repozorunner.backup_main(
-            bin_dir, storages, keep, full, verbose, quick, backup_method
+            bin_dir, storages, keep, full, verbose, backup_method
         )
         if result:
             if backup_blobs:
@@ -192,7 +191,6 @@ def restore_check(
     archive_blob=False,
     alt_restore=False,
     rsync_options="",
-    quick=True,
     zip_restore=False,
     blob_timestamps=False,
     **kwargs,
@@ -272,7 +270,6 @@ def restore_main(
     archive_blob=False,
     alt_restore=False,
     rsync_options="",
-    quick=True,
     zip_restore=False,
     blob_timestamps=False,
     incremental_blobs=False,
@@ -294,7 +291,6 @@ def restore_main(
         archive_blob=archive_blob,
         alt_restore=alt_restore,
         rsync_options=rsync_options,
-        quick=quick,
         zip_restore=zip_restore,
         blob_timestamps=blob_timestamps,
         incremental_blobs=incremental_blobs,

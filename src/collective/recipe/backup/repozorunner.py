@@ -39,13 +39,10 @@ def backup_main(
     keep,
     full,
     verbose,
-    quick,
     backup_method=config.STANDARD_BACKUP,
 ):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, "repozo")
-    if full:
-        quick = False
 
     for storage in storages:
         fs = storage["datafs"]
@@ -66,8 +63,7 @@ def backup_main(
             )
         result = os.system(
             quote_command(
-                [repozo]
-                + backup_arguments(fs, location, full, verbose, quick, as_list=True)
+                [repozo] + backup_arguments(fs, location, full, verbose, as_list=True)
             )
         )
         logger.debug("Repozo command executed.")
@@ -137,7 +133,6 @@ def backup_arguments(
     backup_location=None,
     full=False,
     verbose=False,
-    quick=False,
     as_list=False,
 ):
     """
@@ -146,13 +141,13 @@ def backup_arguments(
     ...
     RuntimeError: Missing locations.
     >>> backup_arguments(datafs='in/Data.fs', backup_location='out')
-    '--backup -f in/Data.fs -r out --gzip'
+    '--backup -f in/Data.fs -r out --quick --gzip'
+    >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
+    ...                  verbose=True)
+    '--backup -f in/Data.fs -r out --quick --verbose --gzip'
     >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
     ...                  full=True)
     '--backup -f in/Data.fs -r out -F --gzip'
-    >>> backup_arguments(datafs='in/Data.fs', backup_location='out',
-    ...                  quick=True)
-    '--backup -f in/Data.fs -r out --quick --gzip'
 
     """
     if datafs is None or backup_location is None:
@@ -163,13 +158,6 @@ def backup_arguments(
     arguments.append(datafs)
     arguments.append("-r")
     arguments.append(backup_location)
-    if quick:
-        # From the repozo help text:
-        # Verify via md5 checksum only the last incremental written.
-        # This significantly reduces the disk i/o at the (theoretical)
-        # cost of inconsistency.  This is a probabilistic way of
-        # determining whether a full backup is necessary.
-        arguments.append("--quick")
     if full:
         # By default, there's an incremental backup, if possible.
         arguments.append("-F")
@@ -179,6 +167,14 @@ def backup_arguments(
             "are no changes since the last backup, there will not "
             "be a new incremental backup file."
         )
+        # 'quick' was optional before collective.recipe.backup 5.
+        # Now we always set it for non-full backups.
+        # From the repozo help text:
+        # Verify via md5 checksum only the last incremental written.
+        # This significantly reduces the disk i/o at the (theoretical)
+        # cost of inconsistency.  This is a probabilistic way of
+        # determining whether a full backup is necessary.
+        arguments.append("--quick")
     if verbose:
         arguments.append("--verbose")
     # Before collective.recipe.backup 5, this was an option.
