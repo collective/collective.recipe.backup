@@ -22,7 +22,6 @@ We'll use most options, except the blob options for now::
     ... full = true
     ... debug = true
     ... snapshotlocation = snap/my
-    ... gzip = false
     ... enable_snapshotrestore = true
     ... pre_command = echo 'Can I have a backup?' > pre
     ... post_command =
@@ -51,7 +50,7 @@ stderr.  Anyway::
     20...-...-... INFO: Please wait while backing up database file: /sample-buildout/subfolder/myproject.fs to /sample-buildout/myproject
     20...-...-...
     >>> check_repozo_output()
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
 
 We do not check that the pre and post output appear in the correct order.
 In the tests the output order can differ between Python 2 and 3.
@@ -77,7 +76,7 @@ The same is true for the snapshot backup.
     20...-...-...
     >>> if 'ERROR' in output: print(output)
     >>> check_repozo_output()
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/var/snap/my -F --verbose --gzip
     >>> cat('pre')
     Can I have a backup?
     >>> cat('post')
@@ -112,7 +111,7 @@ INFO level logging is not there::
     >>> remove('pre')
     >>> remove('post')
     >>> check_repozo_output()
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
     >>> print(system('bin/backup --quiet'))
     >>> cat('pre')
     Can I have a backup?
@@ -122,7 +121,7 @@ INFO level logging is not there::
     >>> remove('pre')
     >>> remove('post')
     >>> check_repozo_output()
-    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose
+    --backup -f /sample-buildout/subfolder/myproject.fs -r /sample-buildout/myproject -F --verbose --gzip
 
 In our case the ``--backup ...`` lines above are just the mock repozo script
 that still prints something. So it proves that the command is executed, but it

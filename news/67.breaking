@@ -1,0 +1,3 @@
+Removed ``gzip`` option.
+From now on, we always call repozo with the gzip option, you can no longer turn this off.
+[maurits]

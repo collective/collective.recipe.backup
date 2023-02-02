@@ -18,7 +18,6 @@ def backup_main(
     keep,
     full,
     verbose,
-    gzip,
     backup_blobs,
     only_blobs,
     use_rsync,
@@ -47,7 +46,7 @@ def backup_main(
     )
     if not only_blobs:
         result = repozorunner.backup_main(
-            bin_dir, storages, keep, full, verbose, gzip, quick, backup_method
+            bin_dir, storages, keep, full, verbose, quick, backup_method
         )
         if result:
             if backup_blobs:
@@ -124,7 +123,6 @@ def zipbackup_main(*args, **kwargs):
     """Main method, gets called by generated bin/zipbackup."""
     kwargs["backup_method"] = config.ZIP_BACKUP
     kwargs["full"] = True
-    kwargs["gzip"] = True
     kwargs["archive_blob"] = True
     kwargs["incremental_blobs"] = False
     kwargs["blob_timestamps"] = False

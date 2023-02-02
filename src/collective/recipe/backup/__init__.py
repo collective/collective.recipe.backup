@@ -135,7 +135,6 @@ class Recipe:
         options.setdefault("enable_snapshotrestore", "true")
         options.setdefault("enable_zipbackup", "false")
         options.setdefault("full", "false")
-        options.setdefault("gzip", "true")
         options.setdefault("incremental_blobs", "false")
         options.setdefault("keep", "2")
         options.setdefault("keep_blob_days", "14")  # two weeks
@@ -448,7 +447,6 @@ logging.basicConfig(level=loglevel,
         keep_blob_days={keep_blob_days},
         full={full},
         verbose={debug},
-        gzip={gzip},
         quick={quick},
         only_blobs={only_blobs},
         backup_blobs={backup_blobs},
@@ -592,7 +590,6 @@ logging.basicConfig(level=loglevel,
             [
                 "full",
                 "debug",
-                "gzip",
                 "only_blobs",
                 "backup_blobs",
                 "use_rsync",

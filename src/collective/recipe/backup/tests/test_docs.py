@@ -102,7 +102,6 @@ def test_suite():
         "blob_timestamps.rst",
         "cleanup_archives.rst",
         "cleanup_dir.rst",
-        "gzip.rst",
         "incremental_blobs.rst",
         "location.rst",
         "multiple.rst",
