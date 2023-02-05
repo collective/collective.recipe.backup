@@ -12,6 +12,9 @@ import zc.recipe.egg
 
 logger = logging.getLogger("backup")
 
+# Standard storage key for Data.fs.
+STORAGE_KEY = "1"
+
 
 class Recipe:
     """zc.buildout recipe"""
@@ -125,8 +128,21 @@ class Recipe:
         self.validate()
 
         # more options, alphabetical
-        options.setdefault("additional_filestorages", "")
-        options.setdefault("alternative_restore_sources", "")
+        # options.setdefault(
+        #     "alternative_restore_source",
+        #     options.get("alternative_restore_sources", ""),
+        # )
+        options.setdefault("alternative_restore_source", "")
+        if not options["alternative_restore_source"]:
+            alt = options.get("alternative_restore_sources", "")
+            if alt:
+                options["alternative_restore_source"] = alt
+                logger.warning(
+                    "You should rename alternative_restore_sources "
+                    "to alternative_restore_source. In version 7 the "
+                    "old name will no longer work."
+                )
+
         options.setdefault("archive_blob", "false")
         options.setdefault("blob_timestamps", "true")
         options.setdefault("compress_blob", "false")
@@ -217,7 +233,7 @@ class Recipe:
             blob_snapshot_location = ""
             blob_zip_location = ""
 
-        storages = self.compute_storages(
+        storage = self.compute_storage(
             buildout_dir,
             backup_location=backup_location,
             snapshot_location=snapshot_location,
@@ -226,10 +242,10 @@ class Recipe:
             blob_snapshot_location=blob_snapshot_location,
             blob_zip_location=blob_zip_location,
         )
-        generated = self.generate_scripts(storages)
+        generated = self.generate_scripts(storage)
         return generated
 
-    def compute_storages(
+    def compute_storage(
         self,
         buildout_dir,
         backup_location,
@@ -239,52 +255,9 @@ class Recipe:
         blob_snapshot_location,
         blob_zip_location,
     ):
-        storages = []
-        additional = self.options["additional_filestorages"]
+        # Note: we used to support additional storages,
+        # but that was dropped in version 5.
         datafs = construct_path(buildout_dir, self.options["datafs"])
-        filestorage_dir = os.path.split(datafs)[0]
-        if additional:
-            additional_regex = (
-                r"^\s*(?P<storage>[^\s]+)"
-                r"\s*(?P<datafs>[^\s]*)"
-                r"\s*(?P<blobdir>[^\s]*)\s*$"
-            )
-            for a in additional.split("\n"):
-                if not a:
-                    continue
-                storage = re.match(additional_regex, a).groupdict()
-                if storage["storage"] in [s["storage"] for s in storages]:
-                    logger.warning("storage {} duplicated".format(storage["storage"]))
-                if not storage["datafs"]:
-                    storage["datafs"] = os.path.join(
-                        filestorage_dir, "{}.fs".format(storage["storage"])
-                    )
-                storage["backup_location"] = "{}_{}".format(
-                    backup_location, storage["storage"]
-                )
-                storage["snapshot_location"] = "{}_{}".format(
-                    snapshot_location, storage["storage"]
-                )
-                storage["zip_location"] = "{}_{}".format(
-                    zip_location, storage["storage"]
-                )
-                if storage["blobdir"]:
-                    storage["blob_backup_location"] = (
-                        "{}_{}".format(blob_backup_location, storage["storage"])
-                        if blob_backup_location
-                        else None
-                    )
-                    storage["blob_snapshot_location"] = (
-                        "{}_{}".format(blob_snapshot_location, storage["storage"])
-                        if blob_snapshot_location
-                        else None
-                    )
-                    storage["blob_zip_location"] = (
-                        "{}_{}".format(blob_zip_location, storage["storage"])
-                        if blob_zip_location
-                        else None
-                    )
-                storages.append(storage)
 
         # '1' is the default root storagename for Zope. The property
         # ``storage`` on this recipe currently is used only for
@@ -302,57 +275,60 @@ class Recipe:
             storage["blob_backup_location"] = blob_backup_location
             storage["blob_snapshot_location"] = blob_snapshot_location
             storage["blob_zip_location"] = blob_zip_location
-        storages.append(storage)
 
         if not to_bool(self.options["only_blobs"]):
-            for s in storages:
-                backup_location = s["backup_location"]
-                snapshot_location = s["snapshot_location"]
-                utils.try_create_folder(backup_location)
-                utils.try_create_folder(snapshot_location)
+            backup_location = storage["backup_location"]
+            snapshot_location = storage["snapshot_location"]
+            utils.try_create_folder(backup_location)
+            utils.try_create_folder(snapshot_location)
 
         # Blob backup.
         if to_bool(self.options["backup_blobs"]):
-            blob_storage_found = False
-            for s in storages:
-                if s["blobdir"]:
-                    s["blobdir"] = s["blobdir"].rstrip(os.sep)
-                    blob_storage_found = True
-                    blob_backup_location = s["blob_backup_location"]
-                    blob_snapshot_location = s["blob_snapshot_location"]
-                    utils.try_create_folder(blob_backup_location)
-                    utils.try_create_folder(blob_snapshot_location)
-            if not blob_storage_found:
+            if not storage["blobdir"]:
                 raise zc.buildout.UserError(
-                    "backup_blobs is true, but no blob_storage could be " "found."
+                    "backup_blobs is true, but no blob_storage could be found."
                 )
+            storage["blobdir"] = storage["blobdir"].rstrip(os.sep)
+            blob_backup_location = storage["blob_backup_location"]
+            blob_snapshot_location = storage["blob_snapshot_location"]
+            utils.try_create_folder(blob_backup_location)
+            utils.try_create_folder(blob_snapshot_location)
 
         # Handle alternative restore sources.
-        storages = self.compute_alternative_restore_sources(buildout_dir, storages)
-        return storages
+        storage = self.compute_alternative_restore_source(buildout_dir, storage)
+        return storage
 
-    def compute_alternative_restore_sources(self, buildout_dir, storages):
-        """Compute alternative restore sources.
+    def compute_alternative_restore_source(self, buildout_dir, storage):
+        """Compute alternative restore source.
 
-        Return them in the storages list.
+        Return them in the storage.
+        Support for multiple sources for additional storages was dropped
+        in version 5.
         """
-        alt_sources = self.options["alternative_restore_sources"]
+        alt_sources = self.options["alternative_restore_source"]
         if not alt_sources:
-            return storages
-        storage_keys = [s["storage"] for s in storages]
-        alt_keys = []
+            return storage
+        found = False
         alt_regex = (
             r"^\s*(?P<storage>[^\s]+)"
             r"\s+(?P<datafs>[^\s]+)"
             r"\s*(?P<blobdir>[^\s]*)\s*$"
         )
         for a in alt_sources.split("\n"):
+            a = a.strip()
             if not a:
                 continue
+            if a.startswith("#"):
+                continue
+            if found:
+                raise zc.buildout.UserError(
+                    "Only one alternative_restore_source line is supported."
+                )
+            found = True
             match = re.match(alt_regex, a)
             if match is None:
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources line {!r} has a wrong "
+                    "alternative_restore_source line {!r} has a wrong "
                     "format. Should be: 'storage-name "
                     "filestorage-backup-path', optionally followed by "
                     "a blobstorage-backup-path.".format(a)
@@ -361,54 +337,32 @@ class Recipe:
             key = orig_key = source["storage"]
             if key == "Data":
                 key = "1"  # Data.fs is called storage '1'.
-            if key not in storage_keys:
+            if key != STORAGE_KEY:
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources key {!r} unknown in "
-                    "storages.".format(orig_key)
-                )
-            alt_keys.append(key)
-            storage = [s for s in storages if key == s["storage"]][0]
-            if storage.get("alt_location"):
-                # Duplicate key.
-                if key == "1":
-                    raise zc.buildout.UserError(
-                        "alternative_restore_sources key {!r} is used. "
-                        "Are you using both '1' and 'Data'? They are "
-                        "alternative keys for the same Data.fs.".format(orig_key)
-                    )
-                raise zc.buildout.UserError(
-                    "alternative_restore_sources key {!r} "
-                    "is used twice.".format(orig_key)
+                    "alternative_restore_source key {!r} unknown. "
+                    "Expected 1 or Data.".format(orig_key)
                 )
             storage["alt_location"] = construct_path(buildout_dir, source["datafs"])
             blobdir = source["blobdir"]
             if storage["blobdir"]:
                 if not blobdir:
                     raise zc.buildout.UserError(
-                        "alternative_restore_sources key {!r} is "
+                        "alternative_restore_source key {!r} is "
                         "missing a blobdir.".format(orig_key)
                     )
                 storage["blob_alt_location"] = construct_path(buildout_dir, blobdir)
             elif blobdir:
                 raise zc.buildout.UserError(
-                    "alternative_restore_sources key {!r} specifies "
+                    "alternative_restore_source key {!r} specifies "
                     "blobdir {!r} but the original storage has no "
                     "blobstorage.".format(orig_key, blobdir)
                 )
             else:
                 storage["blob_alt_location"] = ""
-        # Check that all original storages have an alternative.
-        for key in storage_keys:
-            if key not in alt_keys:
-                if key == "1":
-                    key = "Data"  # canonical spelling
-                raise zc.buildout.UserError(
-                    f"alternative_restore_sources is missing key {key!r}."
-                )
 
-        return storages
+        return storage
 
-    def generate_scripts(self, storages):
+    def generate_scripts(self, storage):
         """Generate scripts and return their names."""
         if to_bool(self.options["debug"]):
             loglevel = "DEBUG"
@@ -441,7 +395,7 @@ logging.basicConfig(level=loglevel,
 """
         arguments_template = """
         bin_dir={bin-directory!r},
-        storages={storages},
+        storage={storage},
         keep={keep},
         keep_blob_days={keep_blob_days},
         full={full},
@@ -462,7 +416,7 @@ logging.basicConfig(level=loglevel,
         # Work with a copy of the options, for safety.
         opts = self.options.copy()
         opts["loglevel"] = loglevel
-        opts["storages"] = pprint.pformat(storages)
+        opts["storage"] = pprint.pformat(storage)
 
         # Keep list of generated files/directories/scripts
         generated = []
@@ -559,7 +513,7 @@ logging.basicConfig(level=loglevel,
             generated += create_script(**creation_args)
 
         # Create alternative sources restore script
-        if self.options["alternative_restore_sources"]:
+        if self.options["alternative_restore_source"]:
             reqs = [
                 (
                     self.options["altrestore_name"],
