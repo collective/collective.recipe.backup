@@ -38,6 +38,7 @@ We might make timestamps the only supported way in the future.
     ... """)
     >>> print(system(buildout))
     Installing backup.
+    backup: You have disabled blob_timestamps. Support for this may be dropped in version 6, making it impossible to restore backups without timestamps. See https://github.com/collective/collective.recipe.backup/issues/65
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
@@ -61,6 +62,7 @@ Full cycle tests:
     >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
+    backup: You have disabled blob_timestamps. Support for this may be dropped in version 6, making it impossible to restore backups without timestamps. See https://github.com/collective/collective.recipe.backup/issues/65
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
@@ -455,11 +457,13 @@ enable_zipbackup too::
     ... """)
     >>> print(system(buildout))
     Installing filebackup.
+    backup: You have disabled blob_timestamps. Support for this may be dropped in version 6, making it impossible to restore backups without timestamps. See https://github.com/collective/collective.recipe.backup/issues/65
     Generated script '/sample-buildout/bin/filebackup'.
     Generated script '/sample-buildout/bin/filebackup-snapshot'.
     Generated script '/sample-buildout/bin/filebackup-restore'.
     Generated script '/sample-buildout/bin/filebackup-snapshotrestore'.
     Installing blobbackup.
+    backup: You have disabled blob_timestamps. Support for this may be dropped in version 6, making it impossible to restore backups without timestamps. See https://github.com/collective/collective.recipe.backup/issues/65
     Generated script '/sample-buildout/bin/blobbackup'.
     Generated script '/sample-buildout/bin/blobbackup-zip'.
     Generated script '/sample-buildout/bin/blobbackup-snapshot'.
@@ -567,6 +571,7 @@ restore to ensure passing of extra options to rsync works::
     Uninstalling blobbackup.
     Uninstalling filebackup.
     Installing backup.
+    backup: You have disabled blob_timestamps. Support for this may be dropped in version 6, making it impossible to restore backups without timestamps. See https://github.com/collective/collective.recipe.backup/issues/65
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
@@ -621,6 +626,7 @@ So backup still works, now test restore that uses a symlinked directory as the b
     >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
+    backup: You have disabled blob_timestamps. Support for this may be dropped in version 6, making it impossible to restore backups without timestamps. See https://github.com/collective/collective.recipe.backup/issues/65
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
@@ -662,6 +668,7 @@ See issue #26. So test what happens:
     >>> print(system(buildout))
     Uninstalling backup.
     Installing backup.
+    backup: You have disabled blob_timestamps. Support for this may be dropped in version 6, making it impossible to restore backups without timestamps. See https://github.com/collective/collective.recipe.backup/issues/65
     Generated script '/sample-buildout/bin/backup'.
     Generated script '/sample-buildout/bin/snapshotbackup'.
     Generated script '/sample-buildout/bin/restore'.
