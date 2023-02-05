@@ -5,7 +5,6 @@ import logging
 import os
 import pprint
 import re
-import sys
 import zc.buildout
 import zc.recipe.egg
 
@@ -34,14 +33,7 @@ class Recipe:
                     "Please pick one."
                 )
 
-        # We usually want backup_blobs to be true.  If no blob_storage is
-        # found, we complain, unless backup_blobs has explicitly been disabled.
-        # Or when the Python version is lower than 2.6: we then expect Plone 3,
-        # so no blob storage.
-        if sys.version_info >= (2, 6):
-            options.setdefault("backup_blobs", "True")
-        else:
-            options.setdefault("backup_blobs", "False")
+        options.setdefault("backup_blobs", "True")
 
         # Validate options, checking for example that the locations are unique.
         self.validate()

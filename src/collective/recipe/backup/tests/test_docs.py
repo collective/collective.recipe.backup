@@ -11,7 +11,6 @@ from zope.testing import renormalizing
 import collective.recipe.backup
 import doctest
 import re
-import sys
 import tempfile
 import unittest
 import zc.buildout.testing
@@ -110,15 +109,6 @@ def test_suite():
         "prefix.rst",
         "zipbackup.rst",
     ]
-    test_file = "zope2instance.rst"
-    if sys.version_info[0] > 2:
-        print(f"INFO: ignoring {test_file} tests on Python 3.")
-        print(
-            "It would pull in Zope and ZODB, which is too much for what we try to test."
-        )
-        print("See https://github.com/collective/collective.recipe.backup/issues/31")
-    else:
-        docfiles.append(test_file)
     for docfile in docfiles:
         suite.addTest(
             doctest.DocFileSuite(
