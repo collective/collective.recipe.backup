@@ -243,6 +243,8 @@ def get_valid_directories(container, name):
 
     Note: timestamps are not accepted here.  This function is not used
     in scenarios that use timestamps.
+    TODO: do we still need this then?  Maybe for backups created by
+    previous versions.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -305,6 +307,8 @@ def get_valid_archives(container, name):
 
     Note: timestamps are not accepted here.  This function is not used
     in scenarios that use timestamps.
+    TODO: do we still need this then?  Maybe for backups created by
+    previous versions.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -355,6 +359,8 @@ def rotate_directories(container, name):
 
     Note: timestamps are not handled here.  This function is not used
     in scenarios that use timestamps.
+    TODO: do we still need this then?  Maybe for backups created by
+    previous versions.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -402,6 +408,8 @@ def rotate_archives(container, name):
 
     Note: timestamps are not handled here.  This function is not used
     in scenarios that use timestamps.
+    TODO: do we still need this then?  Maybe for backups created by
+    previous versions.
 
     Using the zc.buildout tools we create some directories and files:
 
@@ -762,7 +770,6 @@ def backup_blobs(
     keep_blob_days=0,
     archive_blob=False,
     rsync_options="",
-    timestamps=False,
     fs_backup_location=None,
     compress_blob=False,
     incremental_blobs=False,
@@ -797,7 +804,7 @@ def backup_blobs(
     backups created by repozo; and there is no similar concept in our
     blobstorage backups.
 
-    With timestamps True, we do not make blobstorage.0, but use timestamps,
+    Since version 5 we always use timestamps,
     for example blobstorage.2017-01-02-03-04-05.
 
     For tests, see tests/backup_blobs_dir.rst.
@@ -810,7 +817,6 @@ def backup_blobs(
             source,
             destination,
             keep,
-            timestamps=timestamps,
             fs_backup_location=fs_backup_location,
             compress_blob=compress_blob,
             incremental_blobs=incremental_blobs,
@@ -818,46 +824,40 @@ def backup_blobs(
         )
         return
 
-    if timestamps:
-        current_backups = get_blob_backup_dirs(destination)
-        if current_backups:
-            prev = current_backups[0][2]
-        else:
-            prev = None
-        timestamp = get_latest_filestorage_timestamp(fs_backup_location)
-        if timestamp:
-            dest = os.path.join(destination, base_name + "." + timestamp)
-            # if a backup already exists, then apparently there were no
-            # database changes since the last backup, so we don't need
-            # to do anything.
-            if os.path.exists(dest):
-                logger.info(
-                    "Blob backup at %s already exists, so there were "
-                    "no database changes since last backup.",
-                    dest,
-                )
-                # Now possibly remove old backups and remove/create latest symlink.
-                if incremental_blobs:
-                    latest = None
-                else:
-                    # Creating a symlink to the latest blob backup only makes sense in this combination.
-                    latest = dest
-                cleanup(
-                    destination,
-                    full,
-                    keep,
-                    keep_blob_days,
-                    fs_backup_location=fs_backup_location,
-                    latest=latest,
-                )
-                return
-        else:
-            dest = os.path.join(destination, base_name + "." + gen_timestamp())
+    current_backups = get_blob_backup_dirs(destination)
+    if current_backups:
+        prev = current_backups[0][2]
     else:
-        # Without timestamps we need to rotate backups.
-        rotate_directories(destination, base_name)
-        prev = os.path.join(destination, base_name + ".1")
-        dest = os.path.join(destination, base_name + ".0")
+        prev = None
+    timestamp = get_latest_filestorage_timestamp(fs_backup_location)
+    if timestamp:
+        dest = os.path.join(destination, base_name + "." + timestamp)
+        # if a backup already exists, then apparently there were no
+        # database changes since the last backup, so we don't need
+        # to do anything.
+        if os.path.exists(dest):
+            logger.info(
+                "Blob backup at %s already exists, so there were "
+                "no database changes since last backup.",
+                dest,
+            )
+            # Now possibly remove old backups and remove/create latest symlink.
+            if incremental_blobs:
+                latest = None
+            else:
+                # Creating a symlink to the latest blob backup only makes sense in this combination.
+                latest = dest
+            cleanup(
+                destination,
+                full,
+                keep,
+                keep_blob_days,
+                fs_backup_location=fs_backup_location,
+                latest=latest,
+            )
+            return
+    else:
+        dest = os.path.join(destination, base_name + "." + gen_timestamp())
     if use_rsync:
         if prev and os.path.exists(prev):
             # Make a 'partial' backup by reusing the previous backup.  We
@@ -907,7 +907,7 @@ def backup_blobs(
         logger.info("Copying %s to %s", source, target)
         shutil.copytree(source, target)
     # Now possibly remove old backups and remove/create latest symlink.
-    if timestamps and not incremental_blobs:
+    if not incremental_blobs:
         # Creating a symlink to the latest blob backup only makes sense in this combination.
         latest = dest
     else:
@@ -944,7 +944,6 @@ def backup_blobs_archive(
     source,
     destination,
     keep=0,
-    timestamps=False,
     fs_backup_location=None,
     compress_blob=False,
     incremental_blobs=False,
@@ -960,60 +959,51 @@ def backup_blobs_archive(
 
     For tests, see tests/backup_blobs_archive.rst.
     """
-    if incremental_blobs and not timestamps:
-        # This should have been caught by buildout already,
-        # but we may trigger it in tests.
-        raise Exception("Cannot have incremental_blobs without timestamps.")
     source = source.rstrip(os.sep)
     base_name = os.path.basename(source)
     if not os.path.exists(destination):
         os.makedirs(destination)
     tar_options = ""
-    if timestamps:
-        timestamp = get_latest_filestorage_timestamp(fs_backup_location)
-        if timestamp:
-            filename = f"{base_name}.{timestamp}"
-            dest = find_timestamped_filename(destination, filename)
-            if dest:
-                # We have found an existing backup.
-                # Now possibly remove old backups and remove/create latest symlink.
-                if incremental_blobs:
-                    latest = None
-                else:
-                    # Creating a symlink to the latest blob backup only makes sense in this combination.
-                    latest = dest
-                cleanup_archives(
-                    destination,
-                    keep=keep,
-                    fs_backup_location=fs_backup_location,
-                    latest=latest,
-                )
-                return
-        else:
-            timestamp = gen_timestamp()
-            filename = f"{base_name}.{timestamp}"
-        if incremental_blobs:
-            # Get the timestamp of the latest full backup,
-            # if we have a snapshot archive for it.
-            snapshot_archive = find_snapshot_archive(
-                fs_backup_location, destination, base_name, timestamp, full=full
+    timestamp = get_latest_filestorage_timestamp(fs_backup_location)
+    if timestamp:
+        filename = f"{base_name}.{timestamp}"
+        dest = find_timestamped_filename(destination, filename)
+        if dest:
+            # We have found an existing backup.
+            # Now possibly remove old backups and remove/create latest symlink.
+            if incremental_blobs:
+                latest = None
+            else:
+                # Creating a symlink to the latest blob backup only makes sense in this combination.
+                latest = dest
+            cleanup_archives(
+                destination,
+                keep=keep,
+                fs_backup_location=fs_backup_location,
+                latest=latest,
             )
-            if snapshot_archive is not None:
-                # We need to use the raw format, otherwise
-                # '--listed-incremental=/dir' gets normalized to '/dir'
-                # by zc.buildout during testing. Strange, but it should
-                # be no problem to have quotes here.
-                tar_options = f"--listed-incremental={snapshot_archive!r}"
-                if os.path.exists(snapshot_archive):
-                    # The snapshot archive exists, so this is a delta backup.
-                    # File name should be blobs.timestamp.delta.tar(.gz).
-                    filename += ".delta"
-        filename += ".tar"  # .gz may be added a few lines later.
-        dest = os.path.join(destination, filename)
+            return
     else:
-        # Without timestamps we need to rotate backups.
-        rotate_archives(destination, base_name)
-        dest = os.path.join(destination, base_name + ".0.tar")
+        timestamp = gen_timestamp()
+        filename = f"{base_name}.{timestamp}"
+    if incremental_blobs:
+        # Get the timestamp of the latest full backup,
+        # if we have a snapshot archive for it.
+        snapshot_archive = find_snapshot_archive(
+            fs_backup_location, destination, base_name, timestamp, full=full
+        )
+        if snapshot_archive is not None:
+            # We need to use the raw format, otherwise
+            # '--listed-incremental=/dir' gets normalized to '/dir'
+            # by zc.buildout during testing. Strange, but it should
+            # be no problem to have quotes here.
+            tar_options = f"--listed-incremental={snapshot_archive!r}"
+            if os.path.exists(snapshot_archive):
+                # The snapshot archive exists, so this is a delta backup.
+                # File name should be blobs.timestamp.delta.tar(.gz).
+                filename += ".delta"
+    filename += ".tar"  # .gz may be added a few lines later.
+    dest = os.path.join(destination, filename)
     if compress_blob:
         dest += ".gz"
         tar_command = "tar czf"
@@ -1029,7 +1019,7 @@ def backup_blobs_archive(
     if failed:
         return
     # Now possibly remove old backups and remove/create latest symlink.
-    if timestamps and not incremental_blobs:
+    if not incremental_blobs:
         # Creating a symlink to the latest blob backup only makes sense in this combination.
         latest = dest
     else:
@@ -1164,7 +1154,7 @@ def find_conditional_backups_to_restore(backups, tester=None):
     return paths
 
 
-def find_backup_to_restore(source, date_string="", archive=False, timestamps=False):
+def find_backup_to_restore(source, date_string="", archive=False):
     """Find backup to restore.
 
     This determines whether blobstorage.0 or blobstorage.1 is taken, etc.
@@ -1175,7 +1165,7 @@ def find_backup_to_restore(source, date_string="", archive=False, timestamps=Fal
     Note that this matches the 2011-10-05-12-12-45.fsz that is created.
 
     It may be archive backups only (tar or tar.gz).
-    If timestamps is True, we prefer those.
+    We prefer backup names with timestamps.
 
     We return nothing or a directory or file name.
     It may be a list in case of delta archives.
@@ -1205,18 +1195,17 @@ def find_backup_to_restore(source, date_string="", archive=False, timestamps=Fal
     # We should do the same.  The timestamp of the filestorage and
     # blobstorage backups may be a few seconds apart.  If the user
     # specifies a timestamp in between, this is an error of the user.
-    if timestamps:
-        ts_backups = backup_getter(source, only_timestamps=True)
+    ts_backups = backup_getter(source, only_timestamps=True)
 
-        def tester(num, mod_time, directory):
-            # Both num and date_string are timestamps, so we can compare them.
-            return num <= date_string
+    def tester(num, mod_time, directory):
+        # Both num and date_string are timestamps, so we can compare them.
+        return num <= date_string
 
-        paths = find_conditional_backups_to_restore(ts_backups, tester)
-        if paths:
-            return paths
+    paths = find_conditional_backups_to_restore(ts_backups, tester)
+    if paths:
+        return paths
 
-    # If timestamps are not used, or do not give a result,
+    # If timestamps do not give a result,
     # we fall back to comparing modification times.
     # Note that in tests, the modification times will be very close together.
     def tester(num, mod_time, directory):
@@ -1235,7 +1224,6 @@ def restore_blobs(
     date=None,
     archive_blob=False,
     rsync_options="",
-    timestamps=False,
     only_check=False,
     incremental_blobs=False,
 ):
@@ -1270,10 +1258,10 @@ def restore_blobs(
 
     # Determine the source (blob backup) that should be restored.
     archive_source = find_backup_to_restore(
-        source, date_string=date, archive=True, timestamps=timestamps
+        source, date_string=date, archive=True
     )
     standard_source = find_backup_to_restore(
-        source, date_string=date, timestamps=timestamps
+        source, date_string=date
     )
     if not (standard_source or archive_source):
         # error
@@ -1290,7 +1278,7 @@ def restore_blobs(
     if archive_blob and archive_source:
         # We want an archive and have found an archive.
         result = restore_blobs_archive(
-            source, destination, date, timestamps=timestamps, only_check=only_check
+            source, destination, date, only_check=only_check
         )
         return result
 
@@ -1344,7 +1332,6 @@ def restore_blobs_archive(
     source,
     destination,
     date=None,
-    timestamps=False,
     only_check=False,
     incremental_blobs=False,
 ):
@@ -1397,7 +1384,7 @@ def restore_blobs_archive(
     """
     # Determine the source (blob backup) that should be restored.
     backup_sources = find_backup_to_restore(
-        source, date_string=date, archive=True, timestamps=timestamps
+        source, date_string=date, archive=True,
     )
     if not backup_sources:
         # Signal error by returning a true value.

@@ -3,48 +3,17 @@
 Incremental blob backups
 ========================
 
-Incremental blob backups requires the blob_timestamps option, and automatically turns it on.
-This started as a copy of the ``blob_timestamps.rst`` file.
-Several corner cases are only tested in that file, not in the current one.
-
 Some imports:
 
     >>> import os
 
-Write a buildout config.
-We start with a wrong one, which explicitly sets blob_timestamps to false::
+Write a buildout config::
 
     >>> write('buildout.cfg',
     ... """
     ... [buildout]
     ... # For some reason this is now needed:
-    ... index = https://pypi.python.org/simple
-    ... # Avoid suddenly updating zc.buildout or other packages:
-    ... newest = false
-    ... parts = backup
-    ...
-    ... [backup]
-    ... recipe = collective.recipe.backup
-    ... blob_storage = ${buildout:directory}/var/blobstorage
-    ... archive_blob = true
-    ... blob_timestamps = false
-    ... incremental_blobs = true
-    ... keep = 3
-    ... """)
-    >>> print(system(buildout))
-    While:
-      Installing.
-      Getting section backup.
-      Initializing section backup.
-    Error: Cannot have blob_timestamps false and incremental_blobs true.
-
-So leave the blob_timestamps option out::
-
-    >>> write('buildout.cfg',
-    ... """
-    ... [buildout]
-    ... # For some reason this is now needed:
-    ... index = https://pypi.python.org/simple
+    ... index = https://pypi.org/simple
     ... # Avoid suddenly updating zc.buildout or other packages:
     ... newest = false
     ... parts = backup

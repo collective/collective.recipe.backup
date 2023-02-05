@@ -128,7 +128,7 @@ that still prints something. So it proves that the command is executed, but it
 won't end up in the output.
 
 Speaking of cron jobs?  Take a look at `zc.recipe.usercrontab
-<http://pypi.python.org/pypi/z3c.recipe.usercrontab>`_ if you want to handle
+<http://pypi.org/project/z3c.recipe.usercrontab>`_ if you want to handle
 cronjobs from within your buildout.  For example::
 
     [backupcronjob]

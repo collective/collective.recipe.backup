@@ -128,7 +128,6 @@ class Recipe:
         options.setdefault("additional_filestorages", "")
         options.setdefault("alternative_restore_sources", "")
         options.setdefault("archive_blob", "false")
-        options.setdefault("blob_timestamps", "true")
         options.setdefault("compress_blob", "false")
         options.setdefault("datafs", datafs)
         options.setdefault("debug", "false")
@@ -160,10 +159,6 @@ class Recipe:
                     # 'None' would give a TypeError when setting the option.
                     blob_storage = ""
             options["blob_storage"] = blob_storage
-
-        if to_bool(options["incremental_blobs"]):
-            # Incremental blobs only work with timestamped file names.
-            options["blob_timestamps"] = "true"
 
         # Validate again, which also makes sure the blob storage options are
         # the same, for good measure.
@@ -455,7 +450,6 @@ logging.basicConfig(level=loglevel,
         pre_command={pre_command!r},
         post_command={post_command!r},
         no_prompt=options.no_prompt,
-        blob_timestamps={blob_timestamps},
         incremental_blobs={incremental_blobs},
         rsync_hard_links_on_first_copy={rsync_hard_links_on_first_copy},
         """
@@ -595,7 +589,6 @@ logging.basicConfig(level=loglevel,
                 "enable_snapshotrestore",
                 "enable_zipbackup",
                 "compress_blob",
-                "blob_timestamps",
                 "incremental_blobs",
                 "rsync_hard_links_on_first_copy",
             ],
@@ -629,12 +622,6 @@ logging.basicConfig(level=loglevel,
                 raise zc.buildout.UserError(
                     "Cannot have backup_blobs false and enable_zipbackup "
                     "true. zipbackup is useless without blobs."
-                )
-        if not to_bool(options.get("blob_timestamps", True)):
-            # blob_timestamps was explicitly set to false
-            if to_bool(options.get("incremental_blobs")):
-                raise zc.buildout.UserError(
-                    "Cannot have blob_timestamps false and " "incremental_blobs true."
                 )
 
 

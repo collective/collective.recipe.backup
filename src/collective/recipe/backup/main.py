@@ -27,7 +27,6 @@ def backup_main(
     archive_blob=False,
     compress_blob=False,
     rsync_options="",
-    blob_timestamps=False,
     backup_method=config.STANDARD_BACKUP,
     incremental_blobs=False,
     rsync_hard_links_on_first_copy=False,
@@ -102,7 +101,6 @@ def backup_main(
             archive_blob=archive_blob,
             compress_blob=compress_blob,
             rsync_options=rsync_options,
-            timestamps=blob_timestamps,
             fs_backup_location=fs_backup_location,
             incremental_blobs=incremental_blobs,
             rsync_hard_links_on_first_copy=rsync_hard_links_on_first_copy,
@@ -124,7 +122,6 @@ def zipbackup_main(*args, **kwargs):
     kwargs["full"] = True
     kwargs["archive_blob"] = True
     kwargs["incremental_blobs"] = False
-    kwargs["blob_timestamps"] = False
     kwargs["keep"] = 1
     return backup_main(*args, **kwargs)
 
@@ -137,7 +134,6 @@ def check_blobs(
     alt_restore=False,
     rsync_options="",
     zip_restore=False,
-    blob_timestamps=False,
     date=None,
 ):
     """Check that blobs can be restored.
@@ -170,7 +166,6 @@ def check_blobs(
             date=date,
             archive_blob=archive_blob,
             rsync_options=rsync_options,
-            timestamps=blob_timestamps,
             only_check=True,
         )
         if result:
@@ -192,7 +187,6 @@ def restore_check(
     alt_restore=False,
     rsync_options="",
     zip_restore=False,
-    blob_timestamps=False,
     **kwargs,
 ):
     """Method to check that a restore will work.
@@ -251,7 +245,6 @@ def restore_check(
             alt_restore=alt_restore,
             rsync_options=rsync_options,
             zip_restore=zip_restore,
-            blob_timestamps=blob_timestamps,
             date=date,
         )
     return date
@@ -271,7 +264,6 @@ def restore_main(
     alt_restore=False,
     rsync_options="",
     zip_restore=False,
-    blob_timestamps=False,
     incremental_blobs=False,
     **kwargs,
 ):
@@ -292,7 +284,6 @@ def restore_main(
         alt_restore=alt_restore,
         rsync_options=rsync_options,
         zip_restore=zip_restore,
-        blob_timestamps=blob_timestamps,
         incremental_blobs=incremental_blobs,
         **kwargs,
     )
@@ -324,7 +315,6 @@ def restore_main(
             date=date,
             archive_blob=archive_blob,
             rsync_options=rsync_options,
-            timestamps=blob_timestamps,
         )
         if result:
             logger.error("Halting execution due to error.")

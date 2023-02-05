@@ -3,9 +3,9 @@
 Blob storage with timestamps
 ============================
 
-These are tests with ``blob_timestamps = true``.
-This started as a copy of the ``blobs.rst`` file.
-Several corner cases are only tested in that file, not in the current one.
+This started as a copy of the ``blobs.rst`` file, where we created `blobstorage.0`, .1, etcetera.
+Since version 5 we no longer support this.
+TODO Several corner cases are only tested in that file, not in the current one.
 
 Some imports:
 
@@ -17,7 +17,7 @@ Write a buildout config::
     ... """
     ... [buildout]
     ... # For some reason this is now needed:
-    ... index = https://pypi.python.org/simple
+    ... index = https://pypi.org/simple
     ... # Avoid suddenly updating zc.buildout or other packages:
     ... newest = false
     ... parts = backup
@@ -25,7 +25,6 @@ Write a buildout config::
     ... [backup]
     ... recipe = collective.recipe.backup
     ... blob_storage = ${buildout:directory}/var/blobstorage
-    ... blob_timestamps = true
     ... keep = 3
     ... additional_filestorages =
     ...    foo ${buildout:directory}/var/filestorage/foo.fs ${buildout:directory}/var/blobstorage-foo

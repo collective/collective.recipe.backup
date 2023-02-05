@@ -26,7 +26,7 @@ Ghent University is a top 100 university and one of the major universities in Be
 
 .. _Maurits: http://maurits.vanrees.org/
 
-.. _instancemanager: https://pypi.python.org/pypi/instancemanager
+.. _instancemanager: https://pypi.org/project/instancemanager
 
 .. _`Tom 'Spanky' Kapanka`: https://github.com/spanktar
 

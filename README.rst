@@ -541,7 +541,7 @@ get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
 This option ignores the debug variable, if set to true in buildout.
 
 Speaking of cron jobs?  Take a look at `zc.recipe.usercrontab
-<http://pypi.python.org/pypi/z3c.recipe.usercrontab>`_ if you want to handle
+<http://pypi.org/project/z3c.recipe.usercrontab>`_ if you want to handle
 cronjobs from within your buildout.  For example::
 
     [backupcronjob]
