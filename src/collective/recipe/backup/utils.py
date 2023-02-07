@@ -105,33 +105,32 @@ def execute_or_fail(command):
 
 
 def check_folders(
-    storages, backup_blobs=True, only_blobs=False, backup_method=config.STANDARD_BACKUP
+    storage, backup_blobs=True, only_blobs=False, backup_method=config.STANDARD_BACKUP
 ):
     """Check that folders exist, and create them if not."""
     backup = backup_method == config.STANDARD_BACKUP
     snapshot = backup_method == config.SNAPSHOT_BACKUP
     zipbackup = backup_method == config.ZIP_BACKUP
-    for storage in storages:
-        pathdirs = []
-        if not only_blobs:
-            if backup:
-                pathdirs.append(storage.get("backup_location"))
-            if snapshot:
-                pathdirs.append(storage.get("snapshot_location"))
-            if zipbackup:
-                pathdirs.append(storage.get("zip_location"))
-        if backup_blobs:
-            if backup:
-                pathdirs.append(storage.get("blob_backup_location"))
-            if snapshot:
-                pathdirs.append(storage.get("blob_snapshot_location"))
-            if zipbackup:
-                pathdirs.append(storage.get("blob_zip_location"))
+    pathdirs = []
+    if not only_blobs:
+        if backup:
+            pathdirs.append(storage.get("backup_location"))
+        if snapshot:
+            pathdirs.append(storage.get("snapshot_location"))
+        if zipbackup:
+            pathdirs.append(storage.get("zip_location"))
+    if backup_blobs:
+        if backup:
+            pathdirs.append(storage.get("blob_backup_location"))
+        if snapshot:
+            pathdirs.append(storage.get("blob_snapshot_location"))
+        if zipbackup:
+            pathdirs.append(storage.get("blob_zip_location"))
 
-        for pathdir in pathdirs:
-            if pathdir and not os.path.isdir(pathdir):
-                os.makedirs(pathdir)
-                logger.info("Created %s", pathdir)
+    for pathdir in pathdirs:
+        if pathdir and not os.path.isdir(pathdir):
+            os.makedirs(pathdir)
+            logger.info("Created %s", pathdir)
 
 
 def try_create_folder(pathdir):

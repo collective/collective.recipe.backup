@@ -35,7 +35,7 @@ def quote_command(command):
 
 def backup_main(
     bin_dir,
-    storages,
+    storage,
     keep,
     full,
     verbose,
@@ -43,39 +43,35 @@ def backup_main(
 ):
     """Main method, gets called by generated bin/backup."""
     repozo = os.path.join(bin_dir, "repozo")
-
-    for storage in storages:
-        fs = storage["datafs"]
-        if backup_method == config.STANDARD_BACKUP:
-            location = storage["backup_location"]
-            logger.info(
-                "Please wait while backing up database file: %s to %s", fs, location
-            )
-        elif backup_method == config.SNAPSHOT_BACKUP:
-            location = storage["snapshot_location"]
-            logger.info(
-                "Please wait while making snapshot backup: %s to %s", fs, location
-            )
-        elif backup_method == config.ZIP_BACKUP:
-            location = storage["zip_location"]
-            logger.info(
-                "Please wait while backing up database file: %s to %s", fs, location
-            )
-        result = os.system(
-            quote_command(
-                [repozo] + backup_arguments(fs, location, full, verbose, as_list=True)
-            )
+    fs = storage["datafs"]
+    if backup_method == config.STANDARD_BACKUP:
+        location = storage["backup_location"]
+        logger.info(
+            "Please wait while backing up database file: %s to %s", fs, location
         )
-        logger.debug("Repozo command executed.")
-        if result:
-            logger.error("Repozo command failed. See message above.")
-            return result
-        cleanup(location, keep)
+    elif backup_method == config.SNAPSHOT_BACKUP:
+        location = storage["snapshot_location"]
+        logger.info("Please wait while making snapshot backup: %s to %s", fs, location)
+    elif backup_method == config.ZIP_BACKUP:
+        location = storage["zip_location"]
+        logger.info(
+            "Please wait while backing up database file: %s to %s", fs, location
+        )
+    result = os.system(
+        quote_command(
+            [repozo] + backup_arguments(fs, location, full, verbose, as_list=True)
+        )
+    )
+    logger.debug("Repozo command executed.")
+    if result:
+        logger.error("Repozo command failed. See message above.")
+        return result
+    cleanup(location, keep)
 
 
 def restore_main(
     bin_dir,
-    storages,
+    storage,
     verbose,
     date=None,
     restore_snapshot=False,
@@ -102,30 +98,29 @@ def restore_main(
         sys.exit(1)
     repozo = os.path.join(bin_dir, "repozo")
     logger.debug("If things break: did you stop zope?")
-    for storage in storages:
-        if restore_snapshot:
-            backup_location = storage["snapshot_location"]
-        elif alt_restore:
-            backup_location = storage["alt_location"]
-        elif zip_restore:
-            backup_location = storage["zip_location"]
-        else:
-            backup_location = storage["backup_location"]
-        fs = storage["datafs"].rstrip(os.sep)
-        fs_dir = os.path.dirname(fs)
-        if not os.path.exists(fs_dir):
-            os.makedirs(fs_dir)
-            logger.info("Created directory %s", fs_dir)
-        arguments = restore_arguments(fs, backup_location, date, verbose, as_list=True)
-        if only_check:
-            continue
-        logger.info(
-            "Please wait while restoring database file: %s to %s", backup_location, fs
-        )
-        result = os.system(quote_command([repozo] + arguments))
-        if result:
-            logger.error("Repozo command failed. See message above.")
-            return result
+    if restore_snapshot:
+        backup_location = storage["snapshot_location"]
+    elif alt_restore:
+        backup_location = storage["alt_location"]
+    elif zip_restore:
+        backup_location = storage["zip_location"]
+    else:
+        backup_location = storage["backup_location"]
+    fs = storage["datafs"].rstrip(os.sep)
+    fs_dir = os.path.dirname(fs)
+    if not os.path.exists(fs_dir):
+        os.makedirs(fs_dir)
+        logger.info("Created directory %s", fs_dir)
+    arguments = restore_arguments(fs, backup_location, date, verbose, as_list=True)
+    if only_check:
+        return
+    logger.info(
+        "Please wait while restoring database file: %s to %s", backup_location, fs
+    )
+    result = os.system(quote_command([repozo] + arguments))
+    if result:
+        logger.error("Repozo command failed. See message above.")
+        return result
 
 
 def backup_arguments(

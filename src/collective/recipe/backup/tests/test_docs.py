@@ -103,7 +103,6 @@ def test_suite():
         "cleanup_dir.rst",
         "incremental_blobs.rst",
         "location.rst",
-        "multiple.rst",
         "no_rsync.rst",
         "options.rst",
         "prefix.rst",

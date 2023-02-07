@@ -124,9 +124,6 @@ Which data does this recipe backup?
 - The Zope Object DataBase (ZODB) filestorage, by default located at
   ``var/filestorage/Data.fs``.
 
-- Possibly additional filestorages, see the
-  ``additional_filestorages`` option.
-
 - The blobstorage (since version 2.0) if your buildout uses it, by
   default located at ``var/blobstorage``.
 
@@ -280,12 +277,6 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
 
 .. Note: keep this in alphabetical order please.
 
-``additional_filestorages``
-    Advanced option, only needed when you have split for instance a
-    ``catalog.fs`` out of the regular ``Data.fs``.
-    Use it to specify the extra filestorages.
-    (See `Advanced usage: multiple Data.fs files`_).
-
 ``archive_blob``
     Use ``tar`` archiving functionality. ``false`` by default. Set it to ``true``
     and backup/restore will be done with ``tar`` command. Note that ``tar``
@@ -294,11 +285,15 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     counts as a full backup ``keep_blob_days`` is ignored.
     See the ``compress_blob`` option if you want to compress the archive.
 
-``alternative_restore_sources``
+``alternative_restore_source``
     You can restore from an alternative source.  Use case: first make
     a backup of your production site, then go to the testing or
     staging server and restore the production data there.  See
-    `Alternative restore sources`_
+    `Alternative restore source`_
+
+``alternative_restore_sources``
+    Backwards compatibility spelling for ``alternative_restore_source``.
+    This will no longer work in version 7.
 
 ``backup_blobs``
     Backup the blob storage.  Default is ``True`` on Python 2.6 (Plone
@@ -550,71 +545,6 @@ cronjobs from within your buildout.  For example::
     command = ${buildout:directory}/bin/backup
 
 
-Advanced usage: multiple Data.fs files
-======================================
-
-Sometimes, a filestorage is split into several files. Most common reason is to
-have a regular ``Data.fs`` and a ``catalog.fs`` which contains the
-``portal_catalog``. This is supported with the ``additional_filestorages``
-option::
-
-    [backup]
-    recipe = collective.recipe.backup
-    additional_filestorages =
-        catalog
-        another
-
-This means that, with the standard ``Data.fs``, the ``bin/backup``
-script will now backup three filestorages::
-
-    var/filestorage/Data.fs
-    var/filestorage/catalog.fs
-    var/filestorage/another.fs
-
-The additional backups have to be stored separate from the ``Data.fs``
-backup. That's done by appending the file's name and creating extra backup
-directories named that way::
-
-    var/backups_catalog
-    var/snapshotbackups_catalog
-    var/backups_another
-    var/snapshotbackups_another
-
-The various backups are done one after the other. They cannot be done at the
-same time with ``repozo``. So they are not completely in sync. The "other"
-databases are backed up first as a small difference in the catalog is just
-mildly irritating, but the other way around users can get real errors.
-
-In the ``additional_filestorages`` option you can define different
-filestorages using this syntax::
-
-    additional_filestorages =
-        storagename1 [datafs1_path [blobdir1]]
-        storagename2 [datafs2_path [blobdir2]]
-        ...
-
-So if you want more control over the filestorage source path, you can
-explicitly set it, with or without the blobstorage path.  For
-example::
-
-    [backup]
-    recipe = collective.recipe.backup
-    additional_filestorages =
-        foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
-        bar ${buildout:directory}/var/filestorage/bar/bar.fs
-
-If the ``datafs_path`` is missing, then the default value will be used
-(``var/filestorage/storagename1.fs``).  If you do not specify a
-``blobdir``, then this means no blobs will be backed up for that
-storage.  Note that if you specify ``blobdir`` you must specify
-``datafs_path`` as well.
-
-Note that ``collective.recipe.filestorage`` creates additional
-filestorages in a slightly different location, but you can explictly define the
-paths of filestorage and blobstorage for all the ``parts`` defined in the recipe.
-Work is in progress to improve this.
-
-
 Blob storage
 ============
 
@@ -679,26 +609,24 @@ probably to set the ``use_rsync = false`` option in the backup part.
 Then we simply copy the blobstorage directory.
 
 
-Alternative restore sources
-===========================
+Alternative restore source
+==========================
 
 Added in version 2.17.
+Changed in version 5: only one source is supported.
 
 You can restore from an alternative source.  Use case: first make a
 backup of your production site, then go to the testing or staging
 server and restore the production data there.
 
-In the ``alternative_restore_sources`` option you can define different
+In the ``alternative_restore_source`` option you can define different
 filestorage and blobstorage backup source directories using this
 syntax::
 
-    alternative_restore_sources =
-        storagename1 datafs1_backup [blobdir1_backup]
-        storagename2 datafs2_backup [blobdir2_backup]
-        ...
+    alternative_restore_source =
+        storagename datafs1_backup [blobdir1_backup]
 
-The storagenames *must* be the same as in the additional_filestorages
-option, plus a key ``Data`` (or ``1``) for the standard ``Data.fs``
+The storagename must be ``Data`` (or ``1``) for the standard ``Data.fs``
 and optionally its blobstorage.
 
 The result is a ``bin/altrestore`` script.
@@ -708,7 +636,7 @@ blobstorage::
 
     [backup]
     recipe = collective.recipe.backup
-    alternative_restore_sources =
+    alternative_restore_source =
         Data /path/to/production/var/backups /path/to/production/var/blobstoragebackups
 
 The above configuration uses ``repozo`` to restore the Data.fs from
@@ -723,22 +651,10 @@ normal restore script::
 
     bin/altrestore 2000-12-31-23-59
 
-If you have additional filestorages, it would be like this::
-
-    [backup]
-    recipe = collective.recipe.backup
-    additional_filestorages =
-        foo ${buildout:directory}/var/filestorage/foo/foo.fs ${buildout:directory}/var/blobstorage-foo
-        bar ${buildout:directory}/var/filestorage/bar/bar.fs
-    alternative_restore_sources =
-        Data /path/to/production/var/backups /path/to/production/var/blobstoragebackups
-        foo /path/to/production/var/backups_foo /path/to/production/var/blobstoragebackups_foo
-        bar /path/to/production/var/backups_bar
-
-The recipe will fail if the alternative sources do not match the
-standard filestorage, blobstorage and additional storages.  For
-example, you get an error when the ``alternative_restore_sources`` is
-missing the ``Data`` key, when it has extra or missing keys, when a
+The recipe will fail if the alternative source does not match the
+standard filestorage and blobstorage.  For
+example, you get an error when the ``alternative_restore_source`` is
+missing the ``Data`` key, when it has an extra key, when a
 key has no paths, when a key has an extra or missing blobstorage.
 
 During install of the recipe, so during the ``bin/buildout`` run, it
