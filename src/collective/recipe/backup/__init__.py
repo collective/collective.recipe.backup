@@ -211,6 +211,15 @@ class Recipe:
         snapshot_location = construct_path(prefix, self.options["snapshotlocation"])
         zip_location = construct_path(prefix, self.options["ziplocation"])
 
+        if not to_bool(options["blob_timestamps"]):
+            # blob_timestamps was explicitly set to false
+            logger.warning(
+                "You have disabled blob_timestamps. "
+                "Support for this may be dropped in version 6, "
+                "making it impossible to restore backups without timestamps. "
+                "See https://github.com/collective/collective.recipe.backup/issues/65"
+            )
+
         # Blob backup.
         if to_bool(self.options["backup_blobs"]):
             blob_backup_location = construct_path(
@@ -580,7 +589,7 @@ logging.basicConfig(level=loglevel,
             # blob_timestamps was explicitly set to false
             if to_bool(options.get("incremental_blobs")):
                 raise zc.buildout.UserError(
-                    "Cannot have blob_timestamps false and " "incremental_blobs true."
+                    "Cannot have blob_timestamps false and incremental_blobs true."
                 )
 
 
