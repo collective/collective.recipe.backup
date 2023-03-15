@@ -1,4 +1,0 @@
-Removed option ``quick``.
-From now on, we always call repozo with the quick option for normal backups, you can no longer turn this off.
-For full backups (snapshotbackups and zipbackups), the quick option is not used.
-[maurits]

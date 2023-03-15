@@ -1,3 +1,0 @@
-Deprecate setting blob_timestamps to false.
-See `issue 65 <https://github.com/collective/collective.recipe.backup/issues/65>`_.
-[maurits]

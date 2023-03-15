@@ -7,6 +7,38 @@
 
 .. towncrier release notes start
 
+5.0.0a3 (2023-03-15)
+====================
+
+Breaking changes:
+
+
+- Removed ``additional_filestorages`` option.
+  Removed support in ``alternative_restore_sources`` for multiple storages: only the standard single filestorage plus blobstorage is supported.
+  Renamed ``alternative_restore_sources`` to ``alternative_restore_source``, keeping the old alias for now.
+  [maurits] (`Issue #64 <https://github.com/collective/collective.recipe.backup/issues/64>`_)
+- Removed ``gzip`` option.
+  From now on, we always call repozo with the gzip option, you can no longer turn this off.
+  [maurits] (`Issue #67 <https://github.com/collective/collective.recipe.backup/issues/67>`_)
+- Removed option ``gzip_blob``.
+  This was a backwards compatibility alias for ``archive_blob``.
+  You should use that now it you want to create a tar archive.
+  Additionally use the ``compress_blob`` option if you are really sure you want to compress the archive.
+  [maurits] (`Issue #68 <https://github.com/collective/collective.recipe.backup/issues/68>`_)
+- Removed option ``quick``.
+  From now on, we always call repozo with the quick option for normal backups, you can no longer turn this off.
+  For full backups (snapshotbackups and zipbackups), the quick option is not used.
+  [maurits] (`Issue #69 <https://github.com/collective/collective.recipe.backup/issues/69>`_)
+
+
+Bug fixes:
+
+
+- Deprecate setting blob_timestamps to false.
+  See `issue 65 <https://github.com/collective/collective.recipe.backup/issues/65>`_.
+  [maurits] (`Issue #65 <https://github.com/collective/collective.recipe.backup/issues/65>`_)
+
+
 5.0.0a2 (2023-02-01)
 ====================
 

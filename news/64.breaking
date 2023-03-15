@@ -1,4 +1,0 @@
-Removed ``additional_filestorages`` option.
-Removed support in ``alternative_restore_sources`` for multiple storages: only the standard single filestorage plus blobstorage is supported.
-Renamed ``alternative_restore_sources`` to ``alternative_restore_source``, keeping the old alias for now.
-[maurits]

@@ -1,5 +1,0 @@
-Removed option ``gzip_blob``.
-This was a backwards compatibility alias for ``archive_blob``.
-You should use that now it you want to create a tar archive.
-Additionally use the ``compress_blob`` option if you are really sure you want to compress the archive.
-[maurits]
