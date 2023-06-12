@@ -7,6 +7,15 @@
 
 .. towncrier release notes start
 
+5.0.0 (2023-06-12)
+==================
+
+Bug fixes:
+
+
+- Final release, no changes since previous alpha.  [maurits]
+
+
 5.0.0a3 (2023-03-15)
 ====================
 
