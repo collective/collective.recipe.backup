@@ -60,10 +60,10 @@ cake is important!
 Compatibility
 =============
 
-The recipe is tested with Python 2.7, 3.6, 3.7, 3.8, 3.9.
-In Plone terms it works fine on Plone 4, 5 and 6.
+The recipe is tested with Python 3.8, 3.9, 3.10, 3.11, 3.12, and 3.13.
+In Plone terms it works fine on Plone 5.2 and 6.
 
-Note that the integration with ``plone.recipe.zope2instance`` is not tested on Python 3.
+Note that the integration with ``plone.recipe.zope2instance`` is not tested.
 It would pulls in too many dependencies, like Zope and ZODB.
 
 
@@ -296,8 +296,7 @@ some system-wide directory like ``/var/zopebackups/instancename/`` and
     This will no longer work in version 7.
 
 ``backup_blobs``
-    Backup the blob storage.  Default is ``True`` on Python 2.6 (Plone
-    4) and higher, and ``False`` otherwise.  This requires the
+    Backup the blob storage.  Default is ``True``.  This requires the
     ``blob_storage`` location to be set.  If no ``blob_storage``
     location has been set and we cannot find one by looking in the
     other buildout parts, we quit with an error (since version 2.22).
@@ -536,7 +535,7 @@ get, as you'll get that in your mailbox. In your cronjob, just add ``-q`` or
 This option ignores the debug variable, if set to true in buildout.
 
 Speaking of cron jobs?  Take a look at `zc.recipe.usercrontab
-<http://pypi.python.org/pypi/z3c.recipe.usercrontab>`_ if you want to handle
+<https://pypi.org/project/z3c.recipe.usercrontab/>`_ if you want to handle
 cronjobs from within your buildout.  For example::
 
     [backupcronjob]

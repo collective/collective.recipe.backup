@@ -1,5 +1,5 @@
-"""Functions that invoke repozo and/or the blob backup.
-"""
+"""Functions that invoke repozo and/or the blob backup."""
+
 from collective.recipe.backup import config
 from collective.recipe.backup import copyblobs
 from collective.recipe.backup import repozorunner
@@ -271,7 +271,6 @@ def restore_main(
     incremental_blobs=False,
     **kwargs,
 ):
-
     """Main method, gets called by generated bin/restore."""
     # First run several checks, and get the date that should be restored.
     date = restore_check(

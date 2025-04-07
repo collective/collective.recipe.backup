@@ -11,6 +11,7 @@ cleanup() empties old backups from the backup directory to prevent it from
 filling up the harddisk.
 
 """
+
 from collective.recipe.backup import config
 from operator import itemgetter
 

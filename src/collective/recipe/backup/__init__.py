@@ -1,4 +1,5 @@
 """Recipe backup"""
+
 from collective.recipe.backup import utils
 
 import logging
