@@ -7,6 +7,18 @@
 
 .. towncrier release notes start
 
+5.1.0 (2025-04-07)
+==================
+
+New features:
+
+
+- Add official support for Python 3.12 and 3.13.
+  Test with latest setuptools and zc.buildout versions.
+  Keep testing on Python 3.8 for now.
+  [maurits] (`Issue #313 <https://github.com/collective/collective.recipe.backup/issues/313>`_)
+
+
 5.0.0 (2023-06-12)
 ==================
 
