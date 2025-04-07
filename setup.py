@@ -1,6 +1,7 @@
 """
 This module contains the tool of collective.recipe.backup
 """
+
 from setuptools import find_packages
 from setuptools import setup
 

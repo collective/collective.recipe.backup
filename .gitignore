@@ -39,3 +39,5 @@ lib/
 pip-selfcheck.json
 local/
 pyvenc.cfg
+
+.flakeheaven_cache
