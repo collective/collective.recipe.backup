@@ -12,4 +12,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run all lint checks
-        uses: plone/code-analysis-action@v2
+        uses: plone/code-analysis-action@v2.1
