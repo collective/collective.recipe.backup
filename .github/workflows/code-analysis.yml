@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout codebase
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Run all lint checks
         uses: plone/code-analysis-action@v2
