@@ -1,6 +1,6 @@
 packaging==24.2
 pip==25.0.1
-setuptools==75.8.2; python_version >= '3.9'
+setuptools==78.1.1; python_version >= '3.9'
 setuptools==75.3.0; python_version == '3.8'
 wheel==0.45.1
 zc.buildout==4.1.6; python_version >= '3.9'
