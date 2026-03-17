@@ -12,7 +12,7 @@ Archive blob backups feature added by `Matej Cotman`_ (niteoweb_).
 
 
 Sponsorship
-===========
+-----------
 
 Work on collective.recipe.backup has been made possible by Ghent University, or UGent.
 See https://www.ugent.be.

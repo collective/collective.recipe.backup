@@ -8,7 +8,7 @@
 .. towncrier release notes start
 
 5.1.0 (2025-04-07)
-==================
+------------------
 
 New features:
 
@@ -20,7 +20,7 @@ New features:
 
 
 5.0.0 (2023-06-12)
-==================
+------------------
 
 Bug fixes:
 
@@ -29,7 +29,7 @@ Bug fixes:
 
 
 5.0.0a3 (2023-03-15)
-====================
+--------------------
 
 Breaking changes:
 
@@ -61,7 +61,7 @@ Bug fixes:
 
 
 5.0.0a2 (2023-02-01)
-====================
+--------------------
 
 Bug fixes:
 
@@ -69,7 +69,7 @@ Bug fixes:
 
 
 5.0.0a1 (2022-11-08)
-====================
+--------------------
 
 Breaking changes:
 
@@ -98,7 +98,7 @@ Bug fixes:
 
 
 4.2.0 (2021-08-30)
-==================
+------------------
 
 New features:
 
@@ -122,7 +122,7 @@ Bug fixes:
 
 
 4.1.1 (2019-10-07)
-==================
+------------------
 
 Bug fixes:
 
@@ -132,7 +132,7 @@ Bug fixes:
 
 
 4.1.0 (2019-04-10)
-==================
+------------------
 
 New features:
 
@@ -156,7 +156,7 @@ Bug fixes:
 
 
 4.0.1 (2018-04-19)
-==================
+------------------
 
 Bug fixes:
 
@@ -170,13 +170,13 @@ Bug fixes:
 
 
 4.0 (2017-12-22)
-================
+----------------
 
 - Updated readme and added sponsorship note.  [maurits]
 
 
 4.0b5 (2017-11-17)
-==================
+------------------
 
 - Added ``incremental_blobs`` option.
   This creates tarballs with only the changes compared to the previous blob backups.
@@ -192,7 +192,7 @@ Bug fixes:
 
 
 4.0b4 (2017-08-18)
-==================
+------------------
 
 - Test Python 3.6 (and 2.6 and 2.7) on Travis from now on.  [maurits]
 
@@ -207,7 +207,7 @@ Bug fixes:
 
 
 4.0b3 (2017-07-05)
-==================
+------------------
 
 - Added basic Python 3 support.  We do not test with it yet,
   but you should not get NameErrors anymore.
@@ -215,7 +215,7 @@ Bug fixes:
 
 
 4.0b2 (2017-06-26)
-==================
+------------------
 
 - No longer create the ``fullbackup`` script by default.
   You can still enable it by setting ``enable_fullbackup`` to ``true``.
@@ -232,7 +232,7 @@ Bug fixes:
 
 
 4.0b1 (2017-05-31)
-==================
+------------------
 
 - Make custom backup locations relative to the ``locationprefix`` option or the ``var`` directory.
   Until now, the ``locationprefix`` option was only used if you did not set custom locations.
@@ -299,7 +299,7 @@ Bug fixes:
 
 
 3.1 (2017-02-24)
-================
+----------------
 
 - Add a ``locationprefix`` option to configure a folder where all other
   backup and snapshot folders will be created [erral]
@@ -310,7 +310,7 @@ Bug fixes:
 
 
 3.0.0 (2015-12-31)
-==================
+------------------
 
 - Refactored the init and install methods of this recipe.  During the
   init phase we were reading the buildout configuration, but during
@@ -327,7 +327,7 @@ Bug fixes:
 
 
 2.22 (2015-12-30)
-=================
+-----------------
 
 - Do not accept ``backup_blobs`` false and ``enable_zipbackup`` true.
   The zipbackup script is useless without blobs.
@@ -350,7 +350,7 @@ Bug fixes:
 
 
 2.21 (2015-10-06)
-=================
+-----------------
 
 - When restoring, create ``var/filestorage`` if needed.
   Fixes #23.
@@ -358,7 +358,7 @@ Bug fixes:
 
 
 2.20 (2014-11-11)
-=================
+-----------------
 
 - Add ``enable_fullbackup`` option.  Default: true, so no change
   compared to previous version.
@@ -374,7 +374,7 @@ Bug fixes:
 
 
 2.19 (2014-06-16)
-=================
+-----------------
 
 - Call repozo with ``--quick`` when making an incremental backup.
   This is a lot faster.  Theoretically it lead to inconsistency if
@@ -388,7 +388,7 @@ Bug fixes:
 
 
 2.18 (2014-04-29)
-=================
+-----------------
 
 - Add ``rsync_options`` option.  These are added to the default
   ``rsync -a`` command. Default is no extra parameters. This can be
@@ -400,7 +400,7 @@ Bug fixes:
 
 
 2.17 (2014-02-07)
-=================
+-----------------
 
 - Add ``alternative_restore_sources`` option.  This creates a
   ``bin/altrestore`` script that restores from an alternative backup
@@ -424,7 +424,7 @@ Bug fixes:
 
 
 2.16 (2014-01-14)
-=================
+-----------------
 
 - Do not create blob backup dirs when not backing up blobs.
   Do not create filestorage backup dirs when not backing up filestorage.
@@ -433,21 +433,21 @@ Bug fixes:
 
 
 2.15 (2013-09-16)
-=================
+-----------------
 
 - Restore compatibility with Python 2.4 (Plone 3).
   [maurits]
 
 
 2.14 (2013-09-09)
-=================
+-----------------
 
 - Archive blob backups with buildout option ``gzip_blob``.
   [matejc]
 
 
 2.13 (2013-07-15)
-=================
+-----------------
 
 - When printing that we halt the execution due to an error running
   repozo, actually halt the execution.
@@ -455,7 +455,7 @@ Bug fixes:
 
 
 2.12 (2013-06-28)
-=================
+-----------------
 
 - Backup directories are now created when we launch ``backup`` or
   ``fullbackup`` or ``snapshotbackup`` scripts, no more during
@@ -464,7 +464,7 @@ Bug fixes:
 
 
 2.11 (2013-05-06)
-=================
+-----------------
 
 - Print the names of filestorages and blobstorages that will be
   restored.  Issue #8.
@@ -479,7 +479,7 @@ Bug fixes:
 
 
 2.10 (2013-03-30)
-=================
+-----------------
 
 - Added ``fullbackup`` script that defaults to ``full=true``.  This
   could have been handled by making a new part, but it seemed like
@@ -489,7 +489,7 @@ Bug fixes:
 
 
 2.9 (2013-03-06)
-================
+----------------
 
 - Fixed possible KeyError: ``blob_snapshot_location``.
   [gforcada]
@@ -497,7 +497,7 @@ Bug fixes:
 
 
 2.8 (2012-11-13)
-================
+----------------
 
 - Fixed possible KeyError: ``blob_backup_location``.
   https://github.com/collective/collective.recipe.backup/issues/3
@@ -505,21 +505,21 @@ Bug fixes:
 
 
 2.7 (2012-09-27)
-================
+----------------
 
 - additional_filestorages improved: blob support and custom location.
   [mamico]
 
 
 2.6 (2012-08-29)
-================
+----------------
 
 - Added pre_command and post_command options.  See the documentation.
   [maurits]
 
 
 2.5 (2012-08-08)
-================
+----------------
 
 - Moved code to github:
   https://github.com/collective/collective.recipe.backup
@@ -527,7 +527,7 @@ Bug fixes:
 
 
 2.4 (2011-12-20)
-================
+----------------
 
 - Fixed silly indentation error that prevented old blob backups from
   being deleted when older than ``keep_blob_days`` days.
@@ -535,7 +535,7 @@ Bug fixes:
 
 
 2.3 (2011-10-05)
-================
+----------------
 
 - Quit the rest of the backup or restore when a repozo call gives an
   error.  Main use case: when restoring to a specific date repozo will
@@ -548,7 +548,7 @@ Bug fixes:
 
 
 2.2 (2011-09-14)
-================
+----------------
 
 - Refactored script generation to make a split between initialization
   code and script arguments.  This restores compatibility with
@@ -567,7 +567,7 @@ Bug fixes:
 
 
 2.1 (2011-09-01)
-================
+----------------
 
 - Raise an error when the four backup location options
   (blobbackuplocation, blobsnapshotlocation, location and
@@ -581,7 +581,7 @@ Bug fixes:
 
 
 2.0 (2011-08-26)
-================
+----------------
 
 - Backup and restore blobs, using rsync.
   [maurits]
@@ -591,7 +591,7 @@ Bug fixes:
 
 
 1.7 (2010-12-10)
-================
+----------------
 
 - Fix generated repozo commands to work also
   when recipe is configured to have a non **Data.fs**
@@ -603,7 +603,7 @@ Bug fixes:
 
 
 1.6 (2010-09-21)
-================
+----------------
 
 - Added the option enable_snapshotrestore so that the creation of the
   script can be removed. Backwards compatible, if you don't specify it
@@ -614,7 +614,7 @@ Bug fixes:
 
 
 1.5 (2010-09-08)
-================
+----------------
 
 - Fix: when running buildout with a config in a separate directory
   (like ``bin/buildout -c conf/prod.cfg``) the default backup
@@ -626,7 +626,7 @@ Bug fixes:
 
 
 1.4 (2010-08-06)
-================
+----------------
 
 - Added documentation about how to get the required bin/repozo script
   in your buildout if for some reason you do not have it yet (like on
@@ -636,13 +636,13 @@ Bug fixes:
 
 
 1.3 (2009-12-08)
-================
+----------------
 
 - Added snapshotrestore script.  [Nejc Zupan]
 
 
 1.2 (2009-10-26)
-================
+----------------
 
 - The part name is now reflected in the created scripts and var/ directories.
   Originally bin/backup, bin/snapshotbackup, bin/restore and var/backups
@@ -653,7 +653,7 @@ Bug fixes:
 
 
 1.1 (2009-08-21)
-================
+----------------
 
 - Run the cleanup script (removing too old backups that we no longer
   want to keep) for additional file storages as well.
@@ -666,20 +666,20 @@ Bug fixes:
 
 
 1.0 (2009-02-06)
-================
+----------------
 
 - Quote all paths and arguments so that it works on paths that contain
   spaces (specially on Windows). [sidnei]
 
 
 0.9 (2008-12-05)
-================
+----------------
 
 - Windows path compatibility fix.  [Juan A. Diaz]
 
 
 0.8 (2008-09-23)
-================
+----------------
 
 - Changed the default for gzipping to True. Adding ``gzip = true`` to all our
   server deployment configs gets tired pretty quickly, so doing it by default
@@ -691,14 +691,14 @@ Bug fixes:
 
 
 0.7 (2008-09-19)
-================
+----------------
 
 - Added $BACKUP-style environment variable substitution in addition to the tilde
   expansion offered by 0.6. [reinout, idea by Fred van Dijk]
 
 
 0.6 (2008-09-19)
-================
+----------------
 
 - Fixed the test setup so both bin/test and python setup.py test
   work. [reinout+maurits]
@@ -710,7 +710,7 @@ Bug fixes:
 
 
 0.5 (2008-09-18)
-================
+----------------
 
 - Added support for additional_filestorages option, needed for for instance a
   split-out catalog.fs. [reinout]
@@ -719,7 +719,7 @@ Bug fixes:
 
 
 0.4 (2008-08-19)
-================
+----------------
 
 - Allowed the user to make the script more quiet (say in a cronjob)
   by using 'bin/backup -q' (or --quiet).  [maurits]
@@ -728,7 +728,7 @@ Bug fixes:
 
 
 0.3.1 (2008-07-04)
-==================
+------------------
 
 - Added 'gzip' option, including changes to the cleanup functionality that
   treats .fsz also as a full backup like .fs. [reinout]
@@ -737,7 +737,7 @@ Bug fixes:
 
 
 0.2 (2008-07-03)
-================
+----------------
 
 - Extra tests and documentation change for 'keep': the default is to keep 2
   backups instead of all backups. [reinout]
@@ -746,7 +746,7 @@ Bug fixes:
 
 
 0.1 (2008-07-03)
-================
+----------------
 
 - Added bin/restore. [reinout]
 
