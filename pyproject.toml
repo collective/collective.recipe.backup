@@ -140,6 +140,7 @@ ignore = [
     "dependabot.yml",
     "mx.ini",
     "tox.ini",
+    "buildout.cfg",
 
 ]
 

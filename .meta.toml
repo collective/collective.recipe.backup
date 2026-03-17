@@ -4,3 +4,8 @@
 [meta]
 template = "default"
 commit-id = "2.6.1.dev0"
+
+[pyproject]
+check_manifest_ignores = """
+    "buildout.cfg",
+"""
