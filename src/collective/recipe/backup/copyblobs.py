@@ -245,7 +245,7 @@ def get_valid_directories(container, name):
 
     Using the zc.buildout tools we create some directories and files:
 
-    >>> mkdir('dirtest')
+    >>> mkdir('dirtest')  # noqa F821
     >>> get_valid_directories('dirtest', 'a')
     []
     >>> for d in ['a', 'a.0', 'a.1', 'a.bar.2', 'a.bar',
@@ -307,7 +307,7 @@ def get_valid_archives(container, name):
 
     Using the zc.buildout tools we create some directories and files:
 
-    >>> mkdir('dirtest')
+    >>> mkdir('dirtest')  # noqa F821
     >>> get_valid_archives('dirtest', 'a.tar.gz')
     []
     >>> for gz in ['a.tar.gz', 'a.0.tar.gz', 'a.1.tar', 'a.bar.2.tar.gz',
@@ -357,7 +357,7 @@ def rotate_directories(container, name):
 
     Using the zc.buildout tools we create some directories and files:
 
-    >>> mkdir('dirtest')
+    >>> mkdir('dirtest')  # noqa F821
     >>> rotate_directories('dirtest', 'a')
     >>> for d in ['a.0', 'a.1', 'a.2', 'a.9']:
     ...     mkdir('dirtest', d)
@@ -404,7 +404,7 @@ def rotate_archives(container, name):
 
     Using the zc.buildout tools we create some directories and files:
 
-    >>> mkdir('dirtest')
+    >>> mkdir('dirtest')  # noqa F821
     >>> rotate_archives('dirtest', 'a')
     >>> for gz in ['a.0.tar', 'a.1.tar.gz', 'a.2.tar', 'a.9.tar.gz']:
     ...     write('dirtest', gz, 'File content.')
@@ -1351,7 +1351,7 @@ def restore_blobs_archive(
 
     Prepare backup for test:
 
-    >>> mkdir('blobs')
+    >>> mkdir('blobs')  # noqa F821
     >>> write('blobs', 'one.txt', 'File One')
     >>> write('blobs', 'two.txt', 'File Two')
     >>> write('blobs', 'three.txt', 'File Three')

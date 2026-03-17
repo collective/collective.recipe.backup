@@ -136,7 +136,7 @@ def try_create_folder(pathdir):
     """Try to create a folder, but remove it again.
 
     >>> try_create_folder('mytest')
-    >>> mkdir('mytest')
+    >>> mkdir('mytest')  # noqa F821
     >>> mkdir('mytest', 'keep')
     >>> write('mytest', 'myfile', 'I am a file.')
     >>> ls('mytest')

@@ -221,7 +221,7 @@ def cleanup(backup_location, keep=0):
     For the test, we create a backup dir using buildout's test support methods:
 
       >>> backup_dir = 'back'
-      >>> mkdir(backup_dir)
+      >>> mkdir(backup_dir)  # noqa F821
 
     And we'll make a function that creates a backup file for us and that also
     sets the file modification dates to a meaningful time.
