@@ -8,7 +8,6 @@ from collective.recipe.backup import utils
 import logging
 import sys
 
-
 logger = logging.getLogger("backup")
 
 

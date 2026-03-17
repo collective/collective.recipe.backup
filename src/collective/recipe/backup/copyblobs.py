@@ -16,7 +16,6 @@ import shutil
 import sys
 import time
 
-
 logger = logging.getLogger("blobs")
 SOURCE = "blobstorage"
 BACKUP_DIR = "backups"

@@ -9,7 +9,6 @@ import re
 import zc.buildout
 import zc.recipe.egg
 
-
 logger = logging.getLogger("backup")
 
 # Standard storage key for Data.fs.

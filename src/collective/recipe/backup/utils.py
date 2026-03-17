@@ -7,7 +7,6 @@ import shutil
 import subprocess
 import sys
 
-
 try:
     from builtins import input as raw_input
 except ImportError:
