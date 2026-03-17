@@ -24,7 +24,7 @@ is_time_stamp = re.compile(r"\d{4}(?:-\d\d){5}$").match
 
 
 def find_suffixes(value, suffixes):
-    """Check that value contains ons of the suffixes.
+    """Check that value contains one of the suffixes.
 
     If it does, return the value without suffix.
     It it does not, return None.

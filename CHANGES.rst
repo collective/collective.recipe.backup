@@ -693,7 +693,7 @@ Bug fixes:
 0.7 (2008-09-19)
 ================
 
-- Added $BACKUP-style enviroment variable subsitution in addition to the tilde
+- Added $BACKUP-style environment variable substitution in addition to the tilde
   expansion offered by 0.6. [reinout, idea by Fred van Dijk]
 
 
