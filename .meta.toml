@@ -5,6 +5,15 @@
 template = "default"
 commit-id = "2.6.1.dev0"
 
+[github]
+# no 'coverage' job, as our tests have a different setup.
+jobs = [
+   "qa",
+   "dependencies",
+   "release_ready",
+   "circular",
+   ]
+
 [pyproject]
 check_manifest_ignores = """
     "buildout.cfg",
