@@ -60,11 +60,13 @@ cake is important!
 Compatibility
 =============
 
-The recipe is tested with Python 3.8, 3.9, 3.10, 3.11, 3.12, and 3.13.
-In Plone terms it works fine on Plone 5.2 and 6.
+Version 6 of the recipe is tested with Python 3.10-3.14.
+In Plone terms it works fine on Plone 6.0, 6.1, 6.2.
+
+Use version 5 if you need compatibility with Python 3.8, 3.9, and Plone 5.2.
 
 Note that the integration with ``plone.recipe.zope2instance`` is not tested.
-It would pulls in too many dependencies, like Zope and ZODB.
+It would pull in too many dependencies, like Zope and ZODB.
 
 
 Development
@@ -547,11 +549,9 @@ cronjobs from within your buildout.  For example::
 Blob storage
 ============
 
-Added in version 2.0.
-
-We can backup the blob storage.  Plone 4 uses a blob storage to store
-files (Binary Large OBjects) on the file system.  In Plone 3 this is
-optional.  When this is used, it should be backed up of course.  You
+We can backup the blob storage.  Plone uses a blob storage to store
+files (Binary Large OBjects) on the file system.
+When this is used, it should be backed up of course.  You
 must specify the source blob_storage directory where Plone (or Zope)
 stores its blobs.  As indicated earlier, when we do not set it
 specifically, we try to get the location from other parts, for example
@@ -589,9 +589,11 @@ case you want to separate this into several scripts::
 With this setup ``bin/filebackup`` now only backs up the filestorage
 and ``bin/blobbackup`` only backs up the blobstorage.
 
-New in version 4.0: you may want to specify ``blob_timestamps = true``.
+New in version 4.0 is the ``blob_timestamps`` option.
 Then we create stable directories that we do not rotate.
 For example: ``blobstorage.1972-12-25-01-02-03`` instead of ``blobstorage.0``.
+Since version 4.2.0 the default is true.
+Since version 5.0.0 setting it to false is deprecated, and this option may be removed.
 
 
 rsync
@@ -611,7 +613,6 @@ Then we simply copy the blobstorage directory.
 Alternative restore source
 ==========================
 
-Added in version 2.17.
 Changed in version 5: only one source is supported.
 
 You can restore from an alternative source.  Use case: first make a

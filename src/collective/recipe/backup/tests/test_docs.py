@@ -14,7 +14,6 @@ import re
 import tempfile
 import unittest
 import zc.buildout.testing
-import zc.buildout.tests
 import zc.recipe.egg
 
 

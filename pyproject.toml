@@ -1,3 +1,6 @@
+[build-system]
+requires = ["setuptools>=68.2,<82"]
+
 [tool.towncrier]
 # package should be "collective.recipe.backup", but that cannot be imported.
 # See https://github.com/hawkowl/towncrier/issues/111

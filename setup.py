@@ -12,7 +12,7 @@ def read(*rnames):
     return open(os.path.join(*rnames)).read()
 
 
-version = "5.1.1.dev0"
+version = "6.0.0.dev0"
 
 long_description = (
     read("README.rst") + "\n" + "Contributors\n"
@@ -32,12 +32,11 @@ setup(
         "Intended Audience :: System Administrators",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Topic :: Software Development :: Build Tools",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: GNU General Public License (GPL)",
@@ -52,7 +51,7 @@ setup(
     namespace_packages=["collective", "collective.recipe"],
     include_package_data=True,
     zip_safe=False,
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     install_requires=[
         "zc.buildout",
         "setuptools",
@@ -61,8 +60,6 @@ setup(
     extras_require=dict(
         tests=[
             "zope.testing",
-            "zc.buildout[test]",
-            "zc.recipe.egg",
         ],
     ),
     entry_points={
