@@ -60,7 +60,6 @@ setup(
     extras_require=dict(
         tests=[
             "zope.testing",
-            "zc.buildout[test]",
         ],
     ),
     entry_points={
