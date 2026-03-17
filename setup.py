@@ -25,6 +25,7 @@ setup(
     version=version,
     description="bin/backup script: sensible defaults around bin/repozo",
     long_description=long_description,
+    long_description_content_type="text/x-rst",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Framework :: Buildout",
