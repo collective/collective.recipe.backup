@@ -61,7 +61,6 @@ setup(
         tests=[
             "zope.testing",
             "zc.buildout[test]",
-            "zc.recipe.egg",
         ],
     ),
     entry_points={
