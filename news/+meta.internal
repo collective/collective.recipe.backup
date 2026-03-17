@@ -1,3 +1,2 @@
-Update configuration files using ``plone.meta``.
-We don't use its test matrix though, as our test setup with buildout is too different.
+Update configuration files.
 [plone devs]
