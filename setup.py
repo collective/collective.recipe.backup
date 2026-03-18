@@ -2,7 +2,6 @@
 This module contains the tool of collective.recipe.backup
 """
 
-from setuptools import find_packages
 from setuptools import setup
 
 import os
@@ -47,15 +46,11 @@ setup(
     author_email="m.van.rees@zestsoftware.nl",
     url="https://github.com/collective/collective.recipe.backup",
     license="GPL",
-    package_dir={"": "src"},
-    packages=find_packages("src"),
-    namespace_packages=["collective", "collective.recipe"],
     include_package_data=True,
     zip_safe=False,
     python_requires=">=3.10",
     install_requires=[
         "zc.buildout",
-        "setuptools",
         "zc.recipe.egg",
     ],
     extras_require=dict(
