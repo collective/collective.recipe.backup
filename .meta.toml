@@ -1,5 +1,5 @@
 # Generated from:
-# https://github.com/plone/meta/tree/main/src/plone/meta/default
+# https://github.com/plone/meta/tree/2.x/src/plone/meta/default
 # See the inline comments on how to expand/tweak this configuration file
 [meta]
 template = "default"
@@ -21,6 +21,10 @@ check_manifest_ignores = """
 
 [tox]
 use_test_matrix = false
+test_environment_variables = """
+    # Warnings interfere with the expected test output.
+    PYTHONWARNINGS=ignore
+"""
 envlist_lines = """
     py{310,311,312,313,314}
 """
@@ -29,10 +33,6 @@ config_lines = """
 description = run the buildout tests
 use_develop = false
 skip_install = true
-# Suppress warnings like this, which interfere with the expected test output:
-# UserWarning: pkg_resources is deprecated as an API.
-set_env =
-    PYTHONWARNINGS = ignore::DeprecationWarning,ignore::UserWarning
 deps =
     -r requirements.txt
 commands_pre =
