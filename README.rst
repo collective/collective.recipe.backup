@@ -8,7 +8,7 @@ Easy Zope backup/restore recipe for buildout
 
 
 Introduction
-============
+------------
 
 This recipe is mostly a wrapper around the ``bin/repozo`` script in
 your Zope buildout.  It requires that this script is already made
@@ -58,7 +58,7 @@ cake is important!
 
 
 Compatibility
-=============
+-------------
 
 Version 6 of the recipe is tested with Python 3.10-3.14.
 In Plone terms it works fine on Plone 6.0, 6.1, 6.2.
@@ -70,7 +70,7 @@ It would pull in too many dependencies, like Zope and ZODB.
 
 
 Development
-===========
+-----------
 
 - Code repository: https://github.com/collective/collective.recipe.backup
 
@@ -98,7 +98,7 @@ Development
 
 
 Example usage
-=============
+-------------
 
 The simplest way to use this recipe is to add a part in ``buildout.cfg`` like this::
 
@@ -119,7 +119,7 @@ Some are not added by default, others can be switched off.
 
 
 Backed up data
-==============
+--------------
 
 Which data does this recipe backup?
 
@@ -131,7 +131,7 @@ Which data does this recipe backup?
 
 
 Data that is *not* backed up
-============================
+----------------------------
 
 Which data does this recipe *not* backup?  Everything else of course,
 but specifically:
@@ -147,7 +147,7 @@ but specifically:
 
 
 Is your backup backed up?
-=========================
+-------------------------
 
 Note that the backups are by default created in the ``var`` directory
 of the buildout, so if you accidentally remove the entire buildout,
@@ -158,7 +158,7 @@ backup to a different machine/country/continent/planet.
 
 
 Backup
-======
+------
 
 Calling ``bin/backup`` results in a normal incremental repozo backup
 that creates a backup of the ``Data.fs`` in ``var/backups``.  When you
@@ -167,7 +167,7 @@ have a blob storage it is by default backed up to
 
 
 Snapshots
-=========
+---------
 
 A quick backup just before updating the production server is a good
 idea.  But you may not want to interfere with the regular backup
@@ -176,7 +176,7 @@ full backup in, by default, ``var/snapshotbackups``.
 
 
 Zipbackups
-==========
+----------
 
 For quickly grabbing the current state of a production database so you
 can download it to your development laptop, you want a full and zipped
@@ -203,7 +203,7 @@ Also, if ``backup_blobs`` is false, the scripts are useless, so we do not create
 
 
 Restore
-=======
+-------
 
 Calling ``bin/restore`` restores the very latest normal incremental
 ``repozo`` backup and restores the blobstorage if you have that.
@@ -243,7 +243,7 @@ Seconds?  Minutes?  Hours?
 Is that time acceptable or should you take other measures?
 
 Names of created scripts
-========================
+------------------------
 
 A backup part will normally be called ``[backup]``, leading to a
 ``bin/backup`` and ``bin/snapshotbackup``.  Should you name your part
@@ -269,7 +269,7 @@ That buildout snippet will create these scripts::
 
 
 Supported options
-=================
+-----------------
 
 The recipe supports the following options, none of which are needed by
 default. The most common ones to change are ``location`` and
@@ -528,7 +528,7 @@ expanded.
 
 
 Cron job integration
-====================
+--------------------
 
 ``bin/backup`` is of course ideal to put in your cronjob instead of a whole
 ``bin/repozo ....`` line. But you don't want the "INFO" level logging that you
@@ -547,7 +547,7 @@ cronjobs from within your buildout.  For example::
 
 
 Blob storage
-============
+------------
 
 We can backup the blob storage.  Plone uses a blob storage to store
 files (Binary Large OBjects) on the file system.
@@ -597,7 +597,7 @@ Since version 5.0.0 setting it to false is deprecated, and this option may be re
 
 
 rsync
-=====
+-----
 
 By default we use ``rsync`` to create backups.  We create hard links
 with this tool, to save disk space and still have incremental backups.
@@ -611,7 +611,7 @@ Then we simply copy the blobstorage directory.
 
 
 Alternative restore source
-==========================
+--------------------------
 
 Changed in version 5: only one source is supported.
 

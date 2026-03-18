@@ -9,7 +9,6 @@ import re
 import zc.buildout
 import zc.recipe.egg
 
-
 logger = logging.getLogger("backup")
 
 # Standard storage key for Data.fs.
@@ -199,7 +198,7 @@ class Recipe:
         options["ziprestore_name"] = ziprestore_name
         options["altrestore_name"] = altrestore_name
 
-        # Validate agin, which also sets the truth values correctly.
+        # Validate again, which also sets the truth values correctly.
         self.validate()
 
         # For site_py_dest in scripts generated with buildout 1.5+:

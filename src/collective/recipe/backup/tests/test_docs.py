@@ -16,7 +16,6 @@ import unittest
 import zc.buildout.testing
 import zc.recipe.egg
 
-
 optionflags = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
 
 checker = renormalizing.RENormalizing(
@@ -37,9 +36,7 @@ checker = renormalizing.RENormalizing(
 
 _dummy, REPOZO_OUTPUT = tempfile.mkstemp()
 REPOZO_SCRIPT_TEXT = """#!/bin/sh
-echo $* >> {}""".format(
-    REPOZO_OUTPUT
-)
+echo $* >> {}""".format(REPOZO_OUTPUT)
 
 
 def check_repozo_output():
