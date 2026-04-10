@@ -44,6 +44,9 @@ keywords = ["buildout", "backup", "repozo", "zope"]
 [project.entry-points."zc.buildout"]
 default = "collective.recipe.backup:Recipe"
 
+[project.optional-dependencies]
+test = ["zope.testing"]
+
 [project.urls]
 Source = "https://github.com/collective/collective.recipe.backup"
 Issues = "https://github.com/collective/collective.recipe.backup/issues"
