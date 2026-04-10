@@ -35,9 +35,6 @@ requires-python = ">=3.10"
 authors = [
     {name = "Reinout van Rees, Maurits van Rees",email = "m.van.rees@zestsoftware.nl"},
 ]
-maintainers = [
-    {name = "Plone Foundation and contributors",email = "zope-dev@zope.dev"},
-]
 dependencies = [
     "zc.buildout",
     "zc.recipe.egg",
@@ -49,8 +46,11 @@ default = "collective.recipe.backup:Recipe"
 
 [project.urls]
 Source = "https://github.com/collective/collective.recipe.backup"
-Issues = "https://github.com/plone/Products.CMFPlone/issues"
-Changelog = "https://github.com/plone/collective.recipe.backup/blob/315-move-setup-py-to-pyproject-toml/CHANGES.rst"
+Issues = "https://github.com/collective/collective.recipe.backup/issues"
+Changelog = "https://github.com/collective/collective.recipe.backup/blob/master/CHANGES.rst"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst", "CHANGES.rst"]}
 # END-MARKER-MANUAL-CONFIG
 
 [tool.towncrier]
@@ -215,7 +215,3 @@ ignore = [
 #  _your own configuration lines_
 #  """
 ##
-
-[tool.setuptools.dynamic]
-readme = {file = ["README.rst", "CHANGES.rst"]}
-
