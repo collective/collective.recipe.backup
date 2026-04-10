@@ -6,6 +6,56 @@ requires = ["setuptools>=68.2,<83", "wheel"]
 
 
 
+# START-MARKER-MANUAL-CONFIG
+# Anything from here until END-MARKER-MANUAL-CONFIG
+# will be kept by plone.meta
+
+[project]
+name = "collective.recipe.backup"
+version = "6.0.0.dev0"
+description = "bin/backup script: sensible defaults around bin/repozo"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Buildout",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+license = "GPL-2.0-only"
+dynamic = ["readme"]
+requires-python = ">=3.10"
+authors = [
+    {name = "Reinout van Rees, Maurits van Rees",email = "m.van.rees@zestsoftware.nl"},
+]
+dependencies = [
+    "zc.buildout",
+    "zc.recipe.egg",
+]
+keywords = ["buildout", "backup", "repozo", "zope"]
+
+[project.entry-points."zc.buildout"]
+default = "collective.recipe.backup:Recipe"
+
+[project.optional-dependencies]
+test = ["zope.testing"]
+
+[project.urls]
+Source = "https://github.com/collective/collective.recipe.backup"
+Issues = "https://github.com/collective/collective.recipe.backup/issues"
+Changelog = "https://github.com/collective/collective.recipe.backup/blob/master/CHANGES.rst"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst", "CHANGES.rst"]}
+# END-MARKER-MANUAL-CONFIG
+
 [tool.towncrier]
 directory = "news/"
 filename = "CHANGES.rst"
