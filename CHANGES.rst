@@ -7,6 +7,30 @@
 
 .. towncrier release notes start
 
+6.0.0 (2026-05-19)
+------------------
+
+Breaking changes:
+
+
+- Replace ``pkg_resources`` namespace with PEP 420 native namespace.
+  Support only Plone 6.2 and Python 3.10+. (#3928)
+- Drop support for Python 3.8 and 3.9, add support for 3.14.  [maurits]
+- Update license to GPL v2 only.  This is common in Plone packages.  [maurits]
+
+
+Internal:
+
+
+- Move package metadata from ``setup.py`` to ``pyproject.toml``.
+  [plone devs]
+- Rename our ``tests`` extra to ``test``.
+  This matches what most Plone repos have.
+  [maurits]
+- Update configuration files.
+  [plone devs]
+
+
 5.1.0 (2025-04-07)
 ------------------
 
