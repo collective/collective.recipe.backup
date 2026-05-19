@@ -3,7 +3,7 @@
 # See the inline comments on how to expand/tweak this configuration file
 [meta]
 template = "default"
-commit-id = "2.6.1.dev0"
+commit-id = "2.8.1.dev0"
 
 [github]
 # no 'coverage' job, as our tests have a different setup.
@@ -21,6 +21,8 @@ check_manifest_ignores = """
 
 [tox]
 use_test_matrix = false
+# Still define a test matrix so we can force Python 3.10 as minimum instead of 3.9.
+test_matrix = { "6.2" = ["*"], "6.1" = ["*"], "6.0" = ["3.10", "3.11", "3.12", "3.13"] }
 test_environment_variables = """
     # Warnings interfere with the expected test output.
     PYTHONWARNINGS=ignore
