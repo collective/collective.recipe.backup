@@ -4,8 +4,6 @@
 [build-system]
 requires = ["setuptools>=68.2,<83", "wheel"]
 
-
-
 # START-MARKER-MANUAL-CONFIG
 # Anything from here until END-MARKER-MANUAL-CONFIG
 # will be kept by plone.meta
