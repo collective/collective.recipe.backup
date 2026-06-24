@@ -21,7 +21,7 @@ jobs:
         - ["3.14",   "py314"]
     name: ${{ matrix.config[1] }}
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v7.0.0
       - name: Set up Python ${{ matrix.config[0] }}
         uses: actions/setup-python@v6.2.0
         with:
